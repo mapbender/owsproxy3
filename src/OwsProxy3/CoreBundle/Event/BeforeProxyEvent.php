@@ -16,4 +16,8 @@ class BeforeProxyEvent extends Event {
     public function __construct(Url $url) {
         $this->url = $url;
     }
+    
+    public function getUrl() {
+        return $this->url;
+    }
 }
