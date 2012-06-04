@@ -9,6 +9,8 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use OwsProxy3\CoreBundle\Component\WmsProxy;
 use OwsProxy3\CoreBundle\Component\Url;
 
+use  \Saarland\Ows3Bundle\Security\Mb2User;
+
 /**
  * Description of OwsProxyController
  *
@@ -20,6 +22,15 @@ class OwsProxyController extends Controller {
      * @Route("/")
      */
     public function entryPointAction() {
+        $user = $this->get("security.context")->getToken()->getUser();
+        if($user instanceof Mb2User) {
+            // ok
+//            $user->getUsername();
+//            $user->getPassword();
+//            $user->getUserid();
+        } else {
+            // kein user
+        }
         if(!isset($_GET["url"])) {
             throw new \RuntimeException('url parameter not found!');
         }
