@@ -39,7 +39,7 @@ class WmsProxy {
             $event = new BeforeProxyEvent($url);
             $dispatcher->dispatch('owsproxy.before_proxy', $event);
         } catch(\RuntimeException $e) {
-            return;
+            throw new \Exception("502 Bad Gateway");
         }
         
         $browserResponse = $browser->get( $url->toString() );
