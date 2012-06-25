@@ -32,37 +32,85 @@ class WmsProxy {
     public function handle(Url $url) {
         $response = new Response();
         $browser = new Browser();
-        
-        $dispatcher = $this->container->get('event_dispatcher');
-        
-        try {
-            $event = new BeforeProxyEvent($url);
-            $dispatcher->dispatch('owsproxy.before_proxy', $event);
-        } catch(\RuntimeException $e) {
-            throw new \Exception("502 Bad Gateway");
-        }
-        
-        $browserResponse = $browser->get( $url->toString() );
+        $browserResponse = $browser->get($url->toString());
         
         if($browserResponse->isOk()) {
-            $event = new AfterProxyEvent($url, $browserResponse);
-            $dispatcher->dispatch('owsproxy.after_proxy', $event);
-            
-            // Set received headers to our response
-            foreach($browserResponse->getHeaders() as $header) {
-                if(strstr($header, ":") === false) continue;
+            if($this->getBeforeProxyEventResponse($url,$browserResponse)){
                 
-                list($key, $val) = explode(":", $header, 2);
-                //$response->headers->set($key, $val);
+            } else if($this->getAfterProxyEventResponse($url,$browserResponse)){
+                
+            } else {
+                $browserResponse->setContent("");
             }
-            
-            // Set received content to our response
-            $response->setContent( $browserResponse->getContent() );
-
         } else {
-            throw new \Exception("502 Bad Gateway");
+//            throw new \Exception("502 Bad Gateway");
+            $response->setContent("");
         }
-
+//        // Set received headers to our response
+//        foreach($browserResponse->getHeaders() as $header) {
+//            if(strstr($header, ":") === false) continue;
+//
+//            list($key, $val) = explode(":", $header, 2);
+////            $response->headers->set($key, $val);
+//        }
+        # Set received content to our response
+        $response->setContent($browserResponse->getContent());
         return $response;
     }
+    
+    private function getBeforeProxyEventResponse(Url $url, $browserResponse){
+        $dispatcher = $this->container->get('event_dispatcher');
+        $event = new BeforeProxyEvent($url, $browserResponse);
+        $dispatcher->dispatch('owsproxy.before_proxy', $event);
+        return $event->getSuccess();
+    }
+    
+    
+    private function getAfterProxyEventResponse(Url $url, $browserResponse){
+        $dispatcher = $this->container->get('event_dispatcher');
+        $event = new AfterProxyEvent($url, $browserResponse);
+        $dispatcher->dispatch('owsproxy.after_proxy', $event);
+        return $event->getSuccess();
+    }
+    
+//    /**
+//     *
+//     * @return \Symfony\Component\HttpFoundation\Response 
+//     */
+//    public function handle(Url $url) {
+//        $response = new Response();
+//        $browser = new Browser();
+//        
+//        $dispatcher = $this->container->get('event_dispatcher');
+//        
+//        try {
+//            $event = new BeforeProxyEvent($url);
+//            $dispatcher->dispatch('owsproxy.before_proxy', $event);
+//        } catch(\RuntimeException $e) {
+//            throw new \Exception("502 Bad Gateway");
+//        }
+//        
+//        $browserResponse = $browser->get( $url->toString() );
+//        
+//        if($browserResponse->isOk()) {
+//            $event = new AfterProxyEvent($url, $browserResponse);
+//            $dispatcher->dispatch('owsproxy.after_proxy', $event);
+//            
+//            // Set received headers to our response
+//            foreach($browserResponse->getHeaders() as $header) {
+//                if(strstr($header, ":") === false) continue;
+//                
+//                list($key, $val) = explode(":", $header, 2);
+//                //$response->headers->set($key, $val);
+//            }
+//            
+//            // Set received content to our response
+//            $response->setContent( $browserResponse->getContent() );
+//
+//        } else {
+//            throw new \Exception("502 Bad Gateway");
+//        }
+//
+//        return $response;
+//    }
 }
