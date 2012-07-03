@@ -8,6 +8,7 @@ use OwsProxy3\CoreBundle\Component\Url;
 use OwsProxy3\CoreBundle\Event\AfterProxyEvent;
 use OwsProxy3\CoreBundle\Event\BeforeProxyEvent;
 use Buzz\Browser;
+use Buzz\Client\Curl;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -31,7 +32,17 @@ class WmsProxy {
      */
     public function handle(Url $url) {
         $response = new Response();
-        $browser = new Browser();
+        $browser = new Browser(new \Buzz\Client\Curl());
+        $curl = $browser->getClient()->getCurl();
+        $proxy_conf = $this->container->getParameter("owsproxy3.proxy");
+        if($proxy_conf['host'] !== null) {
+            curl_setopt($curl, CURLOPT_PROXY, $proxy_conf['host']);
+            curl_setopt($curl, CURLOPT_PROXYPORT, $proxy_conf['port']);
+
+            if($proxy_conf['user'] && $proxy_conf['password']) {
+               curl_setopt($curl, CURLOPT_PROXYUSERPWD, $proxy_conf['user'].':'.$proxy_conf['password']);
+            }
+        }
         $browserResponse = $browser->get($url->toString());
         
         if($browserResponse->isOk()) {

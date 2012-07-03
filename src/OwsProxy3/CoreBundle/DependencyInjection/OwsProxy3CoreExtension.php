@@ -15,6 +15,11 @@ use Symfony\Component\HttpKernel\DependencyInjection\Extension;
  */
 class OwsProxy3CoreExtension extends Extension {
     public function load(array $configs, ContainerBuilder $container) {
+        $configuration = new Configuration();
+        $config = $this->processConfiguration($configuration, $configs);
+        
+        $container->setParameter('owsproxy3.proxy', $config['proxy']);
+        
         $loader = new XmlFileLoader($container,
                 new FileLocator(__DIR__.'/../Resources/config'));
         
