@@ -15,7 +15,7 @@ class Configuration implements ConfigurationInterface {
      */
     public function getConfigTreeBuilder() {
         $treeBuilder = new TreeBuilder();
-        $rootNode = $treeBuilder->root('mapbender_core');
+        $rootNode = $treeBuilder->root('ows_proxy3_core');
 
         $rootNode
             ->children()

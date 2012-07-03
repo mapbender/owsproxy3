@@ -35,11 +35,10 @@ class WmsProxy {
         $browser = new Browser(new \Buzz\Client\Curl());
         $curl = $browser->getClient()->getCurl();
         $proxy_conf = $this->container->getParameter("owsproxy3.proxy");
-        
-        $logger = $this->container->get('logger');
-        $logger->info('WmsProxy handle- the parameter owsproxy3.proxy:'.print_r($proxy_conf,true));
-        
+
         if($proxy_conf['host'] !== null) {
+            $logger = $this->container->get('logger');
+            $logger->info('WmsProxy handle- Proxy:'.print_r($proxy_conf,true));
             curl_setopt($curl, CURLOPT_PROXY, $proxy_conf['host']);
             curl_setopt($curl, CURLOPT_PROXYPORT, $proxy_conf['port']);
             $logger->info('WmsProxy handle- curl_setopt CURLOPT_PROXY:'.$proxy_conf['host']);
