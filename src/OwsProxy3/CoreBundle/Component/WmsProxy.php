@@ -49,26 +49,14 @@ class WmsProxy {
             }
         }
         $browserResponse = $browser->get($url->toString());
-        
-        if($browserResponse->isOk()) {
-            if($this->getBeforeProxyEventResponse($url,$browserResponse)){
-                
-            } else if($this->getAfterProxyEventResponse($url,$browserResponse)){
-                
-            } else {
-                $browserResponse->setContent("");
-            }
+        /** check 'if($browserResponse->isOk())' at Worker */
+        if($this->getBeforeProxyEventResponse($url,$browserResponse)){
+
+        } else if($this->getAfterProxyEventResponse($url,$browserResponse)){
+
         } else {
-//            throw new \Exception("502 Bad Gateway");
-            $response->setContent("");
+            $browserResponse->setContent("");
         }
-//        // Set received headers to our response
-//        foreach($browserResponse->getHeaders() as $header) {
-//            if(strstr($header, ":") === false) continue;
-//
-//            list($key, $val) = explode(":", $header, 2);
-////            $response->headers->set($key, $val);
-//        }
         # Set received content to our response
         $response->setContent($browserResponse->getContent());
         return $response;
