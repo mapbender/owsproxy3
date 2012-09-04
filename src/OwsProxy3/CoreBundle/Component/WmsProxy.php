@@ -53,7 +53,6 @@ class WmsProxy {
         } catch(\Exception $e) {
             $browserResponse = new \Buzz\Message\Response();
             $browserResponse->setContent($e->getMessage());
-            $curlExc = $e;
         }
         if($this->getBeforeProxyEventResponse($url, $browserResponse)){
              $response->setContent($browserResponse->getContent());
