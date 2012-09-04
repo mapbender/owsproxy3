@@ -48,17 +48,21 @@ class WmsProxy {
                $logger->info('WmsProxy handle- curl_setopt CURLOPT_PROXYUSERPWD:'.$proxy_conf['user'].':'.$proxy_conf['password']);
             }
         }
-        $browserResponse = $browser->get($url->toString());
-        /** check 'if($browserResponse->isOk())' at Worker */
-        if($this->getBeforeProxyEventResponse($url,$browserResponse)){
-
-        } else if($this->getAfterProxyEventResponse($url,$browserResponse)){
-
-        } else {
-            $browserResponse->setContent("");
+        try {
+            $browserResponse = $browser->get($url->toString());
+        } catch(\Exception $e) {
+            $browserResponse = new \Buzz\Message\Response();
+            $browserResponse->setContent($e->getMessage());
+            $curlExc = $e;
         }
-        # Set received content to our response
-        $response->setContent($browserResponse->getContent());
+        if($this->getBeforeProxyEventResponse($url, $browserResponse)){
+             $response->setContent($browserResponse->getContent());
+        } else if($this->getAfterProxyEventResponse($url,$browserResponse)){
+             $response->setContent($browserResponse->getContent());
+        } else {
+            $response->setContent("");
+        }
+
         return $response;
     }
     
