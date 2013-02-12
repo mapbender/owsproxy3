@@ -5,13 +5,17 @@
     xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
     <parameters>
-        <parameter key="owsproxy.spatialsecurity.class">OwsProxy3\CoreBundle\Worker\Mapbender2SpatialSecurityWorker</parameter>
+        <parameter key="owsproxy.terminatelistener.class">OwsProxy3\CoreBundle\EventListener\TerminateListener</parameter>
+        <parameter key="owsproxy.logginglistener.class">OwsProxy3\CoreBundle\EventListener\LoggingListener</parameter>
     </parameters>
 
     <services>        
-        <service id="owsproxy.spatialsecurity" class="%owsproxy.spatialsecurity.class%">
-            <tag name="kernel.event_listener" event="owsproxy.before_proxy" method="onBeforeProxyEvent" />
-            <tag name="kernel.event_listener" event="owsproxy.after_proxy" method="onAfterProxyEvent" />
+        <service id="owsproxy.terminatelistener" class="%owsproxy.terminatelistener.class%">
+            <tag name="kernel.event_listener" event="kernel.terminate" method="onTerminate" />
+            <argument type="service" id="service_container" />
+        </service>
+        <service id="owsproxy.logginglistener" class="%owsproxy.logginglistener.class%">
+            <tag name="kernel.event_listener" event="owsproxy.terminate" method="onTerminate"/>
             <argument type="service" id="service_container" />
         </service>
     </services>
