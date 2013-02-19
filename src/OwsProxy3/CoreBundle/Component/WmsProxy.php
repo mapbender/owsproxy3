@@ -2,67 +2,86 @@
 
 namespace OwsProxy3\CoreBundle\Component;
 
-use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Response;
-use OwsProxy3\CoreBundle\Component\Url;
 use OwsProxy3\CoreBundle\Event\AfterProxyEvent;
 use OwsProxy3\CoreBundle\Event\BeforeProxyEvent;
 use Buzz\Browser;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Buzz\Client\Curl;
 
 /**
  * WMS Proxy
  *
- * @author A.R.Pour
+ * @author P. Schmidt
  */
-class WmsProxy {
-    protected $container;
-    
+class WmsProxy extends CommonProxy
+{
+
+    protected $event_dispatcher;
+
     /**
-     * @param Url $url 
+     * Creates a wms proxy
+     * 
+     * @param array $proxy_config the proxy configuration
+     * @param ContainerInterface $container
      */
-    public function __construct(ContainerInterface $container) {
-        $this->container = $container;
+    public function __construct($event_dispatcher, array $proxy_config,
+            ProxyQuery $proxy_query)
+    {
+        parent::__construct($proxy_config, $proxy_query);
+        $this->event_dispatcher = $event_dispatcher;
     }
-    
+
     /**
-     *
-     * @return \Symfony\Component\HttpFoundation\Response 
+     * 
+     * 
+     * @return MessageInterface the browser response
+     * @throws Exception\HTTPStatus502Exception
      */
-    public function handle(Url $url) {
-        $response = new Response();
-        $browser = new Browser();
-        
-        $dispatcher = $this->container->get('event_dispatcher');
-        
-        try {
-            $event = new BeforeProxyEvent($url);
-            $dispatcher->dispatch('owsproxy.before_proxy', $event);
-        } catch(\RuntimeException $e) {
-            return;
+    public function handle()
+    {
+        $browser = $this->createBrowser();
+        try
+        {
+            $event = new BeforeProxyEvent($this->proxy_query);
+            $this->event_dispatcher->dispatch('owsproxy.before_proxy', $event);
+        } catch(\RuntimeException $e)
+        {
+            throw new HTTPStatus502Exception();
         }
-        
-        $browserResponse = $browser->get( $url->toString() );
-        
-        if($browserResponse->isOk()) {
-            $event = new AfterProxyEvent($url, $browserResponse);
-            $dispatcher->dispatch('owsproxy.after_proxy', $event);
-            
-            // Set received headers to our response
-            foreach($browserResponse->getHeaders() as $header) {
-                if(strstr($header, ":") === false) continue;
-                
-                list($key, $val) = explode(":", $header, 2);
-                //$response->headers->set($key, $val);
+        try
+        {
+            if($this->proxy_query->getMethod() === Utils::$METHOD_POST)
+            {
+                if($this->proxy_query->getContent() !== null)
+                {
+                    $content = $this->proxy_query->getContent();
+                } else
+                {
+                    $content = $this->proxy_query->getPostQueryString();
+                }
+                $browserResponse = $browser->post($this->proxy_query->getGetUrl(),
+                                                  $this->proxy_query->getHeaders(),
+                                                  $content);
+            } else if($this->proxy_query->getMethod() === Utils::$METHOD_GET)
+            {
+                $url = $this->proxy_query->getGETUrl();
+                $browserResponse = $browser->get($this->proxy_query->getGetUrl(),
+                                                 $this->proxy_query->getHeaders());
             }
-            
-            // Set received content to our response
-            $response->setContent( $browserResponse->getContent() );
-
-        } else {
-            throw new \Exception("502 Bad Gateway");
+        } catch(\Exception $e)
+        {
+            throw new Exception\HTTPStatus502Exception($e->getMessage(), 502);
         }
-
-        return $response;
+        if($browserResponse->isOk())
+        {
+            $event = new AfterProxyEvent($this->proxy_query, $browserResponse);
+            $this->event_dispatcher->dispatch('owsproxy.after_proxy', $event);
+        } else
+        {
+            throw new HTTPStatus502Exception();
+        }
+        return $browserResponse;
     }
+
 }

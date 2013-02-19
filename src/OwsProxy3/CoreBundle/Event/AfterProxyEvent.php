@@ -2,28 +2,61 @@
 
 namespace OwsProxy3\CoreBundle\Event;
 
-use OwsProxy3\CoreBundle\Component\Url;
+use OwsProxy3\CoreBundle\Component\ProxyQuery;
 use Symfony\Component\EventDispatcher\Event;
+use Buzz\Message\MessageInterface;
 
 /**
  * Description of BeforeProxyEvent
  *
- * @author A.R.Pour
+ * @author Paul Schmidt <paul.schmidt@wheregroup.com>
  */
-class AfterProxyEvent extends Event {
-    protected $url;
-    protected $browserResponse;
-    
-    public function __construct(Url $url, $browserResponse) {
-        $this->url = $url;
-        $this->browserResponse = $browserResponse;
+class AfterProxyEvent extends Event
+{
+
+    /**
+     *
+     * @var ProxyQuery $proxy_query the proxy query
+     */
+    protected $proxy_query;
+
+    /**
+     *
+     * @var MessageInterface the browser's message
+     */
+    protected $browserMessage;
+
+    /**
+     * Creates an instance
+     * 
+     * @param Request $request the HTTP request
+     * @param MessageInterface $browserMessage the browser's message
+     */
+    public function __construct(ProxyQuery $proxy_query,
+            MessageInterface $browserMessage)
+    {
+        $this->proxy_query = $proxy_query;
+        $this->browserMessage = $browserMessage;
     }
-    
-    public function getUrl() {
-        return $this->url;
+
+    /**
+     * Returns the proxy query
+     * 
+     * @return ProxyQuery the proxy query
+     */
+    public function getProxyQuery()
+    {
+        return $this->proxy_query;
     }
-    
-    public function getBrowserResponse() {
-        return $this->browserResponse;
+
+    /**
+     * Returns the borwser's message
+     * 
+     * @return MessageInterface the browser's message
+     */
+    public function getBrowserMessage()
+    {
+        return $this->browserMessage;
     }
+
 }

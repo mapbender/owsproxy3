@@ -25,6 +25,19 @@ class Configuration implements ConfigurationInterface {
                 ->scalarNode('obfuscate_client_ip')
                     ->defaultTrue()
                 ->end()
+                ->arrayNode("proxy")
+                    ->canBeUnset()
+                    ->addDefaultsIfNotSet()
+                    ->children()
+                        ->scalarNode('host')->defaultNull()->end()
+                        ->scalarNode('port')->defaultNull()->end()
+                        ->scalarNode('user')->defaultNull()->end()
+                        ->scalarNode('password')->defaultNull()->end()
+                        ->arrayNode("noproxy")
+                            ->prototype('scalar')->end()
+                        ->end()
+                    ->end()
+                ->end()
             ->end();
 
         return $treeBuilder;

@@ -1,0 +1,168 @@
+<?php
+
+namespace OwsProxy3\CoreBundle\Component;
+
+use Symfony\Component\HttpFoundation\Request;
+use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus502Exception;
+
+/**
+ * Utils class with help functions
+ *
+ * @author Paul Schmidt <paul.schmidt@wheregroup.com>
+ */
+class Utils
+{
+    /**
+     *
+     * @var string the identifier for HTTP GET
+     */
+    public static $METHOD_GET = "GET";
+    /**
+     *
+     * @var string the identifier for HTTP POST
+     */
+    public static $METHOD_POST = "POST";
+    /**
+     *
+     * @var string the identifier for parameter "url"
+     */
+    public static $PARAMETER_URL = "url";
+    /**
+     *
+     * @var string the identifier for HTTP POST content
+     */
+    public static $CONTENT = "CONTENT";
+
+    /**
+     * Returns the array  with parameters.
+     * 
+     * @param \Symfony\Component\HttpFoundation\Request $request the request
+     * @param string $method  the HTTP method POST/GET
+     * (default null -> the method is determined from request)
+     * @return array the parameters
+     */
+    public static function getParams(Request $request, $method = null)
+    {
+        if($method === null)
+        {
+            $method = $request->getMethod();
+        }
+        if(strtoupper($method) === Utils::$METHOD_GET)
+        {
+            return $request->query->all();
+        } else if(strtoupper($method) === Utils::$METHOD_POST)
+        {
+            return $request->request->all();
+        } else
+        {
+            return null;
+        }
+    }
+
+    /**
+     * Returns the parameter value from request
+     * 
+     * @param \Symfony\Component\HttpFoundation\Request $request the request
+     * @param string $method the HTTP method POST/GET
+     * (default null -> the method is determined from request)
+     * @param boolean $ignoreCase false if the parameter name is case sensitive
+     * (default false)
+     * @param string $name the parameter name
+     * @return string the parameter value or null
+     */
+    public static function getParamValue(Request $request, $name,
+            $method = null, $ignoreCase = false)
+    {
+        $params = Utils::getParams($request, $method);
+        if($params === null)
+        {
+            return null;
+        }
+        if($ignoreCase)
+        {
+            $name = strtolower($name);
+            foreach($params as $key => $value)
+            {
+                if(strtolower($key) === $name)
+                {
+                    return $value;
+                }
+            }
+        } else
+        {
+            foreach($params as $key => $value)
+            {
+                if($key === $name)
+                {
+                    return $value;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns the associative array with all parameters 
+     * ("GET"=> array(),"POST"=>array(),"CONTENT"=>value).
+     * 
+     * @param \Symfony\Component\HttpFoundation\Request $request
+     * @return array the associative array with all parameters
+     */
+    public static function getAllParams(Request $request)
+    {
+        $params = array();
+        $get = Utils::getParams($request, Utils::$METHOD_GET);
+        if($get !== null && count($get) > 0)
+        {
+            $params[Utils::$METHOD_GET] = $get;
+        }
+        $post = Utils::getParams($request, Utils::$METHOD_POST);
+        if($post !== null && count($post) > 0)
+        {
+            $params[Utils::$METHOD_POST] = $post;
+        }
+        if($request->getContent() !== null && strlen($request->getContent()) > 0)
+        {
+            $params[Utils::$CONTENT] = $request->getContent();
+        }
+        return $params;
+    }
+
+    /**
+     * Returns the parameter value
+     * 
+     * @param \Symfony\Component\HttpFoundation\Request $request the request
+     * @param string $name the parameter name
+     * @param boolean $ignoreCase if the parameter name is case sensitive
+     *  => false (default false)
+     * @return string|null the parameter value
+     */
+    public static function getParamValueFromAll(Request $request, $name,
+            $ignoreCase = false)
+    {
+        $value = Utils::getParamValue($request, $name, "GET", $ignoreCase);
+        if($value === null)
+        {
+            $value = Utils::getParamValue($request, $name, "POST", $ignoreCase);
+        }
+        return $value;
+    }
+    
+    /**
+     * Returns the headers from Request
+     * 
+     * @param \Symfony\Component\HttpFoundation\Request $request
+     * @return array the headers
+     */
+    public static function getHeadersFromRequest(Request $request){
+        $headers = array();
+        foreach($request->headers as $key => $value)
+        {
+            if(isset($key) && isset($value) && isset($value[0]))
+            {
+                $headers[$key] = $value[0];
+            }
+        }
+        return $headers;
+    }
+}

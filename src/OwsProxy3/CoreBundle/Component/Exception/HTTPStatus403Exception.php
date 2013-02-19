@@ -1,0 +1,22 @@
+<?php
+
+namespace OwsProxy3\CoreBundle\Component\Exception;
+
+/**
+ * The HTTPStatus403Exception
+ * @package OwsProxy3
+ * @author Paul Schmidt <paul.schmidt@wheregroup.com>
+ */
+class HTTPStatus403Exception
+        extends \Exception
+{
+    /**
+     * Creates the HTTPStatus403Exception exception
+     * 
+     * @param type $message the exception message
+     * @param type $code the exception code
+     */
+    public function __construct($message = "403 Forbidden", $code = 403) {
+     parent::__construct($message, $code);
+    }
+}
