@@ -13,12 +13,13 @@ use Buzz\Message\MessageInterface;
  */
 class CommonProxy
 {
+
     /**
      *
      * @var ContainerInterface the container
      */
     protected $proxy_query;
-    
+
     /**
      *
      * @var array the proxy configuration
@@ -86,13 +87,14 @@ class CommonProxy
                 {
                     $content = $this->proxy_query->getPostQueryString();
                 }
+                $headers = Utils::prepareHeaders($this->proxy_query->getHeaders());
                 $browserResponse = $browser->post($this->proxy_query->getGetUrl(),
-                                                  $this->proxy_query->getHeaders(),
-                                                  $content);
+                                                  $headers, $content);
             } else if($this->proxy_query->getMethod() === Utils::$METHOD_GET)
             {
+                $headers = Utils::prepareHeaders($this->proxy_query->getHeaders());
                 $browserResponse = $browser->get($this->proxy_query->getGetUrl(),
-                                                 $this->proxy_query->getHeaders());
+                                                 $headers);
             }
         } catch(\Exception $e)
         {

@@ -209,5 +209,22 @@ class Utils
             $response->headers->set($key, $value);
         }
     }
+    
+    /**
+     * Prepares the HTTP headers
+     * 
+     * @param array $headers the HTTP headers
+     * @return array the prepared HTTP headers
+     */
+    public static function prepareHeaders($headers)
+    {
+        if(isset($headers["cookie"]))
+            unset($headers["cookie"]);
+        if(isset($headers["user-agent"]))
+            unset($headers["user-agent"]);
+        if(isset($headers["content-length"]))
+            unset($headers["content-length"]);
+        return $headers;
+    }
 
 }

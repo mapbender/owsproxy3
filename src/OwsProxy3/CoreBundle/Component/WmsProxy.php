@@ -60,14 +60,15 @@ class WmsProxy extends CommonProxy
                 {
                     $content = $this->proxy_query->getPostQueryString();
                 }
+                $headers = Utils::prepareHeaders($this->proxy_query->getHeaders());
                 $browserResponse = $browser->post($this->proxy_query->getGetUrl(),
-                                                  $this->proxy_query->getHeaders(),
+                                                  $headers,
                                                   $content);
             } else if($this->proxy_query->getMethod() === Utils::$METHOD_GET)
             {
-                $url = $this->proxy_query->getGETUrl();
+                $headers = Utils::prepareHeaders($this->proxy_query->getHeaders());
                 $browserResponse = $browser->get($this->proxy_query->getGetUrl(),
-                                                 $this->proxy_query->getHeaders());
+                                                 $headers);
             }
         } catch(\Exception $e)
         {
