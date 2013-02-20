@@ -10,7 +10,7 @@ use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus502Exception;
 /**
  * Utils class with help functions
  *
- * @author Paul Schmidt <paul.schmidt@wheregroup.com>
+ * @author Paul Schmidt
  */
 class Utils
 {
@@ -209,7 +209,7 @@ class Utils
             $response->headers->set($key, $value);
         }
     }
-    
+
     /**
      * Prepares the HTTP headers
      * 
@@ -218,12 +218,9 @@ class Utils
      */
     public static function prepareHeaders($headers)
     {
-        if(isset($headers["cookie"]))
-            unset($headers["cookie"]);
-        if(isset($headers["user-agent"]))
-            unset($headers["user-agent"]);
-        if(isset($headers["content-length"]))
-            unset($headers["content-length"]);
+        if(isset($headers["cookie"])) unset($headers["cookie"]);
+        if(isset($headers["user-agent"])) unset($headers["user-agent"]);
+        if(isset($headers["content-length"])) unset($headers["content-length"]);
         return $headers;
     }
 

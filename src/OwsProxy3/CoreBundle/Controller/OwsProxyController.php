@@ -19,6 +19,7 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * Description of OwsProxyController
  *
+ * @author A.R.Pour
  * @author P. Schmidt
  */
 class OwsProxyController extends Controller
