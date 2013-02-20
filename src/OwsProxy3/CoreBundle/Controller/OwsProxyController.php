@@ -3,6 +3,7 @@
 namespace OwsProxy3\CoreBundle\Controller;
 
 use Buzz\Message\MessageInterface;
+use OwsProxy3\CoreBundle\Component\Utils;
 use OwsProxy3\CoreBundle\Component\CommonProxy;
 use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus403Exception;
 use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus502Exception;
@@ -13,6 +14,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+
 //use OwsProxy3\CoreBundle\Component\Url;
 
 /**
@@ -22,6 +24,47 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class OwsProxyController extends Controller
 {
+
+    public function genericProxyAction($url, $content)
+    {
+//        if(!isset($url)) {
+//            throw new \RuntimeException('url parameter not found!');
+//        }
+//        $browser = new Browser();
+//        $browserResponse = $browser->post($url,array(),$content);
+//
+//        if($browserResponse->isOk()) {
+//            return new Response($browserResponse->getContent());
+//        } else {
+//            throw new \Exception("502 Bad Gateway");
+//        }
+
+
+        try
+        {
+            $proxy_config = $this->container->getParameter("owsproxy.proxy");
+            $headers_req = Utils::getHeadersFromRequest($request);
+            $proxy_query = ProxyQuery::createFromUrl($url, null, null,
+                                                     $headers_req, array(),
+                                                     array(), $content);
+            $proxy = new CommonProxy($proxy_config, $proxy_query);
+            $response = new Response();
+            $browserResponse = $proxy->handle();
+            Utils::setHeadersFromBrowserResponse($response, $browserResponse);
+            $response->setContent($browserResponse->getContent());
+            return $response;
+        } catch(HTTPStatus403Exception $e)
+        {
+            return $this->exceptionImage($e, $request);
+        } catch(HTTPStatus502Exception $e)
+        {
+            return $this->exceptionImage($e, $request);
+        } catch(\Exception $e)
+        {
+            if($e->getCode() === 0) $e = new \Exception($e->getMessage(), 500);
+            return $this->exceptionHtml($e);
+        }
+    }
 
     /**
      * @Route("/")
@@ -41,20 +84,11 @@ class OwsProxyController extends Controller
                     $proxy_query = ProxyQuery::createFromRequest($request);
                     $proxy = new WmsProxy($dispatcher, $proxy_config, $proxy_query);
                     $browserResponse = $proxy->handle();
-                    $headers = $browserResponse->getHeaders();
+
                     $response = new Response();
-                    foreach($headers as $header)
-                    {
-                        $pos = stripos($header, ":");
-                        if(is_int($pos))
-                        {
-                            $response->headers->set(substr($header, 0, $pos),
-                                                           substr($header,
-                                                                  $pos + 1));
-                        }
-                    }
-                    $content = $browserResponse->getContent();
-                    $response->setContent($content);
+                    Utils::setHeadersFromBrowserResponse($response,
+                                                         $browserResponse);
+                    $response->setContent($browserResponse->getContent());
                     return $response;
                 } catch(HTTPStatus403Exception $e)
                 {

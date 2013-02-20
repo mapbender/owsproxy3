@@ -2,7 +2,9 @@
 
 namespace OwsProxy3\CoreBundle\Component;
 
+use Buzz\Message\MessageInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus502Exception;
 
 /**
@@ -12,21 +14,25 @@ use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus502Exception;
  */
 class Utils
 {
+
     /**
      *
      * @var string the identifier for HTTP GET
      */
     public static $METHOD_GET = "GET";
+
     /**
      *
      * @var string the identifier for HTTP POST
      */
     public static $METHOD_POST = "POST";
+
     /**
      *
      * @var string the identifier for parameter "url"
      */
     public static $PARAMETER_URL = "url";
+
     /**
      *
      * @var string the identifier for HTTP POST content
@@ -147,14 +153,15 @@ class Utils
         }
         return $value;
     }
-    
+
     /**
      * Returns the headers from Request
      * 
      * @param \Symfony\Component\HttpFoundation\Request $request
      * @return array the headers
      */
-    public static function getHeadersFromRequest(Request $request){
+    public static function getHeadersFromRequest(Request $request)
+    {
         $headers = array();
         foreach($request->headers as $key => $value)
         {
@@ -165,4 +172,42 @@ class Utils
         }
         return $headers;
     }
+
+    /**
+     * Returns the headers from BrowserResponse
+     * 
+     * @param Buzz\Message\MessageInterface $request
+     * @return array the headers
+     */
+    public static function getHeadersFromBrowserResponse(MessageInterface $browserResponse)
+    {
+        $newheaders = array();
+        $headers = $browserResponse->getHeaders();
+        foreach($headers as $header)
+        {
+            $pos = stripos($header, ":");
+            if(is_int($pos))
+            {
+                $newheaders[substr($header, 0, $pos)] = substr($header, $pos + 1);
+            }
+        }
+        return $newheaders;
+    }
+
+    /**
+     * Sets the headers from proxy's browser response into proxy response
+     * 
+     * @param Response $response the response
+     * @param MessageInterface $browserResponse the browser response
+     */
+    public static function setHeadersFromBrowserResponse(Response $response,
+            MessageInterface $browserResponse)
+    {
+        $heasers_resp = Utils::getHeadersFromBrowserResponse($browserResponse);
+        foreach($heasers_resp as $key => $value)
+        {
+            $response->headers->set($key, $value);
+        }
+    }
+
 }
