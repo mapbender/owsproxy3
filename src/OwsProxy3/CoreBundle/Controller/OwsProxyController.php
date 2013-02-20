@@ -3,7 +3,6 @@
 namespace OwsProxy3\CoreBundle\Controller;
 
 use Buzz\Message\MessageInterface;
-use OwsProxy3\CoreBundle\Component\Utils;
 use OwsProxy3\CoreBundle\Component\CommonProxy;
 use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus403Exception;
 use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus502Exception;
