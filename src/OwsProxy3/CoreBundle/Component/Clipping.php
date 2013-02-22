@@ -5,7 +5,7 @@ namespace OwsProxy3\CoreBundle\Component;
 /**
  * Clipping class
  *
- * @author Paul Schmidt <paul.schmidt@wheregroup.com>
+ * @author Paul Schmidt
  */
 class Clipping
 {
@@ -160,8 +160,8 @@ class Clipping
      * @param SrsPoint $point the world coordinate of the GetFeatureInfo click
      * @return boolean true if 
      */
-    public function checkFeatureInfo($conn, string $database, string $whereCol,
-            array $whereColValues, string $geomCol, SrsPoint $point)
+    public function checkFeatureInfo($conn, $database, $whereCol,
+            $whereColValues, $geomCol, SrsPoint $point)
     {
         $paramArray = array();
         if(isset($whereColValues[0]))

@@ -19,6 +19,7 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * Description of OwsProxyController
  *
+ * @author A.R.Pour
  * @author P. Schmidt
  */
 class OwsProxyController extends Controller
@@ -63,7 +64,8 @@ class OwsProxyController extends Controller
     public function entryPointAction()
     {
         $request = $this->get('request');
-        $service = Utils::getParamValueFromAll($request, "service", true);
+        $proxy_query = ProxyQuery::createFromRequest($request);
+        $service = $proxy_query->getGetPostParamValue("service", true);
         // Switch proxy
         switch(strtoupper($service))
         {
@@ -72,7 +74,6 @@ class OwsProxyController extends Controller
                 {
                     $dispatcher = $this->container->get('event_dispatcher');
                     $proxy_config = $this->container->getParameter("owsproxy.proxy");
-                    $proxy_query = ProxyQuery::createFromRequest($request);
                     $proxy = new WmsProxy($dispatcher, $proxy_config, $proxy_query);
                     $browserResponse = $proxy->handle();
 

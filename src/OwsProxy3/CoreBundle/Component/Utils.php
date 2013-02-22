@@ -10,7 +10,7 @@ use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus502Exception;
 /**
  * Utils class with help functions
  *
- * @author Paul Schmidt <paul.schmidt@wheregroup.com>
+ * @author Paul Schmidt
  */
 class Utils
 {
@@ -91,7 +91,7 @@ class Utils
             {
                 if(strtolower($key) === $name)
                 {
-                    return $value;
+                    return urldecode($value);
                 }
             }
         } else
@@ -100,7 +100,7 @@ class Utils
             {
                 if($key === $name)
                 {
-                    return $value;
+                    return urldecode($value);
                 }
             }
         }

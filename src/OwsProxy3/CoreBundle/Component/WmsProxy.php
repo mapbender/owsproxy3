@@ -12,6 +12,7 @@ use Buzz\Client\Curl;
 /**
  * WMS Proxy
  *
+ * @author A.R.Pour
  * @author P. Schmidt
  */
 class WmsProxy extends CommonProxy

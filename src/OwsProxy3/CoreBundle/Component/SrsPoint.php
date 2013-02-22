@@ -5,7 +5,7 @@ namespace OwsProxy3\CoreBundle\Component;
 /**
  * Description of SrsPoint
  *
- * @author Paul Schmidt <paul.schmidt@wheregroup.com>
+ * @author Paul Schmidt
  */
 class SrsPoint
 {

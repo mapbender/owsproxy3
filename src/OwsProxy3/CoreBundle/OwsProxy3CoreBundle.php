@@ -9,6 +9,7 @@ use Symfony\Component\HttpKernel\Bundle\Bundle;
  *
  * @author A.R.Pour
  */
-class OwsProxy3CoreBundle extends Bundle {
-
+class OwsProxy3CoreBundle extends Bundle
+{
+    
 }

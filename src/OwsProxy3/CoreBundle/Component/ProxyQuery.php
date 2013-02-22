@@ -7,7 +7,8 @@ use Symfony\Component\HttpFoundation\Request;
 /**
  * ProxyQuery class provides methods for 
  *
- * @author Paul Schmidt <paul.schmidt@wheregroup.com>
+ * @author A.R.Pour
+ * @author Paul Schmidt
  */
 class ProxyQuery
 {

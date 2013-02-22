@@ -5,7 +5,7 @@ namespace OwsProxy3\CoreBundle\Component\Exception;
 /**
  * The HTTPStatus502Exception
  * @package OwsProxy3
- * @author Paul Schmidt <paul.schmidt@wheregroup.com>
+ * @author Paul Schmidt
  */
 class HTTPStatus502Exception
         extends \Exception

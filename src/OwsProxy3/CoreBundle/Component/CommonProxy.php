@@ -9,7 +9,7 @@ use Buzz\Message\MessageInterface;
 /**
  * CommonProxy class for 
  *
- * @author Paul Schmidt <paul.schmidt@wheregroup.com>
+ * @author Paul Schmidt
  */
 class CommonProxy
 {
