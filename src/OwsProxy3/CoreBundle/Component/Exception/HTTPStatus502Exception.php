@@ -7,9 +7,9 @@ namespace OwsProxy3\CoreBundle\Component\Exception;
  * @package OwsProxy3
  * @author Paul Schmidt
  */
-class HTTPStatus502Exception
-        extends \Exception
+class HTTPStatus502Exception extends \Exception
 {
+
     /**
      * Creates the HTTPStatus502Exception exception
      * 
@@ -20,4 +20,5 @@ class HTTPStatus502Exception
     {
         parent::__construct($message, $code);
     }
+
 }

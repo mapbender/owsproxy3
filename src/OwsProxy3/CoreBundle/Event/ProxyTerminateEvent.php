@@ -6,8 +6,9 @@ use Symfony\Component\HttpKernel\Event\PostResponseEvent;
 
 /**
  *
- * @author apour
+ * @author A.R.Pour
  */
-class ProxyTerminateEvent extends PostResponseEvent 
+class ProxyTerminateEvent extends PostResponseEvent
 {
+    
 }

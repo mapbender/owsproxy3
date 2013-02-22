@@ -4,22 +4,22 @@ namespace OwsProxy3\CoreBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-
 /**
-* Source entity
-*
-* @author Vadim Hermann
-*
-* @ORM\Entity
-* @ORM\Table(name="owsproxy_log")
-*/
+ * Source entity
+ *
+ * @author Vadim Hermann
+ *
+ * @ORM\Entity
+ * @ORM\Table(name="owsproxy_log")
+ */
 class Log
 {
+
     /**
-    * @ORM\Id
-    * @ORM\Column(type="integer")
-    * @ORM\GeneratedValue(strategy="AUTO")
-    */
+     * @ORM\Id
+     * @ORM\Column(type="integer")
+     * @ORM\GeneratedValue(strategy="AUTO")
+     */
     protected $id;
 
     /**
@@ -51,7 +51,7 @@ class Log
      * @ORM\Column(name="request_body", type="text")
      */
     protected $requestBody;
-    
+
     /**
      * @ORM\Column(name="request_method", type="string", length=255)
      */
@@ -72,9 +72,6 @@ class Log
      */
     protected $responseSize;
 
-
-    
-
     /**
      * Get id
      *
@@ -94,7 +91,7 @@ class Log
     public function setUsername($username)
     {
         $this->username = $username;
-    
+
         return $this;
     }
 
@@ -117,7 +114,7 @@ class Log
     public function setRoles($roles)
     {
         $this->roles = $roles;
-    
+
         return $this;
     }
 
@@ -140,7 +137,7 @@ class Log
     public function setIp($ip)
     {
         $this->ip = $ip;
-    
+
         return $this;
     }
 
@@ -163,7 +160,7 @@ class Log
     public function setTimestamp($timestamp)
     {
         $this->timestamp = $timestamp;
-    
+
         return $this;
     }
 
@@ -186,7 +183,7 @@ class Log
     public function setRequestUrl($requestUrl)
     {
         $this->requestUrl = $requestUrl;
-    
+
         return $this;
     }
 
@@ -209,7 +206,7 @@ class Log
     public function setRequestBody($requestBody)
     {
         $this->requestBody = $requestBody;
-    
+
         return $this;
     }
 
@@ -232,7 +229,7 @@ class Log
     public function setRequestMethod($requestMethod)
     {
         $this->requestMethod = $requestMethod;
-    
+
         return $this;
     }
 
@@ -255,7 +252,7 @@ class Log
     public function setResponseMimetype($responseMimetype)
     {
         $this->responseMimetype = $responseMimetype;
-    
+
         return $this;
     }
 
@@ -278,7 +275,7 @@ class Log
     public function setResponseCode($responseCode)
     {
         $this->responseCode = $responseCode;
-    
+
         return $this;
     }
 
@@ -301,7 +298,7 @@ class Log
     public function setResponseSize($responseSize)
     {
         $this->responseSize = $responseSize;
-    
+
         return $this;
     }
 
@@ -314,4 +311,5 @@ class Log
     {
         return $this->responseSize;
     }
+
 }

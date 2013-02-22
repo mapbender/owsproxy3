@@ -15,11 +15,13 @@ class Clipping
      * @var string svg envelope 
      */
     private $svgEnvelope;
+
     /**
      *
      * @var string svg geometry 
      */
     private $svgGeometry;
+
     /**
      *
      * @var int the count of the pixels at svg geometry
@@ -123,7 +125,6 @@ class Clipping
                             ? '' : $this->svgGeometry) . '" fill="black" />
 </svg>';
     }
-
 
     /**
      * Clips the svgGeometry from the image
