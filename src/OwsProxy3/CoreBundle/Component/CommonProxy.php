@@ -48,23 +48,23 @@ class CommonProxy
     {
         $rowUrl = $this->proxy_query->getRowUrl();
         $proxy_config = $this->proxy_config;
+        $curl = new Curl();
+        if($proxy_config !== null && $proxy_config['timeout'] !== null)
+        {
+            $curl->setOption(CURLOPT_TIMEOUT, $proxy_config['timeout']);
+        }
         if($proxy_config !== null && $proxy_config['host'] !== null
                 && !in_array($rowUrl['host'], $proxy_config['noproxy']))
         {
-            $browser = new Browser(new Curl());
-            $curl = $browser->getClient()->getCurl();
-            curl_setopt($curl, CURLOPT_PROXY, $proxy_config['host']);
-            curl_setopt($curl, CURLOPT_PROXYPORT, $proxy_config['port']);
+            $curl->setOption(CURLOPT_PROXY, $proxy_config['host']);
+            $curl->setOption(CURLOPT_PROXYPORT, $proxy_config['port']);
             if($proxy_config['user'] !== null && $proxy_config['password'] !== null)
             {
-                curl_setopt($curl, CURLOPT_PROXYUSERPWD,
-                            $proxy_config['user'] . ':' . $proxy_config['password']);
+                $curl->setOption(CURLOPT_PROXYUSERPWD,
+                        $proxy_config['user'] . ':' . $proxy_config['password']);
             }
-            return $browser;
-        } else
-        {
-            return new Browser();
         }
+        return new Browser($curl);
     }
 
     /**
