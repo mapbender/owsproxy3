@@ -5,6 +5,8 @@ namespace OwsProxy3\CoreBundle\Component;
 use Buzz\Browser;
 use Buzz\Client\Curl;
 use Buzz\Message\MessageInterface;
+use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus403Exception;
+use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus502Exception;
 
 /**
  * CommonProxy class for 

@@ -4,6 +4,8 @@ namespace OwsProxy3\CoreBundle\Component;
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Response;
+use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus403Exception;
+use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus502Exception;
 use OwsProxy3\CoreBundle\Event\AfterProxyEvent;
 use OwsProxy3\CoreBundle\Event\BeforeProxyEvent;
 use Buzz\Browser;
