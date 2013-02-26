@@ -33,6 +33,7 @@ class Configuration implements ConfigurationInterface
                 ->children()
                 ->scalarNode('host')->defaultNull()->end()
                 ->scalarNode('port')->defaultNull()->end()
+                ->scalarNode('connecttimeout')->defaultNull()->end()
                 ->scalarNode('timeout')->defaultNull()->end()
                 ->scalarNode('user')->defaultNull()->end()
                 ->scalarNode('password')->defaultNull()->end()

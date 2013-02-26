@@ -75,7 +75,7 @@ class WmsProxy extends CommonProxy
             }
         } catch(\Exception $e)
         {
-            throw new Exception\HTTPStatus502Exception($e->getMessage(), 502);
+            throw new HTTPStatus502Exception($e->getMessage(), 502);
         }
         if($browserResponse->isOk())
         {

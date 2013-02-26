@@ -51,9 +51,13 @@ class CommonProxy
         $rowUrl = $this->proxy_query->getRowUrl();
         $proxy_config = $this->proxy_config;
         $curl = new Curl();
-        if($proxy_config !== null && $proxy_config['timeout'] !== null)
+        if($proxy_config !== null && $proxy_config['connecttimeout'] !== null)
         {
             $curl->setOption(CURLOPT_TIMEOUT, $proxy_config['timeout']);
+        }
+        if($proxy_config !== null && $proxy_config['connecttimeout'] !== null)
+        {
+            $curl->setOption(CURLOPT_CONNECTTIMEOUT, $proxy_config['connecttimeout']);
         }
         if($proxy_config !== null && $proxy_config['host'] !== null
                 && !in_array($rowUrl['host'], $proxy_config['noproxy']))
@@ -66,6 +70,13 @@ class CommonProxy
                         $proxy_config['user'] . ':' . $proxy_config['password']);
             }
         }
+//        $user_agent = array_key_exists('HTTP_USER_AGENT', $_SERVER) ?
+//            $_SERVER['HTTP_USER_AGENT'] : 'Mapbender3';
+
+//        $curl->setOption(CURLOPT_FOLLOWLOCATION, true);
+//        $curl->setOption(CURLOPT_HEADER, false);
+//        $curl->setOption(CURLOPT_RETURNTRANSFER, true);
+//        $curl->setOption(CURLOPT_USERAGENT, $user_agent);
         return new Browser($curl);
     }
 
@@ -100,7 +111,7 @@ class CommonProxy
             }
         } catch(\Exception $e)
         {
-            throw new Exception\HTTPStatus502Exception($e->getMessage(), 502);
+            throw new HTTPStatus502Exception($e->getMessage(), 502);
         }
         return $browserResponse;
     }
