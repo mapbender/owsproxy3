@@ -81,7 +81,7 @@ class CommonProxy
     }
 
     /**
-     * 
+     * Handles the request and returns the response.
      * 
      * @return MessageInterface the browser response
      * @throws Exception\HTTPStatus502Exception

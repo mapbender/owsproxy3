@@ -25,6 +25,13 @@ use Symfony\Component\HttpFoundation\Response;
 class OwsProxyController extends Controller
 {
 
+    /**
+     * Handles the client's request
+     * 
+     * @param type $url the url
+     * @param type $content the POST content
+     * @return \Symfony\Component\HttpFoundation\Response the response
+     */
     public function genericProxyAction($url, $content)
     {
         $request = $this->get('request');
@@ -59,7 +66,10 @@ class OwsProxyController extends Controller
     }
 
     /**
+     * Handles the client's request
+     * 
      * @Route("/")
+     * @return \Symfony\Component\HttpFoundation\Response the response
      */
     public function entryPointAction()
     {
@@ -99,6 +109,12 @@ class OwsProxyController extends Controller
         }
     }
 
+    /**
+     * Creates a response with an exception as HTML
+     * 
+     * @param \Exception $e the exception
+     * @return \Symfony\Component\HttpFoundation\Response the response
+     */
     private function exceptionHtml(\Exception $e)
     {
         $response = new Response();
@@ -110,6 +126,13 @@ class OwsProxyController extends Controller
         return $response;
     }
 
+    /**
+     * Creates a response with an exception as png image
+     * 
+     * @param \Exception $e the exception
+     * @param Request $request the request
+     * @return \Symfony\Component\HttpFoundation\Response the response
+     */
     private function exceptionImage(\Exception $e, $request)
     {
         $format = Utils::getParamValueFromAll($request, "format", true);

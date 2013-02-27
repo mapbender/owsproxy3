@@ -29,6 +29,38 @@ class Clipping
     private $pixelNumber;
 
     /**
+     *
+     * @var boolean
+     */
+    private $intersects = false;
+
+    /**
+     *
+     * @var boolean
+     */
+    private $containts = false;
+
+    /**
+     * Returns the contains
+     * 
+     * @return boolean the contains
+     */
+    public function getContains()
+    {
+        return $this->containts;
+    }
+
+    /**
+     * Returns  the intersects.
+     * 
+     * @return boolean the intersects
+     */
+    public function getIntersects()
+    {
+        return $this->intersects;
+    }
+
+    /**
      * Queries the svgEnvelope and the svgGeometry from the database
      * 
      * @param type $conn the database connection
@@ -63,14 +95,18 @@ class Clipping
         if("POSTGIS")
         {
             $sql .= "SELECT st_assvg(ST_INTERSECTION(" . $bboxGeoText
-                    . ", st_union(ST_TRANSFORM(" . $geomColumn . ","
+                    . ", ST_UNION(ST_TRANSFORM(" . $geomColumn . ","
                     . $srsInt . ")))) as geom"
                     . ",ST_INTERSECTION(" . $bboxGeoText
-                    . ", st_union(ST_TRANSFORM(" . $geomColumn . ","
+                    . ", ST_UNION(ST_TRANSFORM(" . $geomColumn . ","
                     . $srsInt . "))) as geomint"
+                    . ",ST_INTERSECTS(ST_UNION(ST_TRANSFORM(" . $geomColumn
+                    . "," . $srsInt . "))," . $bboxGeoText . ") as intersects"
+                    . ",ST_CONTAINS(ST_UNION(ST_TRANSFORM(" . $geomColumn . ","
+                    . $srsInt . "))," . $bboxGeoText . ") as contains"
                     . ",area2d(" . $bboxGeoText . ") as bboxarea"
                     . ",area2d(ST_INTERSECTION(" . $bboxGeoText
-                    . ",st_union(ST_TRANSFORM(" . $geomColumn
+                    . ",ST_UNION(ST_TRANSFORM(" . $geomColumn
                     . "," . $srsInt . ")))) as geomarea"
                     . ",st_assvg(" . $bboxGeoText . ") as envelope"
                     . " FROM " . $database
@@ -83,6 +119,9 @@ class Clipping
 
         $this->svgEnvelope = $row["envelope"];
         $this->svgGeometry = $row["geom"];
+        $this->intersects = $row["intersects"] === null ? false : $row["intersects"];
+        $this->contains = $row["contains"] === null ? false : $row["contains"];
+
 
         $geomarea = $row["geomarea"] !== null ? intval($row["geomarea"]) : 0;
         $bboxarea = $row["bboxarea"];
@@ -131,9 +170,10 @@ class Clipping
      * 
      * @param type $sourceImage
      * @param type $maskImage
-     * @return \Imagick 
+     * @param string $format the image format
+     * @return \Imagick the clipped image
      */
-    public function clipImage($sourceImage, $maskImage)
+    public function clipImage($sourceImage, $maskImage, $format)
     {
         $source = new \Imagick();
         $source->readImageBlob($sourceImage);
@@ -142,12 +182,30 @@ class Clipping
         $mask->setBackgroundColor(new \ImagickPixel('transparent'));
 
         $mask->readImageBlob($maskImage);
-        $mask->setImageFormat("png32");
+        $mask->setImageFormat($format);
 
         $source->setImageMatte(1);
         $source->compositeImage($mask, \Imagick::COMPOSITE_DSTIN, 0, 0);
 
         return $source;
+    }
+
+    /**
+     * Creates the graphical image
+     * 
+     * @param int $width the image widht
+     * @param int $height the image height
+     * @param string $format the image format
+     * @return \Imagick the image
+     */
+    public function createImage($width, $height, $format)
+    {
+        $image = new \Imagick();
+        $pixel = new \ImagickPixel('none');
+        $image->newImage(intval($width), intval($height), $pixel);
+        $image->setImageFormat($format);
+
+        return $image;
     }
 
     /**
