@@ -185,14 +185,14 @@ class Clipping
         $mask->setImageFormat($format);
 
         $source->setImageMatte(1);
-//        $source->compositeImage($mask, \Imagick::COMPOSITE_DSTIN, 0, 0);
-//        $mask->destroy();
-//        unset($mask);
-//        $content = $source->getimageblob();
-        $mask->compositeImage($source, \Imagick::COMPOSITE_DSTOUT, 0, 0);
-        $content = $mask->getimageblob();
-//        $source->destroy();
-//        unset($source);
+        $source->compositeImage($mask, \Imagick::COMPOSITE_DSTIN, 0, 0);
+        $mask->destroy();
+        unset($mask);
+        $content = $source->getimageblob();
+//        $mask->compositeImage($source, \Imagick::COMPOSITE_DSTOUT, 0, 0);
+//        $content = $mask->getimageblob();
+        $source->destroy();
+        unset($source);
         return $content;
     }
 
