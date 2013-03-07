@@ -21,6 +21,12 @@ class Clipping
      * @var string svg geometry 
      */
     private $svgGeometry;
+    
+    /**
+     *
+     * @var string svg geometry 
+     */
+    private $wktGeometry;
 
     /**
      *
@@ -59,6 +65,16 @@ class Clipping
     {
         return $this->intersects;
     }
+    
+    /**
+     * Returns the geometry as wkt
+     * 
+     * @return string
+     */
+    public function getWktGeometry()
+    {
+        return $this->wktGeometry;
+    }
 
     /**
      * Queries the svgEnvelope and the svgGeometry from the database
@@ -96,10 +112,7 @@ class Clipping
         {
             $sql .= "SELECT st_assvg(ST_INTERSECTION(" . $bboxGeoText
                     . ", ST_UNION(ST_TRANSFORM(" . $geomColumn . ","
-                    . $srsInt . ")))) as geom"
-                    . ",ST_INTERSECTION(" . $bboxGeoText
-                    . ", ST_UNION(ST_TRANSFORM(" . $geomColumn . ","
-                    . $srsInt . "))) as geomint"
+                    . $srsInt . ")))) as svg_geom"
                     . ",ST_INTERSECTS(ST_UNION(ST_TRANSFORM(" . $geomColumn
                     . "," . $srsInt . "))," . $bboxGeoText . ") as intersects"
                     . ",ST_CONTAINS(ST_UNION(ST_TRANSFORM(" . $geomColumn . ","
@@ -118,7 +131,71 @@ class Clipping
         $row = $stmt->fetch();
 
         $this->svgEnvelope = $row["envelope"];
-        $this->svgGeometry = $row["geom"];
+        $this->svgGeometry = $row["svg_geom"];
+        $this->intersects = $row["intersects"] === null ? false : $row["intersects"];
+        $this->contains = $row["contains"] === null ? false : $row["contains"];
+
+
+        $geomarea = $row["geomarea"] !== null ? intval($row["geomarea"]) : 0;
+        $bboxarea = $row["bboxarea"];
+        $factor = $geomarea / $bboxarea;
+        $this->pixelNumber = intval($factor * $width * $height);
+    }
+    
+    /**
+     * Queries the svgEnvelope and the svgGeometry from the database
+     * 
+     * @param type $conn the database connection
+     * @param array $MultiPointBbox the bounding box as a collection of the 
+     * SrsPoints
+     * @param string $database the name of the database
+     * @param string $geomColumn the name of the geometry column
+     * @param string $whereCol the name of the column at the where clause
+     * @param array $whereColValues the values for the column at the where clause
+     * @param int $width the width of the image
+     * @param int $height the height of the image
+     */
+    public function findWktGeometry($conn, $MultiPointBbox, $database,
+            $geomColumn, $whereCol, $whereColValues, $width, $height)
+    {
+        $bboxGeoText = "ST_ENVELOPE("
+                . SrsPoint::getGeomFromTextMultiPoint("POSTGIS", $MultiPointBbox)
+                . ")";
+        $paramArray = array();
+        if(isset($whereColValues[0]))
+        {
+            if(is_string($whereColValues[0]))
+            {
+                $paramArray = array(\Doctrine\DBAL\Connection::PARAM_STR_ARRAY);
+            } else if(is_int($whereColValues[0]))
+            {
+                $paramArray = array(\Doctrine\DBAL\Connection::PARAM_INT_ARRAY);
+            }
+        }
+        $srsInt = $MultiPointBbox[0]->getSrs();
+        $sql = "";
+        if("POSTGIS")
+        {
+            $sql .= "SELECT astext(ST_INTERSECTION(" . $bboxGeoText
+                    . ", ST_UNION(ST_TRANSFORM(" . $geomColumn . ","
+                    . $srsInt . ")))) as wkt_geom"
+                    . ",ST_INTERSECTS(ST_UNION(ST_TRANSFORM(" . $geomColumn
+                    . "," . $srsInt . "))," . $bboxGeoText . ") as intersects"
+                    . ",ST_CONTAINS(ST_UNION(ST_TRANSFORM(" . $geomColumn . ","
+                    . $srsInt . "))," . $bboxGeoText . ") as contains"
+                    . ",area2d(" . $bboxGeoText . ") as bboxarea"
+                    . ",area2d(ST_INTERSECTION(" . $bboxGeoText
+                    . ",ST_UNION(ST_TRANSFORM(" . $geomColumn
+                    . "," . $srsInt . ")))) as geomarea"
+                    . " FROM " . $database
+                    . " WHERE " . $whereCol . " IN (?) AND ST_INTERSECTS("
+                    . $bboxGeoText . ",ST_TRANSFORM(" . $geomColumn . "," . $srsInt . "))";
+        }
+        $stmt = $conn->executeQuery($sql, array($whereColValues), $paramArray);
+
+        $row = $stmt->fetch();
+
+        $this->wktGeometry = $row["wkt_geom"];
         $this->intersects = $row["intersects"] === null ? false : $row["intersects"];
         $this->contains = $row["contains"] === null ? false : $row["contains"];
 
