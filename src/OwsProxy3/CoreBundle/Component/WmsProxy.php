@@ -4,6 +4,8 @@ namespace OwsProxy3\CoreBundle\Component;
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Response;
+use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus403Exception;
+use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus502Exception;
 use OwsProxy3\CoreBundle\Event\AfterProxyEvent;
 use OwsProxy3\CoreBundle\Event\BeforeProxyEvent;
 use Buzz\Browser;
@@ -12,6 +14,7 @@ use Buzz\Client\Curl;
 /**
  * WMS Proxy
  *
+ * @author A.R.Pour
  * @author P. Schmidt
  */
 class WmsProxy extends CommonProxy
@@ -33,7 +36,7 @@ class WmsProxy extends CommonProxy
     }
 
     /**
-     * 
+     * Handles the request and returns the response.
      * 
      * @return MessageInterface the browser response
      * @throws Exception\HTTPStatus502Exception
@@ -60,18 +63,18 @@ class WmsProxy extends CommonProxy
                 {
                     $content = $this->proxy_query->getPostQueryString();
                 }
+                $headers = Utils::prepareHeaders($this->proxy_query->getHeaders());
                 $browserResponse = $browser->post($this->proxy_query->getGetUrl(),
-                                                  $this->proxy_query->getHeaders(),
-                                                  $content);
+                                                  $headers, $content);
             } else if($this->proxy_query->getMethod() === Utils::$METHOD_GET)
             {
-                $url = $this->proxy_query->getGETUrl();
+                $headers = Utils::prepareHeaders($this->proxy_query->getHeaders());
                 $browserResponse = $browser->get($this->proxy_query->getGetUrl(),
-                                                 $this->proxy_query->getHeaders());
+                                                 $headers);
             }
         } catch(\Exception $e)
         {
-            throw new Exception\HTTPStatus502Exception($e->getMessage(), 502);
+            throw new HTTPStatus502Exception($e->getMessage(), 502);
         }
         if($browserResponse->isOk())
         {

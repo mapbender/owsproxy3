@@ -8,7 +8,8 @@ use Symfony\Component\EventDispatcher\Event;
 /**
  * Description of BeforeProxyEvent
  *
- * @author Paul Schmidt <paul.schmidt@wheregroup.com>
+ * @author A.R.Pour
+ * @author Paul Schmidt
  */
 class BeforeProxyEvent extends Event
 {

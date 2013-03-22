@@ -3,6 +3,7 @@
 namespace OwsProxy3\CoreBundle\Controller;
 
 use Buzz\Message\MessageInterface;
+use OwsProxy3\CoreBundle\Component\Utils;
 use OwsProxy3\CoreBundle\Component\CommonProxy;
 use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus403Exception;
 use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus502Exception;
@@ -56,10 +57,10 @@ class OwsProxyController extends Controller
             return $response;
         } catch(HTTPStatus403Exception $e)
         {
-            return $this->exceptionHtml($e, $request);
+            return $this->exceptionImage($e, $request);
         } catch(HTTPStatus502Exception $e)
         {
-            return $this->exceptionHtml($e, $request);
+            return $this->exceptionImage($e, $request);
         } catch(\Exception $e)
         {
             if($e->getCode() === 0) $e = new \Exception($e->getMessage(), 500);
@@ -86,6 +87,7 @@ class OwsProxyController extends Controller
                 {
                     $dispatcher = $this->container->get('event_dispatcher');
                     $proxy_config = $this->container->getParameter("owsproxy.proxy");
+                    $proxy_query = ProxyQuery::createFromRequest($request);
                     $proxy = new WmsProxy($dispatcher, $proxy_config, $proxy_query);
                     $browserResponse = $proxy->handle();
 

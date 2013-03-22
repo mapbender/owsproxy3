@@ -9,7 +9,8 @@ use Buzz\Message\MessageInterface;
 /**
  * Description of BeforeProxyEvent
  *
- * @author Paul Schmidt <paul.schmidt@wheregroup.com>
+ * @author A.R.Pour
+ * @author Paul Schmidt
  */
 class AfterProxyEvent extends Event
 {

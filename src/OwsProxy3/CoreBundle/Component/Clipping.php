@@ -5,7 +5,7 @@ namespace OwsProxy3\CoreBundle\Component;
 /**
  * Clipping class
  *
- * @author Paul Schmidt <paul.schmidt@wheregroup.com>
+ * @author Paul Schmidt
  */
 class Clipping
 {
@@ -15,16 +15,66 @@ class Clipping
      * @var string svg envelope 
      */
     private $svgEnvelope;
+
     /**
      *
      * @var string svg geometry 
      */
     private $svgGeometry;
+    
+    /**
+     *
+     * @var string svg geometry 
+     */
+    private $wktGeometry;
+
     /**
      *
      * @var int the count of the pixels at svg geometry
      */
     private $pixelNumber;
+
+    /**
+     *
+     * @var boolean
+     */
+    private $intersects = false;
+
+    /**
+     *
+     * @var boolean
+     */
+    private $containts = false;
+
+    /**
+     * Returns the contains
+     * 
+     * @return boolean the contains
+     */
+    public function getContains()
+    {
+        return $this->containts;
+    }
+
+    /**
+     * Returns  the intersects.
+     * 
+     * @return boolean the intersects
+     */
+    public function getIntersects()
+    {
+        return $this->intersects;
+    }
+    
+    /**
+     * Returns the geometry as wkt
+     * 
+     * @return string
+     */
+    public function getWktGeometry()
+    {
+        return $this->wktGeometry;
+    }
 
     /**
      * Queries the svgEnvelope and the svgGeometry from the database
@@ -61,14 +111,15 @@ class Clipping
         if("POSTGIS")
         {
             $sql .= "SELECT st_assvg(ST_INTERSECTION(" . $bboxGeoText
-                    . ", st_union(ST_TRANSFORM(" . $geomColumn . ","
-                    . $srsInt . ")))) as geom"
-                    . ",ST_INTERSECTION(" . $bboxGeoText
-                    . ", st_union(ST_TRANSFORM(" . $geomColumn . ","
-                    . $srsInt . "))) as geomint"
+                    . ", ST_UNION(ST_TRANSFORM(" . $geomColumn . ","
+                    . $srsInt . ")))) as svg_geom"
+                    . ",ST_INTERSECTS(ST_UNION(ST_TRANSFORM(" . $geomColumn
+                    . "," . $srsInt . "))," . $bboxGeoText . ") as intersects"
+                    . ",ST_CONTAINS(ST_UNION(ST_TRANSFORM(" . $geomColumn . ","
+                    . $srsInt . "))," . $bboxGeoText . ") as contains"
                     . ",area2d(" . $bboxGeoText . ") as bboxarea"
                     . ",area2d(ST_INTERSECTION(" . $bboxGeoText
-                    . ",st_union(ST_TRANSFORM(" . $geomColumn
+                    . ",ST_UNION(ST_TRANSFORM(" . $geomColumn
                     . "," . $srsInt . ")))) as geomarea"
                     . ",st_assvg(" . $bboxGeoText . ") as envelope"
                     . " FROM " . $database
@@ -80,7 +131,74 @@ class Clipping
         $row = $stmt->fetch();
 
         $this->svgEnvelope = $row["envelope"];
-        $this->svgGeometry = $row["geom"];
+        $this->svgGeometry = $row["svg_geom"];
+        $this->intersects = $row["intersects"] === null ? false : $row["intersects"];
+        $this->contains = $row["contains"] === null ? false : $row["contains"];
+
+
+        $geomarea = $row["geomarea"] !== null ? intval($row["geomarea"]) : 0;
+        $bboxarea = $row["bboxarea"];
+        $factor = $geomarea / $bboxarea;
+        $this->pixelNumber = intval($factor * $width * $height);
+    }
+    
+    /**
+     * Queries the svgEnvelope and the svgGeometry from the database
+     * 
+     * @param type $conn the database connection
+     * @param array $MultiPointBbox the bounding box as a collection of the 
+     * SrsPoints
+     * @param string $database the name of the database
+     * @param string $geomColumn the name of the geometry column
+     * @param string $whereCol the name of the column at the where clause
+     * @param array $whereColValues the values for the column at the where clause
+     * @param int $width the width of the image
+     * @param int $height the height of the image
+     */
+    public function findWktGeometry($conn, $MultiPointBbox, $database,
+            $geomColumn, $whereCol, $whereColValues, $width, $height)
+    {
+        $bboxGeoText = "ST_ENVELOPE("
+                . SrsPoint::getGeomFromTextMultiPoint("POSTGIS", $MultiPointBbox)
+                . ")";
+        $paramArray = array();
+        if(isset($whereColValues[0]))
+        {
+            if(is_string($whereColValues[0]))
+            {
+                $paramArray = array(\Doctrine\DBAL\Connection::PARAM_STR_ARRAY);
+            } else if(is_int($whereColValues[0]))
+            {
+                $paramArray = array(\Doctrine\DBAL\Connection::PARAM_INT_ARRAY);
+            }
+        }
+        $srsInt = $MultiPointBbox[0]->getSrs();
+        $sql = "";
+        if("POSTGIS")
+        {
+            $sql .= "SELECT astext(ST_INTERSECTION(" . $bboxGeoText
+                    . ", ST_UNION(ST_TRANSFORM(" . $geomColumn . ","
+                    . $srsInt . ")))) as wkt_geom"
+                    . ",ST_INTERSECTS(ST_UNION(ST_TRANSFORM(" . $geomColumn
+                    . "," . $srsInt . "))," . $bboxGeoText . ") as intersects"
+                    . ",ST_CONTAINS(ST_UNION(ST_TRANSFORM(" . $geomColumn . ","
+                    . $srsInt . "))," . $bboxGeoText . ") as contains"
+                    . ",area2d(" . $bboxGeoText . ") as bboxarea"
+                    . ",area2d(ST_INTERSECTION(" . $bboxGeoText
+                    . ",ST_UNION(ST_TRANSFORM(" . $geomColumn
+                    . "," . $srsInt . ")))) as geomarea"
+                    . " FROM " . $database
+                    . " WHERE " . $whereCol . " IN (?) AND ST_INTERSECTS("
+                    . $bboxGeoText . ",ST_TRANSFORM(" . $geomColumn . "," . $srsInt . "))";
+        }
+        $stmt = $conn->executeQuery($sql, array($whereColValues), $paramArray);
+
+        $row = $stmt->fetch();
+
+        $this->wktGeometry = $row["wkt_geom"];
+        $this->intersects = $row["intersects"] === null ? false : $row["intersects"];
+        $this->contains = $row["contains"] === null ? false : $row["contains"];
+
 
         $geomarea = $row["geomarea"] !== null ? intval($row["geomarea"]) : 0;
         $bboxarea = $row["bboxarea"];
@@ -124,15 +242,15 @@ class Clipping
 </svg>';
     }
 
-
     /**
      * Clips the svgGeometry from the image
      * 
      * @param type $sourceImage
      * @param type $maskImage
-     * @return \Imagick 
+     * @param string $format the image format
+     * @return \Imagick the clipped image
      */
-    public function clipImage($sourceImage, $maskImage)
+    public function clipImage($sourceImage, $maskImage, $format)
     {
         $source = new \Imagick();
         $source->readImageBlob($sourceImage);
@@ -141,12 +259,39 @@ class Clipping
         $mask->setBackgroundColor(new \ImagickPixel('transparent'));
 
         $mask->readImageBlob($maskImage);
-        $mask->setImageFormat("png32");
+        $mask->setImageFormat($format);
 
         $source->setImageMatte(1);
         $source->compositeImage($mask, \Imagick::COMPOSITE_DSTIN, 0, 0);
+        $mask->destroy();
+        unset($mask);
+        $content = $source->getimageblob();
+//        $mask->compositeImage($source, \Imagick::COMPOSITE_DSTOUT, 0, 0);
+//        $content = $mask->getimageblob();
+        $source->destroy();
+        unset($source);
+        return $content;
+    }
 
-        return $source;
+    /**
+     * Creates the graphical image
+     * 
+     * @param int $width the image widht
+     * @param int $height the image height
+     * @param string $format the image format
+     * @return \Imagick the image
+     */
+    public function createImage($width, $height, $format)
+    {
+        $image = new \Imagick();
+        $pixel = new \ImagickPixel('none');
+        $image->newImage(intval($width), intval($height), $pixel);
+        $image->setImageFormat($format);
+
+        $content = $image->getimageblob();
+        $image->destroy();
+        unset($image);
+        return $content;
     }
 
     /**
@@ -160,8 +305,8 @@ class Clipping
      * @param SrsPoint $point the world coordinate of the GetFeatureInfo click
      * @return boolean true if 
      */
-    public function checkFeatureInfo($conn, string $database, string $whereCol,
-            array $whereColValues, string $geomCol, SrsPoint $point)
+    public function checkFeatureInfo($conn, $database, $whereCol,
+            $whereColValues, $geomCol, SrsPoint $point)
     {
         $paramArray = array();
         if(isset($whereColValues[0]))

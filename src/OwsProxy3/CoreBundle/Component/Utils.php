@@ -10,7 +10,7 @@ use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus502Exception;
 /**
  * Utils class with help functions
  *
- * @author Paul Schmidt <paul.schmidt@wheregroup.com>
+ * @author Paul Schmidt
  */
 class Utils
 {
@@ -91,7 +91,7 @@ class Utils
             {
                 if(strtolower($key) === $name)
                 {
-                    return $value;
+                    return urldecode($value);
                 }
             }
         } else
@@ -100,7 +100,7 @@ class Utils
             {
                 if($key === $name)
                 {
-                    return $value;
+                    return urldecode($value);
                 }
             }
         }
@@ -206,8 +206,31 @@ class Utils
         $heasers_resp = Utils::getHeadersFromBrowserResponse($browserResponse);
         foreach($heasers_resp as $key => $value)
         {
-            $response->headers->set($key, $value);
+            if(strtolower($key) !== "transfer-encoding"){
+                $response->headers->set($key, $value);
+            }
         }
+    }
+
+    /**
+     * Prepares the HTTP headers
+     * 
+     * @param array $headers the HTTP headers
+     * @return array the prepared HTTP headers
+     */
+    public static function prepareHeaders($headers)
+    {
+        foreach($headers as $key => $value)
+        {
+            $lkey = strtolower($key);
+            if($lkey === "cookie"
+                    || $lkey === "user-agent"
+                    || $lkey === "content-length"){
+                unset($headers[$key]);
+            }
+                
+        }
+        return $headers;
     }
 
 }

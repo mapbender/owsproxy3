@@ -3,11 +3,14 @@
 namespace OwsProxy3\CoreBundle\Component;
 
 use Symfony\Component\HttpFoundation\Request;
+use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus403Exception;
+use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus502Exception;
 
 /**
  * ProxyQuery class provides methods for 
  *
- * @author Paul Schmidt <paul.schmidt@wheregroup.com>
+ * @author A.R.Pour
+ * @author Paul Schmidt
  */
 class ProxyQuery
 {

@@ -5,7 +5,7 @@ namespace OwsProxy3\CoreBundle\Component;
 /**
  * Description of SrsPoint
  *
- * @author Paul Schmidt <paul.schmidt@wheregroup.com>
+ * @author Paul Schmidt
  */
 class SrsPoint
 {
@@ -42,31 +42,34 @@ class SrsPoint
         $this->lat = $lat;
         $this->srs = $srs;
     }
-    
+
     /**
      * Gets the point's longitude
      * 
      * @return float the point's longitude
      */
-    public function getLon() {
+    public function getLon()
+    {
         return $this->lon;
     }
-    
+
     /**
      * Gets the point's latitude
      * 
      * @return float the point's latitude
      */
-    public function getLat() {
+    public function getLat()
+    {
         return $this->lat;
     }
-    
+
     /**
      * Gets the point's srs
      * 
      * @return int the point's srs
      */
-    public function getSrs() {
+    public function getSrs()
+    {
         return $this->srs;
     }
 
@@ -90,7 +93,7 @@ class SrsPoint
         }
         return $wkt;
     }
-    
+
     /**
      * Generates the "geomfromtext function" for multipoint object
      * 
@@ -98,17 +101,19 @@ class SrsPoint
      * @return string "geomfromtext function"
      */
     public static function getGeomFromTextMultiPoint(
-            $databasetype, $points){
+    $databasetype, $points)
+    {
         $wkt = "";
         switch(strtoupper($databasetype))
         {
             case SrsPoint::$POSTGIS:
 //                $wkt .= "ST_GEOMFROMTEXT('MULTIPOINT(";
-                foreach($points as $point){
+                foreach($points as $point)
+                {
                     $wkt .= "," . $point->getLon() . " " . $point->getLat();
                 }
                 $wkt = "ST_GEOMFROMTEXT('MULTIPOINT("
-                    . substr($wkt, 1) . ")'," . $point->getSrs() . ")";
+                        . substr($wkt, 1) . ")'," . $point->getSrs() . ")";
                 break;
 
             default:
