@@ -3,7 +3,6 @@
 namespace OwsProxy3\CoreBundle\Controller;
 
 use Buzz\Message\MessageInterface;
-use OwsProxy3\CoreBundle\Component\Utils;
 use OwsProxy3\CoreBundle\Component\CommonProxy;
 use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus403Exception;
 use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus502Exception;
@@ -20,45 +19,47 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * Description of OwsProxyController
  *
+ * @author A.R.Pour
  * @author P. Schmidt
  */
 class OwsProxyController extends Controller
 {
 
-    public function genericProxyAction($url, $content)
+    /**
+     * Handles the client's request
+     * 
+     * @param type $url the url
+     * @param type $content the POST content
+     * @return \Symfony\Component\HttpFoundation\Response the response
+     */
+    public function genericProxyAction($url, $content = null)
     {
-//        if(!isset($url)) {
-//            throw new \RuntimeException('url parameter not found!');
-//        }
-//        $browser = new Browser();
-//        $browserResponse = $browser->post($url,array(),$content);
-//
-//        if($browserResponse->isOk()) {
-//            return new Response($browserResponse->getContent());
-//        } else {
-//            throw new \Exception("502 Bad Gateway");
-//        }
-
-
+        $request = $this->get('request');
         try
         {
             $proxy_config = $this->container->getParameter("owsproxy.proxy");
             $headers_req = Utils::getHeadersFromRequest($request);
+            $getParams = Utils::getParams($request, Utils::$METHOD_GET);
+            $postParams = Utils::getParams($request, Utils::$METHOD_POST);
+            if(null === $content) {
+                $content = $request->getContent();
+            }
             $proxy_query = ProxyQuery::createFromUrl($url, null, null,
-                                                     $headers_req, array(),
-                                                     array(), $content);
+                                                     $headers_req, $getParams,
+                                                     $postParams, $content);
             $proxy = new CommonProxy($proxy_config, $proxy_query);
             $response = new Response();
             $browserResponse = $proxy->handle();
             Utils::setHeadersFromBrowserResponse($response, $browserResponse);
+//            $content_ = $browserResponse->getContent();
             $response->setContent($browserResponse->getContent());
             return $response;
         } catch(HTTPStatus403Exception $e)
         {
-            return $this->exceptionImage($e, $request);
+            return $this->exceptionHtml($e, $request);
         } catch(HTTPStatus502Exception $e)
         {
-            return $this->exceptionImage($e, $request);
+            return $this->exceptionHtml($e, $request);
         } catch(\Exception $e)
         {
             if($e->getCode() === 0) $e = new \Exception($e->getMessage(), 500);
@@ -67,12 +68,16 @@ class OwsProxyController extends Controller
     }
 
     /**
+     * Handles the client's request
+     * 
      * @Route("/")
+     * @return \Symfony\Component\HttpFoundation\Response the response
      */
     public function entryPointAction()
     {
         $request = $this->get('request');
-        $service = Utils::getParamValueFromAll($request, "service", true);
+        $proxy_query = ProxyQuery::createFromRequest($request);
+        $service = $proxy_query->getGetPostParamValue("service", true);
         // Switch proxy
         switch(strtoupper($service))
         {
@@ -81,7 +86,6 @@ class OwsProxyController extends Controller
                 {
                     $dispatcher = $this->container->get('event_dispatcher');
                     $proxy_config = $this->container->getParameter("owsproxy.proxy");
-                    $proxy_query = ProxyQuery::createFromRequest($request);
                     $proxy = new WmsProxy($dispatcher, $proxy_config, $proxy_query);
                     $browserResponse = $proxy->handle();
 
@@ -107,6 +111,12 @@ class OwsProxyController extends Controller
         }
     }
 
+    /**
+     * Creates a response with an exception as HTML
+     * 
+     * @param \Exception $e the exception
+     * @return \Symfony\Component\HttpFoundation\Response the response
+     */
     private function exceptionHtml(\Exception $e)
     {
         $response = new Response();
@@ -118,6 +128,13 @@ class OwsProxyController extends Controller
         return $response;
     }
 
+    /**
+     * Creates a response with an exception as png image
+     * 
+     * @param \Exception $e the exception
+     * @param Request $request the request
+     * @return \Symfony\Component\HttpFoundation\Response the response
+     */
     private function exceptionImage(\Exception $e, $request)
     {
         $format = Utils::getParamValueFromAll($request, "format", true);
@@ -127,7 +144,7 @@ class OwsProxyController extends Controller
                 || !is_int(strpos(strtolower($format), "image"))
                 || intval($w) === 0 || intval($h) === 0)
         {
-            return exceptionHtml($e);
+            return $this->exceptionHtml($e);
         }
         $image = new \Imagick();
         $draw = new \ImagickDraw();
