@@ -9,6 +9,7 @@ use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus403Exception;
 use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus502Exception;
 use OwsProxy3\CoreBundle\Component\ProxyQuery;
 use OwsProxy3\CoreBundle\Component\WmsProxy;
+use OwsProxy3\CoreBundle\Component\WfsProxy;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
@@ -27,7 +28,7 @@ class OwsProxyController extends Controller
 
     /**
      * Handles the client's request
-     * 
+     *
      * @param type $url the url
      * @param type $content the POST content
      * @return \Symfony\Component\HttpFoundation\Response the response
@@ -69,7 +70,7 @@ class OwsProxyController extends Controller
 
     /**
      * Handles the client's request
-     * 
+     *
      * @Route("/")
      * @return \Symfony\Component\HttpFoundation\Response the response
      */
@@ -107,6 +108,21 @@ class OwsProxyController extends Controller
                             $e = new \Exception($e->getMessage(), 500);
                     return $this->exceptionHtml($e);
                 }
+            case 'WFS':
+                try {
+                    $dispatcher = $this->container->get('event_dispatcher');
+                    $proxy_config = $this->container->getParameter("owsproxy.proxy");
+                    $proxy_query = ProxyQuery::createFromRequest($request);
+                    $proxy = new WfsProxy($dispatcher, $proxy_config, $proxy_query);
+                    $browserResponse = $proxy->handle();
+
+                    $response = new Response();
+                    Utils::setHeadersFromBrowserResponse($response, $browserResponse);
+                    $response->setContent($browserResponse->getContent());
+                    return $response;
+                } catch(\RuntimeException $e) {
+                    return $this->exceptionHtml(new \Exception($e->getMessage(), 500));
+                }
             default: //@TODO ?
                 return $this->exceptionHtml(new \Exception('Unknown Service Type', 404));
         }
@@ -114,7 +130,7 @@ class OwsProxyController extends Controller
 
     /**
      * Creates a response with an exception as HTML
-     * 
+     *
      * @param \Exception $e the exception
      * @return \Symfony\Component\HttpFoundation\Response the response
      */
@@ -131,7 +147,7 @@ class OwsProxyController extends Controller
 
     /**
      * Creates a response with an exception as png image
-     * 
+     *
      * @param \Exception $e the exception
      * @param Request $request the request
      * @return \Symfony\Component\HttpFoundation\Response the response
