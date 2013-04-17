@@ -163,33 +163,38 @@ class OwsProxyController extends Controller
         {
             return $this->exceptionHtml($e);
         }
-        $image = new \Imagick();
-        $draw = new \ImagickDraw();
-        $pixel = new \ImagickPixel('none');
+        return $this->exceptionHtml($e);
+        try{
+            $image = new \Imagick();
+            $draw = new \ImagickDraw();
+            $pixel = new \ImagickPixel('none');
 
-        $image->newImage(intval($w), intval($h), $pixel);
+            $image->newImage(intval($w), intval($h), $pixel);
 
-        $draw->setFillColor('grey');
-        $draw->setFontSize(30);
-        $st_x = 200;
-        $st_y = 200;
-        $ang = -45;
-        for($x = 10; $x < $w; $x += $st_x)
-        {
-            for($y = 10; $y < $h; $y += $st_y)
+            $draw->setFillColor('grey');
+            $draw->setFontSize(30);
+            $st_x = 200;
+            $st_y = 200;
+            $ang = -45;
+            for($x = 10; $x < $w; $x += $st_x)
             {
-                $image->annotateImage($draw, $x, $y, $ang, $e->getMessage());
+                for($y = 10; $y < $h; $y += $st_y)
+                {
+                    $image->annotateImage($draw, $x, $y, $ang, $e->getMessage());
+                }
             }
+
+            $image->setImageFormat('png');
+
+            $response = new Response();
+            $response->headers->set('Content-Type', "image/png");
+            $response->setStatusCode($e->getCode());
+            $response->setContent($image->getimageblob());
+
+            return $response;
+        } catch(\Exception $e){
+            return $this->exceptionHtml($e);
         }
-
-        $image->setImageFormat('png');
-
-        $response = new Response();
-        $response->headers->set('Content-Type', "image/png");
-        $response->setStatusCode($e->getCode());
-        $response->setContent($image->getimageblob());
-
-        return $response;
     }
 
 }
