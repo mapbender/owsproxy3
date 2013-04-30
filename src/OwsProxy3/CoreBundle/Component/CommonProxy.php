@@ -51,6 +51,8 @@ class CommonProxy
         $rowUrl = $this->proxy_query->getRowUrl();
         $proxy_config = $this->proxy_config;
         $curl = new Curl();
+        $curl->setOption(CURLOPT_TIMEOUT, 60);
+        $curl->setOption(CURLOPT_CONNECTTIMEOUT, 30);
         if($proxy_config !== null && $proxy_config['timeout'] !== null)
         {
             $curl->setOption(CURLOPT_TIMEOUT, $proxy_config['timeout']);
