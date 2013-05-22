@@ -12,6 +12,7 @@ use OwsProxy3\CoreBundle\Component\WmsProxy;
 use OwsProxy3\CoreBundle\Component\WfsProxy;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -49,9 +50,15 @@ class OwsProxyController extends Controller
                                                      $headers_req, $getParams,
                                                      $postParams, $content);
             $proxy = new CommonProxy($proxy_config, $proxy_query);
+            $cookies_req = $request->cookies;
             $response = new Response();
             $browserResponse = $proxy->handle();
             Utils::setHeadersFromBrowserResponse($response, $browserResponse);
+            foreach($cookies_req as $key => $value)
+            {
+                $response->headers->removeCookie($key);
+                $response->headers->setCookie(new Cookie($key, $value));
+            }
             $response->setContent($browserResponse->getContent());
             return $response;
         } catch(HTTPStatus403Exception $e)
