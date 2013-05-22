@@ -206,7 +206,7 @@ class Utils
         $heasers_resp = Utils::getHeadersFromBrowserResponse($browserResponse);
         foreach($heasers_resp as $key => $value)
         {
-            if(strtolower($key) !== "transfer-encoding"){
+            if(strtolower($key) !== "transfer-encoding" || strtolower($key) !== "set-cookie"){
                 $response->headers->set($key, $value);
             }
         }

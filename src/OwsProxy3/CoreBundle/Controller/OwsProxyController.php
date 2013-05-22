@@ -52,7 +52,6 @@ class OwsProxyController extends Controller
             $response = new Response();
             $browserResponse = $proxy->handle();
             Utils::setHeadersFromBrowserResponse($response, $browserResponse);
-//            $content_ = $browserResponse->getContent();
             $response->setContent($browserResponse->getContent());
             return $response;
         } catch(HTTPStatus403Exception $e)
