@@ -43,7 +43,8 @@ class OwsProxyController extends Controller
             $headers_req = Utils::getHeadersFromRequest($request);
             $getParams = Utils::getParams($request, Utils::$METHOD_GET);
             $postParams = Utils::getParams($request, Utils::$METHOD_POST);
-            if(null === $content) {
+            if(null === $content)
+            {
                 $content = $request->getContent();
             }
             $proxy_query = ProxyQuery::createFromUrl($url, null, null,
@@ -100,6 +101,11 @@ class OwsProxyController extends Controller
                     $response = new Response();
                     Utils::setHeadersFromBrowserResponse($response,
                                                          $browserResponse);
+                    foreach($cookies_req as $key => $value)
+                    {
+                        $response->headers->removeCookie($key);
+                        $response->headers->setCookie(new Cookie($key, $value));
+                    }
                     $response->setContent($browserResponse->getContent());
                     return $response;
                 } catch(HTTPStatus403Exception $e)
@@ -115,7 +121,8 @@ class OwsProxyController extends Controller
                     return $this->exceptionHtml($e);
                 }
             case 'WFS':
-                try {
+                try
+                {
                     $dispatcher = $this->container->get('event_dispatcher');
                     $proxy_config = $this->container->getParameter("owsproxy.proxy");
                     $proxy_query = ProxyQuery::createFromRequest($request);
@@ -123,10 +130,17 @@ class OwsProxyController extends Controller
                     $browserResponse = $proxy->handle();
 
                     $response = new Response();
-                    Utils::setHeadersFromBrowserResponse($response, $browserResponse);
+                    Utils::setHeadersFromBrowserResponse($response,
+                                                         $browserResponse);
+                    foreach($cookies_req as $key => $value)
+                    {
+                        $response->headers->removeCookie($key);
+                        $response->headers->setCookie(new Cookie($key, $value));
+                    }
                     $response->setContent($browserResponse->getContent());
                     return $response;
-                } catch(\RuntimeException $e) {
+                } catch(\RuntimeException $e)
+                {
                     return $this->exceptionHtml(new \Exception($e->getMessage(), 500));
                 }
             default: //@TODO ?
@@ -170,7 +184,8 @@ class OwsProxyController extends Controller
             return $this->exceptionHtml($e);
         }
         return $this->exceptionHtml($e);
-        try{
+        try
+        {
             $image = new \Imagick();
             $draw = new \ImagickDraw();
             $pixel = new \ImagickPixel('none');
@@ -198,7 +213,8 @@ class OwsProxyController extends Controller
             $response->setContent($image->getimageblob());
 
             return $response;
-        } catch(\Exception $e){
+        } catch(\Exception $e)
+        {
             return $this->exceptionHtml($e);
         }
     }
