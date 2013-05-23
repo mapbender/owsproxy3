@@ -98,6 +98,7 @@ class OwsProxyController extends Controller
                     $proxy = new WmsProxy($dispatcher, $proxy_config, $proxy_query);
                     $browserResponse = $proxy->handle();
 
+                    $cookies_req = $request->cookies;
                     $response = new Response();
                     Utils::setHeadersFromBrowserResponse($response,
                                                          $browserResponse);
@@ -129,6 +130,7 @@ class OwsProxyController extends Controller
                     $proxy = new WfsProxy($dispatcher, $proxy_config, $proxy_query);
                     $browserResponse = $proxy->handle();
 
+                    $cookies_req = $request->cookies;
                     $response = new Response();
                     Utils::setHeadersFromBrowserResponse($response,
                                                          $browserResponse);
