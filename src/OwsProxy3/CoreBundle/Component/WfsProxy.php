@@ -41,7 +41,7 @@ class WfsProxy extends CommonProxy
             } else {
                 $content = $this->proxy_query->getPostQueryString();
             }
-            $headers = Utils::prepareHeaders($this->proxy_query->getHeaders());
+            $headers = Utils::prepareHeadersForRequest($this->proxy_query->getHeaders());
             $browserResponse = $browser->post($this->proxy_query->getGetUrl(), $headers, $content);
         } catch(\Exception $e) {
             throw new HTTPStatus502Exception($e->getMessage(), 502);

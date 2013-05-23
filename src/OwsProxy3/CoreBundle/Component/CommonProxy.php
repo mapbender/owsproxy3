@@ -102,12 +102,13 @@ class CommonProxy
                 {
                     $content = $this->proxy_query->getPostQueryString();
                 }
-                $headers = Utils::prepareHeaders($this->proxy_query->getHeaders());
+                $headers = Utils::prepareHeadersForRequest($this->proxy_query->getHeaders());
                 $browserResponse = $browser->post($this->proxy_query->getGetUrl(),
                                                   $headers, $content);
             } else if($this->proxy_query->getMethod() === Utils::$METHOD_GET)
             {
-                $headers = Utils::prepareHeaders($this->proxy_query->getHeaders());
+                $headers = Utils::prepareHeadersForRequest($this->proxy_query->getHeaders());
+                $url = $this->proxy_query->getGetUrl();
                 $browserResponse = $browser->get($this->proxy_query->getGetUrl(),
                                                  $headers);
             }

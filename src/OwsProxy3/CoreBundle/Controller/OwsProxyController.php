@@ -107,7 +107,8 @@ class OwsProxyController extends Controller
                         $response->headers->removeCookie($key);
                         $response->headers->setCookie(new Cookie($key, $value));
                     }
-                    $response->setContent($browserResponse->getContent());
+                    $content = $browserResponse->getContent();
+                    $response->setContent($content);
                     return $response;
                 } catch(HTTPStatus403Exception $e)
                 {

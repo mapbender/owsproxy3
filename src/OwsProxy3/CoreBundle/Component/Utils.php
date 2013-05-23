@@ -206,7 +206,7 @@ class Utils
         $heasers_resp = Utils::getHeadersFromBrowserResponse($browserResponse);
         foreach($heasers_resp as $key => $value)
         {
-            if(strtolower($key) !== "transfer-encoding" || strtolower($key) !== "set-cookie"){
+            if(strtolower($key) !== "transfer-encoding"){
                 $response->headers->set($key, $value);
             }
         }
@@ -218,14 +218,16 @@ class Utils
      * @param array $headers the HTTP headers
      * @return array the prepared HTTP headers
      */
-    public static function prepareHeaders($headers)
+    public static function prepareHeadersForRequest($headers)
     {
         foreach($headers as $key => $value)
         {
             $lkey = strtolower($key);
             if($lkey === "cookie"
                     || $lkey === "user-agent"
-                    || $lkey === "content-length"){
+                    || $lkey === "content-length"
+                    || $lkey === "referer"
+                    || $lkey === "host"){
                 unset($headers[$key]);
             }
                 
