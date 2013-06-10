@@ -18,6 +18,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 //use OwsProxy3\CoreBundle\Component\Url;
 
+
 /**
  * Description of OwsProxyController
  *
@@ -34,6 +35,22 @@ class OwsProxyController extends Controller
      * @param type $content the POST content
      * @return \Symfony\Component\HttpFoundation\Response the response
      */
+<<<<<<< HEAD
+    public function entryPointAction() {
+        
+        if(!isset($_GET["url"])) {
+            throw new \RuntimeException('url parameter not found!');
+        }
+        
+        // Get the URL
+        $url = new Url($_GET["url"]);
+
+        // Add get params to URL
+        foreach($_GET as $key => $val) {
+            if($key === "url") continue;
+            
+            $url->addParam($key, $val);
+=======
     public function genericProxyAction($url, $content = null)
     {
         $request = $this->get('request');
@@ -72,6 +89,7 @@ class OwsProxyController extends Controller
         {
             if($e->getCode() === 0) $e = new \Exception($e->getMessage(), 500);
             return $this->exceptionHtml($e);
+>>>>>>> 05fa27f76bfdc180b5d4ba535cf711c234837427
         }
     }
 

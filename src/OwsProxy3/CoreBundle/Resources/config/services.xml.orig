@@ -3,6 +3,8 @@
 <container xmlns="http://symfony.com/schema/dic/services"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+<<<<<<< HEAD
+=======
 
     <parameters>
         <parameter key="owsproxy.terminatelistener.class">OwsProxy3\CoreBundle\EventListener\TerminateListener</parameter>
@@ -19,5 +21,6 @@
             <argument type="service" id="service_container" />
         </service>
     </services>
+>>>>>>> 05fa27f76bfdc180b5d4ba535cf711c234837427
 </container>
 
