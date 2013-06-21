@@ -69,28 +69,29 @@ class ProxyQuery
             $content = null)
     {
         $rowUrl = parse_url($url);
-        if(empty($rowUrl["host"]))
+        if (empty($rowUrl["host"]))
         {
             throw new HTTPStatus502Exception("The host is not defined", 502);
         }
-        if($user !== null)
+        if ($user !== null)
         {
             $rowUrl["user"] = $user;
             $rowUrl["pass"] = $password === null ? "" : $password;
         }
         $getParamsHelp = array();
-        if(isset($rowUrl["query"]))
+        if (isset($rowUrl["query"]))
         {
             parse_str($rowUrl["query"], $getParamsHelp);
             unset($rowUrl["query"]);
         }
         $getParams = array_merge($getParamsHelp, $getParams);
-        $method = Utils::$METHOD_GET;
-        if($content !== null || count($postParams) > 0)
+        $method    = Utils::$METHOD_GET;
+        if ($content !== null || count($postParams) > 0)
         {
             $method = Utils::$METHOD_POST;
         }
-        return new ProxyQuery($rowUrl, $method, $content, $getParams, $postParams, $headers);
+        return new ProxyQuery($rowUrl, $method, $content, $getParams,
+                $postParams, $headers);
     }
 
     /**
@@ -103,50 +104,52 @@ class ProxyQuery
     public static function createFromRequest(Request $request)
     {
         $rowUrl = Utils::getParamValue($request, Utils::$PARAMETER_URL,
-                                       Utils::$METHOD_GET, false);
+                        Utils::$METHOD_GET, false);
         $rowUrl = parse_url($rowUrl);
-        if(empty($rowUrl["host"]))
+        if (empty($rowUrl["host"]))
         {
             throw new HTTPStatus502Exception("The host is not defined", 502);
         }
         $getParams = array();
-        if(isset($rowUrl["query"]))
+        if (isset($rowUrl["query"]))
         {
             parse_str($rowUrl["query"], $getParams);
             unset($rowUrl["query"]);
         }
 
         $allParams = Utils::getAllParams($request);
-        if(isset($allParams[Utils::$METHOD_GET]) &&
+        if (isset($allParams[Utils::$METHOD_GET]) &&
                 isset($allParams[Utils::$METHOD_GET][Utils::$PARAMETER_URL]))
         {
             unset($allParams[Utils::$METHOD_GET][Utils::$PARAMETER_URL]);
         }
-        $content = null;
+        $content    = null;
         $postParams = array();
-        if(isset($allParams[Utils::$CONTENT]) || isset($allParams[Utils::$METHOD_POST]))
+        if (isset($allParams[Utils::$CONTENT]) || isset($allParams[Utils::$METHOD_POST]))
         {
-            $method = Utils::$METHOD_POST;
-            $content = isset($allParams[Utils::$CONTENT]) ?
+            $method     = Utils::$METHOD_POST;
+            $content    = isset($allParams[Utils::$CONTENT]) ?
                     $allParams[Utils::$CONTENT] : null;
             $postParams = isset($allParams[Utils::$METHOD_POST]) ?
                     $allParams[Utils::$METHOD_POST] : array();
             // if url containts more get parameters
-            if(isset($allParams[Utils::$METHOD_GET])
-                    && count(isset($allParams[Utils::$METHOD_GET])) > 0)
+            if (isset($allParams[Utils::$METHOD_GET]) && count(isset($allParams[Utils::$METHOD_GET]))
+                    > 0)
             {
                 $postParams = array_merge($postParams,
-                                          $allParams[Utils::$METHOD_GET]);
+                        $allParams[Utils::$METHOD_GET]);
             }
-        } else
+        }
+        else
         {
-            $method = Utils::$METHOD_GET;
+            $method        = Utils::$METHOD_GET;
             $getParamshelp = isset($allParams[Utils::$METHOD_GET]) ?
                     $allParams[Utils::$METHOD_GET] : array();
-            $getParams = array_merge($getParams, $getParamshelp);
+            $getParams     = array_merge($getParams, $getParamshelp);
         }
         $headers = Utils::getHeadersFromRequest($request);
-        return new ProxyQuery($rowUrl, $method, $content, $getParams, $postParams, $headers);
+        return new ProxyQuery($rowUrl, $method, $content, $getParams,
+                $postParams, $headers);
     }
 
     /**
@@ -162,12 +165,12 @@ class ProxyQuery
     private function __construct($rowUrl, $method, $content, $getParams,
             $postParams, $headers)
     {
-        $this->rowUrl = $rowUrl;
-        $this->method = $method;
-        $this->content = $content;
-        $this->getParams = $getParams;
+        $this->rowUrl     = $rowUrl;
+        $this->method     = $method;
+        $this->content    = $content;
+        $this->getParams  = $getParams;
         $this->postParams = $postParams;
-        $this->headers = $headers;
+        $this->headers    = $headers;
     }
 
     /**
@@ -200,10 +203,11 @@ class ProxyQuery
      */
     public function addQueryParameter($name, $value)
     {
-        if($this->method === Utils::$METHOD_GET)
+        if ($this->method === Utils::$METHOD_GET)
         {
             $this->addGetParameter($name, $value);
-        } else if($this->method === Utils::$METHOD_POST)
+        }
+        else if ($this->method === Utils::$METHOD_POST)
         {
             $this->addPostParameter($name, $value);
         }
@@ -270,8 +274,8 @@ class ProxyQuery
         $user = empty($this->rowUrl["user"]) ? "" : $this->rowUrl["user"];
         $pass = empty($this->rowUrl["pass"]) ? "" : $this->rowUrl["pass"];
 
-        if(!empty($pass)) $user .= ":";
-        if(!empty($user) || !empty($pass)) $pass .= "@";
+        if (!empty($pass)) $user .= ":";
+        if (!empty($user) || !empty($pass)) $pass .= "@";
 
         $host = $this->rowUrl["host"];
         $port = empty($this->rowUrl["port"]) ? "" : ":" . $this->rowUrl["port"];
@@ -279,7 +283,7 @@ class ProxyQuery
         $path = empty($this->rowUrl["path"]) ? "" : $this->rowUrl["path"];
 
         $urlquery = "";
-        if(count($this->getParams) > 0)
+        if (count($this->getParams) > 0)
         {
             $urlquery = "?" . http_build_query($this->getParams);
         }
@@ -296,10 +300,11 @@ class ProxyQuery
     public function getGetPostParamValue($name, $ignoreCase = false)
     {
         $param = $this->getGetParamValue($name, $ignoreCase);
-        if($param !== null)
+        if ($param !== null)
         {
             return $param;
-        } else
+        }
+        else
         {
             return $this->getPostParamValue($name, $ignoreCase);
         }
@@ -314,21 +319,22 @@ class ProxyQuery
      */
     public function getGetParamValue($name, $ignoreCase = false)
     {
-        if($ignoreCase)
+        if ($ignoreCase)
         {
             $name = strtolower($name);
-            foreach($this->getParams as $key => $value)
+            foreach ($this->getParams as $key => $value)
             {
-                if(strtolower($key) === $name)
+                if (strtolower($key) === $name)
                 {
                     return $value;
                 }
             }
-        } else
+        }
+        else
         {
-            foreach($this->getParams as $key => $value)
+            foreach ($this->getParams as $key => $value)
             {
-                if($key === $name)
+                if ($key === $name)
                 {
                     return $value;
                 }
@@ -346,27 +352,60 @@ class ProxyQuery
      */
     public function getPostParamValue($name, $ignoreCase = false)
     {
-        if($ignoreCase)
+        if ($ignoreCase)
         {
             $name = strtolower($name);
-            foreach($this->postParams as $key => $value)
+            foreach ($this->postParams as $key => $value)
             {
-                if(strtolower($key) === $name)
+                if (strtolower($key) === $name)
                 {
                     return $value;
                 }
             }
-        } else
+        }
+        else
         {
-            foreach($this->postParams as $key => $value)
+            foreach ($this->postParams as $key => $value)
             {
-                if($key === $name)
+                if ($key === $name)
                 {
                     return $value;
                 }
             }
         }
         return null;
+    }
+
+    /**
+     * Removes a GET parameter.
+     * @param string $name parameter name
+     * @return boolean true if parameter removed
+     */
+    public function removeGetParameter($name)
+    {
+        if (isset($this->getParams[$name]))
+        {
+            unset($this->getParams[$name]);
+            return true;
+        }
+        else
+            return false;
+    }
+    
+    /**
+     * Removes a POST parameter.
+     * @param string $name parameter name
+     * @return boolean true if parameter removed
+     */
+    public function removePostParameter($name)
+    {
+        if (isset($this->postParams[$name]))
+        {
+            unset($this->postParams[$name]);
+            return true;
+        }
+        else
+            return false;
     }
 
 }
