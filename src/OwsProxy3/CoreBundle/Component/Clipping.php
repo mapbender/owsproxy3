@@ -32,7 +32,13 @@ class Clipping
      *
      * @var int the count of the pixels at svg geometry
      */
-    private $pixelNumber;
+    private $pixelNumber = 0;
+    
+    /**
+     *
+     * @var int the count of colors at result image
+     */
+    private $colorNumber = 0;
 
     /**
      *
@@ -45,6 +51,18 @@ class Clipping
      * @var boolean
      */
     private $containts = false;
+    
+    
+    public function getPixelNumber()
+    {
+        return $this->pixelNumber;
+    }
+    
+    
+    public function getColorNumber()
+    {
+        return $this->colorNumber;
+    }
 
     /**
      * Returns the contains
@@ -136,7 +154,7 @@ class Clipping
         $this->contains = $row["contains"] === null ? false : $row["contains"];
 
 
-        $geomarea = $row["geomarea"] !== null ? intval($row["geomarea"]) : 0;
+        $geomarea = $row["geomarea"] !== null ? floatval($row["geomarea"]) : 0.0;
         $bboxarea = $row["bboxarea"];
         $factor = $geomarea / $bboxarea;
         $this->pixelNumber = intval($factor * $width * $height);
@@ -265,6 +283,7 @@ class Clipping
         $source->compositeImage($mask, \Imagick::COMPOSITE_DSTIN, 0, 0);
         $mask->destroy();
         unset($mask);
+        $this->colorNumber = $source->getImageColors();
         $content = $source->getimageblob();
 //        $mask->compositeImage($source, \Imagick::COMPOSITE_DSTOUT, 0, 0);
 //        $content = $mask->getimageblob();
@@ -287,7 +306,8 @@ class Clipping
         $pixel = new \ImagickPixel('none');
         $image->newImage(intval($width), intval($height), $pixel);
         $image->setImageFormat($format);
-
+        $this->colorNumber = $image->getImageColors();
+        $this->pixelNumber = 0;
         $content = $image->getimageblob();
         $image->destroy();
         unset($image);
