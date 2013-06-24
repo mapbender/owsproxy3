@@ -16,18 +16,11 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 abstract class AbstractClipWorker implements AbstractWorker
 {
-
     /**
      *
-     * @var string The abbr. for the vendor specific types at the configuration.
+     * @var logger
      */
-    private $TYPE = "clip";
-
-    /**
-     *
-     * @var string prefix for GKZ role 
-     */
-    private $ROLE_GKZ = "ROLE_GKZ_";
+    protected $logger;
 
     /**
      *
@@ -43,6 +36,7 @@ abstract class AbstractClipWorker implements AbstractWorker
     public function __construct(ContainerInterface $container)
     {
         $this->container = $container;
+        $this->logger = $this->container->get('logger');
     }
 
     /**
@@ -51,7 +45,10 @@ abstract class AbstractClipWorker implements AbstractWorker
      * @param ProxyEvent $event event
      * @throws HTTPStatus403Exception if no gds found
      */
-    abstract function onBeforeProxyEvent(BeforeProxyEvent $event);
+    public function onBeforeProxyEvent(BeforeProxyEvent $event)
+    {
+        
+    }
 
     /**
      * Handles the parameters after a request
@@ -59,7 +56,10 @@ abstract class AbstractClipWorker implements AbstractWorker
      * @param ProxyEvent $event event
      * @throws HTTPStatus403Exception if no gds found
      */
-    abstract function onAfterProxyEvent(AfterProxyEvent $event);
+    public function onAfterProxyEvent(AfterProxyEvent $event)
+    {
+        
+    }
 
     /**
      * 
@@ -77,6 +77,7 @@ abstract class AbstractClipWorker implements AbstractWorker
             $connection, $databaseName, $whereColumnName,
             array $whereColumnValues, $geometryColumnName)
     {
+        $this->logger->info('AbstractClipWorker->handleFeatureInfoBefore');
         $x      = $event->getProxyQuery()->getGetPostParamValue("x", true);
         $y      = $event->getProxyQuery()->getGetPostParamValue("y", true);
         $bbox   = explode(",",
@@ -105,7 +106,8 @@ abstract class AbstractClipWorker implements AbstractWorker
                         $whereColumnName, $whereColumnValues,
                         $geometryColumnName, new SrsPoint($xsrs, $ysrs, $srsInt)))
         {
-            throw new HTTPStatus403Exception();
+            $this->logger->info('AbstractClipWorker->handleFeatureInfoBefore clipping->checkFeatureInfo == false');
+            throw new HTTPStatus403Exception("checkFeatureInfo == false");
         }
         return $clipping;
     }
@@ -114,6 +116,7 @@ abstract class AbstractClipWorker implements AbstractWorker
             $databaseName, $whereColumnName, array $whereColumnValues,
             $geometryColumnName)
     {
+        $this->logger->info('AbstractClipWorker->handleGetMapAfter');
         $bbox_str = $event->getProxyQuery()->getGetPostParamValue('bbox', true);
         $bbox     = explode(",", $bbox_str);
         $width    = $event->getProxyQuery()->getGetPostParamValue('width', true);
@@ -127,7 +130,8 @@ abstract class AbstractClipWorker implements AbstractWorker
         $browserResponse = $event->getBrowserMessage();
         $contentType     = $browserResponse->getHeader("Content-Type");
         if (is_int(strpos($contentType, "image/")))
-        { # check if contentType image
+        {
+            $this->logger->info('AbstractClipWorker->handleGetMapAfter response: '.$contentType);
             $clipping = new Clipping();
 
             $format_ = explode("/", $contentType);
@@ -143,15 +147,17 @@ abstract class AbstractClipWorker implements AbstractWorker
 
             if ($clipping->getContains())
             {
-                //
+                $this->logger->info('AbstractClipWorker->handleGetMapAfter Contains');
             }
             else if ($clipping->getIntersects())
             {
+                $this->logger->info('AbstractClipWorker->handleGetMapAfter Intersects');
                 $browserResponse->setContent($clipping->clipImage($browserResponse->getContent(),
                                 $clipping->getSVG($width, $height), $format));
             }
             else
             {
+                $this->logger->info('AbstractClipWorker->handleGetMapAfter keine Überschneidung');
                 $browserResponse->setContent($clipping->createImage($width,
                                 $height, $format));
             }
@@ -159,6 +165,7 @@ abstract class AbstractClipWorker implements AbstractWorker
         }
         else
         {
+            $this->logger->info('AbstractClipWorker->handleGetMapAfter response: '.$contentType);
             return null;
         }
     }
