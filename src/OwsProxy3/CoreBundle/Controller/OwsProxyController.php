@@ -41,7 +41,7 @@ class OwsProxyController extends Controller
         $request = $this->get('request');
         try
         {
-            $this->logger->info("OwsProxyController->genericProxyAction");
+            $this->logger->debug("OwsProxyController->genericProxyAction");
             $proxy_config = $this->container->getParameter("owsproxy.proxy");
             $headers_req = Utils::getHeadersFromRequest($request);
             $getParams = Utils::getParams($request, Utils::$METHOD_GET);
@@ -67,15 +67,15 @@ class OwsProxyController extends Controller
             return $response;
         } catch(HTTPStatus403Exception $e)
         {
-            $this->logger->error("OwsProxyController->genericProxyAction 403: ".$e->getMessage()." ".$e->getCode());
+            $this->logger->err("OwsProxyController->genericProxyAction 403: ".$e->getMessage()." ".$e->getCode());
             return $this->exceptionImage($e, $request);
         } catch(HTTPStatus502Exception $e)
         {
-            $this->logger->error("OwsProxyController->genericProxyAction 502: ".$e->getMessage()." ".$e->getCode());
+            $this->logger->err("OwsProxyController->genericProxyAction 502: ".$e->getMessage()." ".$e->getCode());
             return $this->exceptionImage($e, $request);
         } catch(\Exception $e)
         {
-            $this->logger->error("OwsProxyController->genericProxyAction : ".$e->getMessage()." ".$e->getCode());
+            $this->logger->err("OwsProxyController->genericProxyAction : ".$e->getMessage()." ".$e->getCode());
             if($e->getCode() === 0) $e = new \Exception($e->getMessage(), 500);
             return $this->exceptionHtml($e);
         }
@@ -99,7 +99,7 @@ class OwsProxyController extends Controller
             case 'WMS':
                 try
                 {
-                    $this->logger->info("OwsProxyController->entryPointAction");
+                    $this->logger->debug("OwsProxyController->entryPointAction");
                     $dispatcher = $this->container->get('event_dispatcher');
                     $proxy_config = $this->container->getParameter("owsproxy.proxy");
                     $proxy_query = ProxyQuery::createFromRequest($request);
@@ -120,15 +120,15 @@ class OwsProxyController extends Controller
                     return $response;
                 } catch(HTTPStatus403Exception $e)
                 {
-                    $this->logger->error("OwsProxyController->entryPointAction WMS 403: ".$e->getMessage()." ".$e->getCode());
+                    $this->logger->err("OwsProxyController->entryPointAction WMS 403: ".$e->getMessage()." ".$e->getCode());
                     return $this->exceptionImage($e, $request);
                 } catch(HTTPStatus502Exception $e)
                 {
-                    $this->logger->error("OwsProxyController->entryPointAction WMS 502: ".$e->getMessage()." ".$e->getCode());
+                    $this->logger->err("OwsProxyController->entryPointAction WMS 502: ".$e->getMessage()." ".$e->getCode());
                     return $this->exceptionImage($e, $request);
                 } catch(\Exception $e)
                 {
-                    $this->logger->error("OwsProxyController->entryPointAction WMS : ".$e->getMessage()." ".$e->getCode());
+                    $this->logger->err("OwsProxyController->entryPointAction WMS : ".$e->getMessage()." ".$e->getCode());
                     if($e->getCode() === 0)
                             $e = new \Exception($e->getMessage(), 500);
                     return $this->exceptionHtml($e);
@@ -155,7 +155,7 @@ class OwsProxyController extends Controller
                     return $response;
                 } catch(\RuntimeException $e)
                 {
-                    $this->logger->error("OwsProxyController->entryPointAction WFS : ".$e->getMessage()." ".$e->getCode());
+                    $this->logger->err("OwsProxyController->entryPointAction WFS : ".$e->getMessage()." ".$e->getCode());
                     return $this->exceptionHtml(new \Exception($e->getMessage(), 500));
                 }
             default: //@TODO ?

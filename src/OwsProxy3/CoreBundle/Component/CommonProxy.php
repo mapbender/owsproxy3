@@ -52,7 +52,7 @@ class CommonProxy
     protected function createBrowser()
     {
         if($this->logger !== null){
-            $this->logger->info("CommonProxy->createBrowser rowUrl:" . $this->proxy_query->getRowUrl());
+            $this->logger->debug("CommonProxy->createBrowser rowUrl:" . $this->proxy_query->getRowUrl());
         }
         $rowUrl = $this->proxy_query->getRowUrl();
         $proxy_config = $this->proxy_config;
@@ -109,7 +109,7 @@ class CommonProxy
                     $content = $this->proxy_query->getPostQueryString();
                 }
                 if($this->logger !== null){
-                    $this->logger->info("CommonProxy->handle POST:" . $this->proxy_query->getGetUrl());
+                    $this->logger->debug("CommonProxy->handle POST:" . $this->proxy_query->getGetUrl());
                 }
                 $headers = Utils::prepareHeadersForRequest($this->proxy_query->getHeaders());
                 $browserResponse = $browser->post($this->proxy_query->getGetUrl(),
@@ -118,7 +118,7 @@ class CommonProxy
             {
                 
                 if($this->logger !== null){
-                    $this->logger->info("CommonProxy->handle GET:" . $this->proxy_query->getGetUrl());
+                    $this->logger->debug("CommonProxy->handle GET:" . $this->proxy_query->getGetUrl());
                 }
                 $headers = Utils::prepareHeadersForRequest($this->proxy_query->getHeaders());
                 $browserResponse = $browser->get($this->proxy_query->getGetUrl(),
@@ -127,7 +127,7 @@ class CommonProxy
         } catch(\Exception $e)
         {
             if($this->logger !== null){
-                $this->logger->error("CommonProxy->handle :" . $e->getMessage());
+                $this->logger->err("CommonProxy->handle :" . $e->getMessage());
             }
             throw new HTTPStatus502Exception($e->getMessage(), 502);
         }

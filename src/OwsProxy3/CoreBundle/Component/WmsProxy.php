@@ -64,7 +64,7 @@ class WmsProxy extends CommonProxy
                     $content = $this->proxy_query->getPostQueryString();
                 }
                 if($this->logger !== null){
-                    $this->logger->info("WmsProxy->handle POST:" . $this->proxy_query->getGetUrl());
+                    $this->logger->debug("WmsProxy->handle POST:" . $this->proxy_query->getGetUrl());
                 }
                 $headers = Utils::prepareHeadersForRequest($this->proxy_query->getHeaders());
                 $browserResponse = $browser->post($this->proxy_query->getGetUrl(),
@@ -72,7 +72,7 @@ class WmsProxy extends CommonProxy
             } else if($this->proxy_query->getMethod() === Utils::$METHOD_GET)
             {
                 if($this->logger !== null){
-                    $this->logger->info("WmsProxy->handle GET:" . $this->proxy_query->getGetUrl());
+                    $this->logger->debug("WmsProxy->handle GET:" . $this->proxy_query->getGetUrl());
                 }
                 $headers = Utils::prepareHeadersForRequest($this->proxy_query->getHeaders());
                 $browserResponse = $browser->get($this->proxy_query->getGetUrl(),
@@ -81,7 +81,7 @@ class WmsProxy extends CommonProxy
         } catch(\Exception $e)
         {
             if($this->logger !== null){
-                $this->logger->error("WmsProxy->handle :" . $e->getMessage());
+                $this->logger->err("WmsProxy->handle :" . $e->getMessage());
             }
             throw new HTTPStatus502Exception($e->getMessage(), 502);
         }
@@ -93,7 +93,7 @@ class WmsProxy extends CommonProxy
         } else
         {
             if($this->logger !== null){
-                $this->logger->error("WmsProxy->handle browserResponse is not OK.");
+                $this->logger->err("WmsProxy->handle browserResponse is not OK.");
             }
             throw new HTTPStatus502Exception();
         }
