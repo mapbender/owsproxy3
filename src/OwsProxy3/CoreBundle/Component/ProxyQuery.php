@@ -168,9 +168,23 @@ class ProxyQuery
         $this->rowUrl     = $rowUrl;
         $this->method     = $method;
         $this->content    = $content;
-        $this->getParams  = $getParams;
-        $this->postParams = $postParams;
-        $this->headers    = $headers;
+        $this->getParams  = array();
+        $this->postParams = array();
+        foreach ($getParams as $key => $value)
+        {
+            if (!$this->hasGetPostParamValue($key, true))
+            {
+                $this->getParams[$key] = $value;
+            }
+        }
+        foreach ($postParams as $key => $value)
+        {
+            if (!$this->hasGetPostParamValue($key, true))
+            {
+                $this->postParams[$key] = $value;
+            }
+        }
+        $this->headers = $headers;
     }
 
     /**
@@ -181,7 +195,15 @@ class ProxyQuery
      */
     public function addPostParameter($name, $value)
     {
-        $this->postParams[$name] = $value;
+        if (!$this->hasGetPostParamValue($name, true))
+        {
+            $this->postParams[$name] = $value;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     /**
@@ -192,7 +214,15 @@ class ProxyQuery
      */
     public function addGetParameter($name, $value)
     {
-        $this->getParams[$name] = $value;
+        if (!$this->hasGetPostParamValue($name, true))
+        {
+            $this->getParams[$name] = $value;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     /**
@@ -205,11 +235,27 @@ class ProxyQuery
     {
         if ($this->method === Utils::$METHOD_GET)
         {
-            $this->addGetParameter($name, $value);
+            if (!$this->hasGetPostParamValue($name, true))
+            {
+                $this->addGetParameter($name, $value);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
         else if ($this->method === Utils::$METHOD_POST)
         {
-            $this->addPostParameter($name, $value);
+            if (!$this->hasGetPostParamValue($name, true))
+            {
+                $this->addPostParameter($name, $value);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
     }
 
@@ -388,10 +434,9 @@ class ProxyQuery
             unset($this->getParams[$name]);
             return true;
         }
-        else
-            return false;
+        else return false;
     }
-    
+
     /**
      * Removes a POST parameter.
      * @param string $name parameter name
@@ -404,8 +449,93 @@ class ProxyQuery
             unset($this->postParams[$name]);
             return true;
         }
+        else return false;
+    }
+
+    /**
+     * Checks if a GET/POST parameter exists
+     * 
+     * @param string $name the parameter name
+     * @param boolean $ignoreCase to ignore the parameter name case sensitivity
+     * @return boolean true if a parameter exists
+     */
+    public function hasGetPostParamValue($name, $ignoreCase = false)
+    {
+        $param = $this->hasGetParamValue($name, $ignoreCase);
+        if ($param !== null)
+        {
+            return $param;
+        }
         else
-            return false;
+        {
+            return $this->hasPostParamValue($name, $ignoreCase);
+        }
+    }
+
+    /**
+     * Checks if a GET parameter exists
+     * 
+     * @param string $name the parameter name
+     * @param boolean $ignoreCase to ignore the parameter name case sensitivity
+     * @return boolean true if a parameter exists
+     */
+    public function hasGetParamValue($name, $ignoreCase = false)
+    {
+        if ($ignoreCase)
+        {
+            $name = strtolower($name);
+            foreach ($this->getParams as $key => $value)
+            {
+                if (strtolower($key) === $name)
+                {
+                    return true;
+                }
+            }
+        }
+        else
+        {
+            foreach ($this->getParams as $key => $value)
+            {
+                if ($key === $name)
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Checks if a POST parameter exists
+     * 
+     * @param string $name the parameter name
+     * @param boolean $ignoreCase  to ignore the parameter name case sensitivity
+     * @return boolean true if a parameter exists
+     */
+    public function hasPostParamValue($name, $ignoreCase = false)
+    {
+        if ($ignoreCase)
+        {
+            $name = strtolower($name);
+            foreach ($this->postParams as $key => $value)
+            {
+                if (strtolower($key) === $name)
+                {
+                    return true;
+                }
+            }
+        }
+        else
+        {
+            foreach ($this->postParams as $key => $value)
+            {
+                if ($key === $name)
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
 }
