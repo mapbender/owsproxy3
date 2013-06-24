@@ -29,9 +29,9 @@ class WmsProxy extends CommonProxy
      * @param ContainerInterface $container
      */
     public function __construct($event_dispatcher, array $proxy_config,
-            ProxyQuery $proxy_query)
+            ProxyQuery $proxy_query, $logger = null)
     {
-        parent::__construct($proxy_config, $proxy_query);
+        parent::__construct($proxy_config, $proxy_query, $logger);
         $this->event_dispatcher = $event_dispatcher;
     }
 
@@ -63,25 +63,38 @@ class WmsProxy extends CommonProxy
                 {
                     $content = $this->proxy_query->getPostQueryString();
                 }
+                if($this->logger !== null){
+                    $this->logger->info("WmsProxy->handle POST:" . $this->proxy_query->getGetUrl());
+                }
                 $headers = Utils::prepareHeadersForRequest($this->proxy_query->getHeaders());
                 $browserResponse = $browser->post($this->proxy_query->getGetUrl(),
                                                   $headers, $content);
             } else if($this->proxy_query->getMethod() === Utils::$METHOD_GET)
             {
+                if($this->logger !== null){
+                    $this->logger->info("WmsProxy->handle GET:" . $this->proxy_query->getGetUrl());
+                }
                 $headers = Utils::prepareHeadersForRequest($this->proxy_query->getHeaders());
                 $browserResponse = $browser->get($this->proxy_query->getGetUrl(),
                                                  $headers);
             }
         } catch(\Exception $e)
         {
+            if($this->logger !== null){
+                $this->logger->error("WmsProxy->handle :" . $e->getMessage());
+            }
             throw new HTTPStatus502Exception($e->getMessage(), 502);
         }
         if($browserResponse->isOk())
         {
+            
             $event = new AfterProxyEvent($this->proxy_query, $browserResponse);
             $this->event_dispatcher->dispatch('owsproxy.after_proxy', $event);
         } else
         {
+            if($this->logger !== null){
+                $this->logger->error("WmsProxy->handle browserResponse is not OK.");
+            }
             throw new HTTPStatus502Exception();
         }
         return $browserResponse;

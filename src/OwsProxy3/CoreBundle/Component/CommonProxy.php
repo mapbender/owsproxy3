@@ -27,6 +27,8 @@ class CommonProxy
      * @var array the proxy configuration
      */
     protected $proxy_config;
+    
+    protected $logger;
 
     /**
      * Creates a common proxy
@@ -34,10 +36,11 @@ class CommonProxy
      * @param array $proxy_config the proxy configuration
      * @param ContainerInterface $container
      */
-    public function __construct(array $proxy_config, ProxyQuery $proxy_query)
+    public function __construct(array $proxy_config, ProxyQuery $proxy_query, $logger = null)
     {
         $this->proxy_config = $proxy_config;
         $this->proxy_query = $proxy_query;
+        $this->logger = $logger;
     }
 
     /**
@@ -48,6 +51,9 @@ class CommonProxy
      */
     protected function createBrowser()
     {
+        if($this->logger !== null){
+            $this->logger->info("CommonProxy->createBrowser rowUrl:" . $this->proxy_query->getRowUrl());
+        }
         $rowUrl = $this->proxy_query->getRowUrl();
         $proxy_config = $this->proxy_config;
         $curl = new Curl();
@@ -102,18 +108,27 @@ class CommonProxy
                 {
                     $content = $this->proxy_query->getPostQueryString();
                 }
+                if($this->logger !== null){
+                    $this->logger->info("CommonProxy->handle POST:" . $this->proxy_query->getGetUrl());
+                }
                 $headers = Utils::prepareHeadersForRequest($this->proxy_query->getHeaders());
                 $browserResponse = $browser->post($this->proxy_query->getGetUrl(),
                                                   $headers, $content);
             } else if($this->proxy_query->getMethod() === Utils::$METHOD_GET)
             {
+                
+                if($this->logger !== null){
+                    $this->logger->info("CommonProxy->handle GET:" . $this->proxy_query->getGetUrl());
+                }
                 $headers = Utils::prepareHeadersForRequest($this->proxy_query->getHeaders());
-                $url = $this->proxy_query->getGetUrl();
                 $browserResponse = $browser->get($this->proxy_query->getGetUrl(),
                                                  $headers);
             }
         } catch(\Exception $e)
         {
+            if($this->logger !== null){
+                $this->logger->error("CommonProxy->handle :" . $e->getMessage());
+            }
             throw new HTTPStatus502Exception($e->getMessage(), 502);
         }
         return $browserResponse;
