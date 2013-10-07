@@ -7,7 +7,7 @@ use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus403Exception;
 use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus502Exception;
 
 /**
- * ProxyQuery class provides methods for 
+ * ProxyQuery class provides methods for
  *
  * @author A.R.Pour
  * @author Paul Schmidt
@@ -23,7 +23,7 @@ class ProxyQuery
 
     /**
      *
-     * @var string HTTP method (GET/POST) 
+     * @var string HTTP method (GET/POST)
      */
     protected $method;
 
@@ -41,7 +41,7 @@ class ProxyQuery
 
     /**
      *
-     * @var string the POST content 
+     * @var string the POST content
      */
     protected $content;
 
@@ -53,7 +53,7 @@ class ProxyQuery
 
     /**
      * Creates an instance from parameters
-     * 
+     *
      * @param string $url the url
      * @param string $user the user name for basic authentication
      * @param string $password the user password for basic authentication
@@ -62,7 +62,7 @@ class ProxyQuery
      * @param array $postParams the POST parameters
      * @param string $content the POST content
      * @return ProxyQuery a new instance
-     * @throws HTTPStatus502Exception if the host is not defined at $url 
+     * @throws HTTPStatus502Exception if the host is not defined at $url
      */
     public static function createFromUrl($url, $user = null, $password = null,
             $headers = array(), $getParams = array(), $postParams = array(),
@@ -96,7 +96,7 @@ class ProxyQuery
 
     /**
      * Creates an instance
-     * 
+     *
      * @param Request $request
      * @return ProxyQuery a new instance
      * @throws HTTPStatus502Exception if the host is not defined
@@ -129,7 +129,7 @@ class ProxyQuery
         {
             $method     = Utils::$METHOD_POST;
             $content    = isset($allParams[Utils::$CONTENT]) ?
-                    $allParams[Utils::$CONTENT] : null;
+                $allParams[Utils::$CONTENT] : $request->getContent();
             $postParams = isset($allParams[Utils::$METHOD_POST]) ?
                     $allParams[Utils::$METHOD_POST] : array();
             // if url containts more get parameters
@@ -154,7 +154,7 @@ class ProxyQuery
 
     /**
      * Creates an instance
-     * 
+     *
      * @param array $rowUrl the parsed url (parse_url()) without "query"
      * @param string $method the GET/POST HTTP method
      * @param string $content the POST content
@@ -189,7 +189,7 @@ class ProxyQuery
 
     /**
      * Adds a POST parameter
-     * 
+     *
      * @param string $name
      * @param string $value
      */
@@ -208,7 +208,7 @@ class ProxyQuery
 
     /**
      * Adds a GET parameter
-     * 
+     *
      * @param string $name
      * @param string $value
      */
@@ -227,7 +227,7 @@ class ProxyQuery
 
     /**
      * Adds a POST/GET parameter
-     * 
+     *
      * @param string $name
      * @param string $value
      */
@@ -261,7 +261,7 @@ class ProxyQuery
 
     /**
      * Returns the query string for POST request
-     * 
+     *
      * @return string the query string for POST request
      */
     public function getPostQueryString()
@@ -271,7 +271,7 @@ class ProxyQuery
 
     /**
      * Returns the POST content
-     * 
+     *
      * @return string content
      */
     public function getContent()
@@ -281,7 +281,7 @@ class ProxyQuery
 
     /**
      * Returns the GET/POST method
-     * 
+     *
      * @return string method
      */
     public function getMethod()
@@ -300,7 +300,7 @@ class ProxyQuery
 
     /**
      * Returns the headers
-     * 
+     *
      * @return array headers
      */
     public function getHeaders()
@@ -310,7 +310,7 @@ class ProxyQuery
 
     /**
      * Generats the url for HTTP GET
-     * 
+     *
      * @return string the HTTP GET url
      */
     public function getGetUrl()
@@ -338,7 +338,7 @@ class ProxyQuery
 
     /**
      * Returns the parameter value from GET/POST parameters
-     * 
+     *
      * @param string $name the parameter name
      * @param boolean $ignoreCase to ignore the parameter name case sensitivity
      * @return string|null the parameter value or null
@@ -358,7 +358,7 @@ class ProxyQuery
 
     /**
      * Returns the parameter value from GET parameters
-     * 
+     *
      * @param string $name the parameter name
      * @param boolean $ignoreCase to ignore the parameter name case sensitivity
      * @return string|null the parameter value or null
@@ -391,7 +391,7 @@ class ProxyQuery
 
     /**
      * Returns the parameter value from POST parameters
-     * 
+     *
      * @param string $name the parameter name
      * @param boolean $ignoreCase  to ignore the parameter name case sensitivity
      * @return string|null the parameter value or null
@@ -454,7 +454,7 @@ class ProxyQuery
 
     /**
      * Checks if a GET/POST parameter exists
-     * 
+     *
      * @param string $name the parameter name
      * @param boolean $ignoreCase to ignore the parameter name case sensitivity
      * @return boolean true if a parameter exists
@@ -474,7 +474,7 @@ class ProxyQuery
 
     /**
      * Checks if a GET parameter exists
-     * 
+     *
      * @param string $name the parameter name
      * @param boolean $ignoreCase to ignore the parameter name case sensitivity
      * @return boolean true if a parameter exists
@@ -507,7 +507,7 @@ class ProxyQuery
 
     /**
      * Checks if a POST parameter exists
-     * 
+     *
      * @param string $name the parameter name
      * @param boolean $ignoreCase  to ignore the parameter name case sensitivity
      * @return boolean true if a parameter exists
@@ -536,6 +536,15 @@ class ProxyQuery
             }
         }
         return false;
+    }
+
+    public function getServiceType() {
+        if($this->hasGetParamValue('service', true)) return $this->getGetParamValue('service', true);
+        if($this->hasPostParamValue('service', true)) return $this->getPostParamValue('service', true);
+
+        $dom = new \DOMDocument();
+        $dom->loadXML($this->content);
+        return $dom->documentElement->getAttribute('service');
     }
 
 }

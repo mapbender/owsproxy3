@@ -92,7 +92,7 @@ class OwsProxyController extends Controller
         $this->logger = $this->container->get('logger');
         $request = $this->get('request');
         $proxy_query = ProxyQuery::createFromRequest($request);
-        $service = $proxy_query->getGetPostParamValue("service", true);
+        $service = $proxy_query->getServiceType();
         // Switch proxy
         switch(strtoupper($service))
         {
