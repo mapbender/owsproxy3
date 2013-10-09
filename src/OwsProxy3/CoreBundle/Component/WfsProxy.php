@@ -7,6 +7,7 @@ use Symfony\Component\HttpFoundation\Response;
 use OwsProxy3\CoreBundle\Component\Url;
 use OwsProxy3\CoreBundle\Event\AfterProxyEvent;
 use OwsProxy3\CoreBundle\Event\BeforeProxyEvent;
+use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus502Exception;
 use Buzz\Browser;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
