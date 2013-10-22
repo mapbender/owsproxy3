@@ -90,6 +90,9 @@ class ProxyQuery
         {
             $method = Utils::$METHOD_POST;
         }
+
+        $headers['Host'] = $rowUrl['host'];
+
         return new ProxyQuery($rowUrl, $method, $content, $getParams,
                 $postParams, $headers);
     }
@@ -148,6 +151,9 @@ class ProxyQuery
             $getParams     = array_merge($getParams, $getParamshelp);
         }
         $headers = Utils::getHeadersFromRequest($request);
+
+        $headers['Host'] = $rowUrl['host'];
+
         return new ProxyQuery($rowUrl, $method, $content, $getParams,
                 $postParams, $headers);
     }
