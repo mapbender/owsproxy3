@@ -5,6 +5,9 @@ namespace OwsProxy3\CoreBundle\Component;
 use Symfony\Component\HttpFoundation\Request;
 use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus403Exception;
 use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus502Exception;
+use ArsGeografica\Signing\BadSignatureException;
+use ArsGeografica\Signing\Signer;
+
 
 /**
  * ProxyQuery class provides methods for
@@ -104,7 +107,7 @@ class ProxyQuery
      * @return ProxyQuery a new instance
      * @throws HTTPStatus502Exception if the host is not defined
      */
-    public static function createFromRequest(Request $request)
+    public static function createFromRequest(Request $request, Signer $signer)
     {
         $rowUrl = Utils::getParamValue($request, Utils::$PARAMETER_URL,
                         Utils::$METHOD_GET, false);
@@ -120,7 +123,21 @@ class ProxyQuery
             unset($rowUrl["query"]);
         }
 
+        // Check URL signature
+        if(!isset($getParams['_signature'])) {
+            throw new HTTPStatus403Exception('No URL signature provided');
+        }
+        $signature = explode(':', $getParams['_signature']);
+        $baseUrl = substr(Utils::getParamValue($request, 'url'), 0, $signature[0]);
+        try {
+            $signer->unsign($baseUrl . ':' . $signature[1]);
+        } catch(BadSignatureException $e) {
+            throw new HTTPStatus403Exception('Invalid URL signature: ' . $e->getMessage());
+        }
+
+
         $allParams = Utils::getAllParams($request);
+
         if (isset($allParams[Utils::$METHOD_GET]) &&
                 isset($allParams[Utils::$METHOD_GET][Utils::$PARAMETER_URL]))
         {

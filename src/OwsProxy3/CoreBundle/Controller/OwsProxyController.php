@@ -15,6 +15,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use ArsGeografica\Signing\Signer;
+
 
 //use OwsProxy3\CoreBundle\Component\Url;
 
@@ -91,7 +93,8 @@ class OwsProxyController extends Controller
     {
         $this->logger = $this->container->get('logger');
         $request = $this->get('request');
-        $proxy_query = ProxyQuery::createFromRequest($request);
+        $signer = $this->get('signer');
+        $proxy_query = ProxyQuery::createFromRequest($request, $signer);
         $service = $proxy_query->getServiceType();
         // Switch proxy
         switch(strtoupper($service))
@@ -102,7 +105,6 @@ class OwsProxyController extends Controller
                     $this->logger->debug("OwsProxyController->entryPointAction");
                     $dispatcher = $this->container->get('event_dispatcher');
                     $proxy_config = $this->container->getParameter("owsproxy.proxy");
-                    $proxy_query = ProxyQuery::createFromRequest($request);
                     $proxy = new WmsProxy($dispatcher, $proxy_config, $proxy_query);
                     $browserResponse = $proxy->handle();
 
@@ -138,7 +140,6 @@ class OwsProxyController extends Controller
                 {
                     $dispatcher = $this->container->get('event_dispatcher');
                     $proxy_config = $this->container->getParameter("owsproxy.proxy");
-                    $proxy_query = ProxyQuery::createFromRequest($request);
                     $proxy = new WfsProxy($dispatcher, $proxy_config, $proxy_query);
                     $browserResponse = $proxy->handle();
 
