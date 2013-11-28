@@ -123,18 +123,11 @@ class ProxyQuery
             unset($rowUrl["query"]);
         }
 
-        // Check URL signature
-        if(!isset($getParams['_signature'])) {
-            throw new HTTPStatus403Exception('No URL signature provided');
-        }
-        $signature = explode(':', $getParams['_signature']);
-        $baseUrl = substr(Utils::getParamValue($request, 'url'), 0, $signature[0]);
         try {
-            $signer->unsign($baseUrl . ':' . $signature[1]);
+            $signer->checkSignedUrl(Utils::getParamValue($request, 'url'));
         } catch(BadSignatureException $e) {
             throw new HTTPStatus403Exception('Invalid URL signature: ' . $e->getMessage());
         }
-
 
         $allParams = Utils::getAllParams($request);
 
