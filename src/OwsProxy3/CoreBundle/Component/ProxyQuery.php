@@ -124,7 +124,7 @@ class ProxyQuery
         }
 
         try {
-            $signer->checkSignedUrl(Utils::getParamValue($request, 'url'));
+            $signer->checkSignedUrl(Utils::getParamValue($request, Utils::$PARAMETER_URL));
         } catch(BadSignatureException $e) {
             throw new HTTPStatus403Exception('Invalid URL signature: ' . $e->getMessage());
         }
