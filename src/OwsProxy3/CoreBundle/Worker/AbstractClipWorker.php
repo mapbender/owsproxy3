@@ -107,7 +107,7 @@ abstract class AbstractClipWorker implements AbstractWorker
                         $geometryColumnName, new SrsPoint($xsrs, $ysrs, $srsInt)))
         {
             $this->logger->info('AbstractClipWorker->handleFeatureInfoBefore clipping->checkFeatureInfo == false');
-            throw new HTTPStatus403Exception("checkFeatureInfo == false");
+            throw new HTTPStatus403Exception("403 FeatureInfoBefore checkFeatureInfo == false");
         }
         return $clipping;
     }

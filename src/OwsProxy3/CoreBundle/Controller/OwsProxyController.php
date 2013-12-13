@@ -204,7 +204,8 @@ class OwsProxyController extends Controller
             $ang = -45;
             for ($x = 10; $x < $w; $x += $st_x) {
                 for ($y = 10; $y < $h; $y += $st_y) {
-                    $image->annotateImage($draw, $x, $y, $ang, $e->getMessage());
+                    $image->annotateImage($draw, $x, $y, $ang,
+                        $this->container->get('translator')->trans($e->getMessage()));
                 }
             }
 

@@ -78,13 +78,6 @@ class CommonProxy
                         $proxy_config['user'] . ':' . $proxy_config['password']);
             }
         }
-//        $user_agent = array_key_exists('HTTP_USER_AGENT', $_SERVER) ?
-//            $_SERVER['HTTP_USER_AGENT'] : 'Mapbender3';
-
-//        $curl->setOption(CURLOPT_FOLLOWLOCATION, true);
-//        $curl->setOption(CURLOPT_HEADER, false);
-//        $curl->setOption(CURLOPT_RETURNTRANSFER, true);
-//        $curl->setOption(CURLOPT_USERAGENT, $user_agent);
         return new Browser($curl);
     }
 

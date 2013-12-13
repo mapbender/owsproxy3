@@ -89,7 +89,7 @@ class WfsProxy extends CommonProxy
             $response->setContent( $browserResponse->getContent() );
 
         } else {
-            throw new \Exception("502 Bad Gateway");
+            throw new HTTPStatus502Exception();
         }
 
         return $response;
