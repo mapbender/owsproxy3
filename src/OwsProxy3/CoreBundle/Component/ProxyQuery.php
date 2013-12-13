@@ -107,10 +107,10 @@ class ProxyQuery
      * @return ProxyQuery a new instance
      * @throws HTTPStatus502Exception if the host is not defined
      */
-    public static function createFromRequest(Request $request, Signer $signer)
+    public static function createFromRequest(Request $request)
     {
-        $rowUrl = Utils::getParamValue($request, Utils::$PARAMETER_URL,
-                        Utils::$METHOD_GET, false);
+        $rowUrl = urldecode(Utils::getParamValue($request, Utils::$PARAMETER_URL,
+                        Utils::$METHOD_GET, false));
         $rowUrl = parse_url($rowUrl);
         if (empty($rowUrl["host"]))
         {
@@ -121,12 +121,6 @@ class ProxyQuery
         {
             parse_str($rowUrl["query"], $getParams);
             unset($rowUrl["query"]);
-        }
-
-        try {
-            $signer->checkSignedUrl(Utils::getParamValue($request, Utils::$PARAMETER_URL));
-        } catch(BadSignatureException $e) {
-            throw new HTTPStatus403Exception('Invalid URL signature: ' . $e->getMessage());
         }
 
         $allParams = Utils::getAllParams($request);

@@ -85,7 +85,12 @@ class OwsProxyController extends Controller
         $this->logger = $this->container->get('logger');
         $request = $this->get('request');
         $signer = $this->get('signer');
-        $proxy_query = ProxyQuery::createFromRequest($request, $signer);
+        $proxy_query = ProxyQuery::createFromRequest($request);
+        try {
+            $signer->checkSignedUrl($proxy_query->getGetUrl());
+        } catch(BadSignatureException $e) {
+            throw new HTTPStatus403Exception('Invalid URL signature: ' . $e->getMessage());
+        }
         $service = $proxy_query->getServiceType();
         // Switch proxy
         switch (strtoupper($service)) {
