@@ -92,10 +92,17 @@ class WmsProxy extends CommonProxy
             $this->event_dispatcher->dispatch('owsproxy.after_proxy', $event);
         } else
         {
-            if($this->logger !== null){
-                $this->logger->err("WmsProxy->handle browserResponse is not OK.");
+            $message = null;
+            if($browserResponse->getReasonPhrase() !== null){
+                $rawUrl = $this->proxy_query->getRowUrl();
+                $message = 'Server "' . $rawUrl['host'] . '" says: ' . $browserResponse->getReasonPhrase();
+                throw new HTTPStatus502Exception($message);
+            } else {
+                throw new HTTPStatus502Exception();
             }
-            throw new HTTPStatus502Exception();
+            if($this->logger !== null){
+                $this->logger->err($message !== null ? $message : "WmsProxy->handle browserResponse is not OK.");
+            }
         }
         return $browserResponse;
     }
