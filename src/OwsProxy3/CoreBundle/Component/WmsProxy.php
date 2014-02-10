@@ -19,7 +19,6 @@ use Buzz\Client\Curl;
  */
 class WmsProxy extends CommonProxy
 {
-
     protected $event_dispatcher;
 
     /**
@@ -28,8 +27,7 @@ class WmsProxy extends CommonProxy
      * @param array $proxy_config the proxy configuration
      * @param ContainerInterface $container
      */
-    public function __construct($event_dispatcher, array $proxy_config,
-            ProxyQuery $proxy_query, $logger = null)
+    public function __construct($event_dispatcher, array $proxy_config, ProxyQuery $proxy_query, $logger = null)
     {
         parent::__construct($proxy_config, $proxy_query, $logger);
         $this->event_dispatcher = $event_dispatcher;
@@ -44,63 +42,53 @@ class WmsProxy extends CommonProxy
     public function handle()
     {
         $browser = $this->createBrowser();
-        try
-        {
+        try {
             $event = new BeforeProxyEvent($this->proxy_query);
             $this->event_dispatcher->dispatch('owsproxy.before_proxy', $event);
-        } catch(\RuntimeException $e)
-        {
+        } catch (\RuntimeException $e) {
             throw new HTTPStatus502Exception();
         }
-        try
-        {
-            if($this->proxy_query->getMethod() === Utils::$METHOD_POST)
-            {
-                if($this->proxy_query->getContent() !== null)
-                {
+        try {
+            if ($this->proxy_query->getMethod() === Utils::$METHOD_POST) {
+                if ($this->proxy_query->getContent() !== null) {
                     $content = $this->proxy_query->getContent();
-                } else
-                {
+                } else {
                     $content = $this->proxy_query->getPostQueryString();
                 }
-                if($this->logger !== null){
+                if ($this->logger !== null) {
                     $this->logger->debug("WmsProxy->handle POST:" . $this->proxy_query->getGetUrl());
                 }
-                $headers = Utils::prepareHeadersForRequest($this->proxy_query->getHeaders());
-                $browserResponse = $browser->post($this->proxy_query->getGetUrl(),
-                                                  $headers, $content);
-            } else if($this->proxy_query->getMethod() === Utils::$METHOD_GET)
-            {
-                if($this->logger !== null){
+                $headers = Utils::prepareHeadersForRequest($this->proxy_query->getHeaders(), $this->headerBlackList,
+                        $this->headerWhiteList);
+                $browserResponse = $browser->post($this->proxy_query->getGetUrl(), $headers, $content);
+            } else if ($this->proxy_query->getMethod() === Utils::$METHOD_GET) {
+                if ($this->logger !== null) {
                     $this->logger->debug("WmsProxy->handle GET:" . $this->proxy_query->getGetUrl());
                 }
-                $headers = Utils::prepareHeadersForRequest($this->proxy_query->getHeaders());
-                $browserResponse = $browser->get($this->proxy_query->getGetUrl(),
-                                                 $headers);
+                $headers = Utils::prepareHeadersForRequest($this->proxy_query->getHeaders(), $this->headerBlackList,
+                        $this->headerWhiteList);
+                $browserResponse = $browser->get($this->proxy_query->getGetUrl(), $headers);
             }
-        } catch(\Exception $e)
-        {
-            if($this->logger !== null){
+        } catch (\Exception $e) {
+            if ($this->logger !== null) {
                 $this->logger->err("WmsProxy->handle :" . $e->getMessage());
             }
             throw new HTTPStatus502Exception($e->getMessage(), 502);
         }
-        if($browserResponse->isOk())
-        {
-            
+        if ($browserResponse->isOk()) {
+
             $event = new AfterProxyEvent($this->proxy_query, $browserResponse);
             $this->event_dispatcher->dispatch('owsproxy.after_proxy', $event);
-        } else
-        {
+        } else {
             $message = null;
-            if($browserResponse->getReasonPhrase() !== null){
+            if ($browserResponse->getReasonPhrase() !== null) {
                 $rawUrl = $this->proxy_query->getRowUrl();
                 $message = 'Server "' . $rawUrl['host'] . '" says: ' . $browserResponse->getReasonPhrase();
                 throw new HTTPStatus502Exception($message);
             } else {
                 throw new HTTPStatus502Exception();
             }
-            if($this->logger !== null){
+            if ($this->logger !== null) {
                 $this->logger->err($message !== null ? $message : "WmsProxy->handle browserResponse is not OK.");
             }
         }

@@ -37,17 +37,18 @@ class WfsProxy extends CommonProxy
     {
         $browser = $this->createBrowser();
         try {
-            if($this->proxy_query->getContent() !== null) {
+            if ($this->proxy_query->getContent() !== null) {
                 $content = $this->proxy_query->getContent();
             } else {
                 $content = $this->proxy_query->getPostQueryString();
             }
-            $headers = Utils::prepareHeadersForRequest($this->proxy_query->getHeaders());
+            $headers = Utils::prepareHeadersForRequest($this->proxy_query->getHeaders(), $this->headerBlackList,
+                    $this->headerWhiteList);
             $browserResponse = $browser->post($this->proxy_query->getGetUrl(), $headers, $content);
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             throw new HTTPStatus502Exception($e->getMessage(), 502);
         }
-        if($browserResponse->isOk()) {
+        if ($browserResponse->isOk()) {
             return $browserResponse;
         } else {
             throw new HTTPStatus502Exception();
@@ -61,7 +62,7 @@ class WfsProxy extends CommonProxy
         try {
             $event = new BeforeProxyEvent($url);
             $dispatcher->dispatch('owsproxy.before_proxy', $event);
-        } catch(\RuntimeException $e) {
+        } catch (\RuntimeException $e) {
             return;
         }
 
@@ -73,25 +74,26 @@ class WfsProxy extends CommonProxy
 
         $browserResponse = $browser->post($url->toString(), $headers, $body);
 
-        if($browserResponse->isOk()) {
+        if ($browserResponse->isOk()) {
             $event = new AfterProxyEvent($url, $browserResponse);
             $dispatcher->dispatch('owsproxy.after_proxy', $event);
 
             // Set received headers to our response
-            foreach($browserResponse->getHeaders() as $header) {
-                if(strstr($header, ":") === false) continue;
+            foreach ($browserResponse->getHeaders() as $header) {
+                if (strstr($header, ":") === false)
+                    continue;
 
                 list($key, $val) = explode(":", $header, 2);
                 //$response->headers->set($key, $val);
             }
 
             // Set received content to our response
-            $response->setContent( $browserResponse->getContent() );
-
+            $response->setContent($browserResponse->getContent());
         } else {
             throw new HTTPStatus502Exception();
         }
 
         return $response;
     }
+
 }
