@@ -319,6 +319,26 @@ class ProxyQuery
     }
 
     /**
+     * Sets the headers
+     *
+     * @return array headers
+     */
+    public function setHeaders($headers)
+    {
+        $this->headers = $headers;
+    }
+    
+    /**
+     * Sets the headers
+     *
+     * @return array headers
+     */
+    public function addHeader($header)
+    {
+        $this->headers[] = $header;
+    }
+    
+    /**
      * Generats the url for HTTP GET
      *
      * @return string the HTTP GET url
