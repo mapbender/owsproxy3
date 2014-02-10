@@ -216,21 +216,17 @@ class Utils
      * Prepares the HTTP headers
      * 
      * @param array $headers the HTTP headers
+     * @param array $blackList the array with header names to remove
+     * @param array $whiteList the array with header names to remove
      * @return array the prepared HTTP headers
      */
-    public static function prepareHeadersForRequest($headers)
+    public static function prepareHeadersForRequest(array $headers, array $blackList, array $whiteList)
     {
-        foreach($headers as $key => $value)
-        {
+        foreach ($headers as $key => $value) {
             $lkey = strtolower($key);
-            if($lkey === "cookie"
-                    || $lkey === "user-agent"
-                    || $lkey === "content-length"
-                    || $lkey === "referer"
-                    || $lkey === "host"){
+            if (in_array($lkey, $blackList) && !in_array($lkey, $whiteList)) {
                 unset($headers[$key]);
             }
-                
         }
         return $headers;
     }
