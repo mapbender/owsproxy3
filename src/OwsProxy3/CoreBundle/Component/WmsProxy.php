@@ -23,7 +23,7 @@ class WmsProxy extends CommonProxy
 
     /**
      * Creates a wms proxy
-     * 
+     *
      * @param array $proxy_config the proxy configuration
      * @param ContainerInterface $container
      */
@@ -35,7 +35,7 @@ class WmsProxy extends CommonProxy
 
     /**
      * Handles the request and returns the response.
-     * 
+     *
      * @return MessageInterface the browser response
      * @throws Exception\HTTPStatus502Exception
      */
@@ -76,10 +76,35 @@ class WmsProxy extends CommonProxy
             throw new HTTPStatus502Exception($e->getMessage(), 502);
         }
         if ($browserResponse->isOk()) {
-
             $event = new AfterProxyEvent($this->proxy_query, $browserResponse);
             $this->event_dispatcher->dispatch('owsproxy.after_proxy', $event);
         } else {
+            // pass auth challenge down to client, but alter realm to make it
+            // unique as it will be applied to this server as the auth
+            // partition key!
+            if(401 === $browserResponse->getStatusCode()) {
+                $headers = $browserResponse->getHeaders();
+                $needle = 'www-authenticate: basic realm="';
+                foreach($headers as $idx => &$header) {
+                    $haystack = strtolower($header);
+                    if(0 === strpos($haystack, $needle)) {
+                        $origRealm = substr($header, strlen($needle), strlen($header) - strlen($needle) - 1);
+                        $rawUrl = $this->proxy_query->getRowUrl(); // ;)
+
+                        $scheme = empty($rawUrl["scheme"]) ? "http://" : $rawUrl["scheme"] . "://";
+                        $host = $rawUrl["host"];
+                        $port = empty($rawUrl["port"]) ? "" : ":" . $rawUrl["port"];
+                        $path = empty($rawUrl["path"]) ? "" : $rawUrl["path"];
+                        $server = $scheme . $host . $port . $path;
+                        $realm = 'Server: ' . $server . ' - ' . $origRealm;
+                        $header = 'WWW-Authenticate: Basic realm="' . $realm . '"';
+
+                        $browserResponse->setHeaders($headers);
+                        break;
+                    }
+                }
+                return $browserResponse;
+            }
             $message = null;
             if ($browserResponse->getReasonPhrase() !== null) {
                 $rawUrl = $this->proxy_query->getRowUrl();
