@@ -4,12 +4,13 @@ namespace OwsProxy3\CoreBundle\Component;
 
 use Buzz\Browser;
 use Buzz\Client\Curl;
+use Buzz\Listener\BasicAuthListener;
 use Buzz\Message\MessageInterface;
 use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus403Exception;
 use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus502Exception;
 
 /**
- * CommonProxy class for 
+ * CommonProxy class for
  *
  * @author Paul Schmidt
  */
@@ -29,25 +30,25 @@ class CommonProxy
 
     /**
      *
-     * @var Logger the logger 
+     * @var Logger the logger
      */
     protected $logger;
 
     /**
      *
-     * @var array headernames  
+     * @var array headernames
      */
     protected $headerBlackList = array("cookie", "user-agent", "content-length", "referer", "host");
 
     /**
      *
-     * @var array headernames  
+     * @var array headernames
      */
     protected $headerWhiteList = array();
 
     /**
      * Creates a common proxy
-     * 
+     *
      * @param array $proxy_config the proxy configuration
      * @param ContainerInterface $container
      */
@@ -67,8 +68,8 @@ class CommonProxy
 
     /**
      * Creates the browser
-     * 
-     * 
+     *
+     *
      * @return \Buzz\Browser
      */
     protected function createBrowser()
@@ -95,12 +96,19 @@ class CommonProxy
                 $curl->setOption(CURLOPT_PROXYUSERPWD, $proxy_config['user'] . ':' . $proxy_config['password']);
             }
         }
-        return new Browser($curl);
+        $browser = new Browser($curl);
+
+        if(array_key_exists('user', $rowUrl) && $rowUrl['user'] != ''
+            && array_key_exists('pass', $rowUrl) && $rowUrl['pass'] != '') {
+            $browser->addListener(new BasicAuthListener($rowUrl['user'], $rowUrl['pass']));
+        }
+
+        return $browser;
     }
 
     /**
      * Handles the request and returns the response.
-     * 
+     *
      * @return MessageInterface the browser response
      * @throws Exception\HTTPStatus502Exception
      */
