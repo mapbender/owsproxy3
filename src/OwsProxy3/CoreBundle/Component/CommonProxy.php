@@ -52,7 +52,7 @@ class CommonProxy
     protected function createBrowser()
     {
         if($this->logger !== null){
-            $this->logger->debug("CommonProxy->createBrowser rowUrl:" . $this->proxy_query->getRowUrl());
+            $this->logger->debug("CommonProxy->createBrowser rowUrl:" . print_r($this->proxy_query->getRowUrl(), true));
         }
         $rowUrl = $this->proxy_query->getRowUrl();
         $proxy_config = $this->proxy_config;
@@ -110,19 +110,27 @@ class CommonProxy
                 }
                 if($this->logger !== null){
                     $this->logger->debug("CommonProxy->handle POST:" . $this->proxy_query->getGetUrl());
+                    $this->logger->debug("CommonProxy->handle Headers: " . print_r($this->proxy_query->getHeaders(), true));
                 }
                 $headers = Utils::prepareHeadersForRequest($this->proxy_query->getHeaders());
                 $browserResponse = $browser->post($this->proxy_query->getGetUrl(),
                                                   $headers, $content);
+                if($this->logger !== null){                                  
+                    $this->logger->debug("CommonProxy->handle Response: " . print_r($browserResponse, true));
+                }
             } else if($this->proxy_query->getMethod() === Utils::$METHOD_GET)
             {
                 
                 if($this->logger !== null){
                     $this->logger->debug("CommonProxy->handle GET:" . $this->proxy_query->getGetUrl());
+                    $this->logger->debug("CommonProxy->handle Headers: " . print_r($this->proxy_query->getHeaders(), true));
                 }
                 $headers = Utils::prepareHeadersForRequest($this->proxy_query->getHeaders());
                 $browserResponse = $browser->get($this->proxy_query->getGetUrl(),
                                                  $headers);
+                if($this->logger !== null){
+                    $this->logger->debug("CommonProxy->handle Response: " . print_r($browserResponse, true));
+                }
             }
         } catch(\Exception $e)
         {
