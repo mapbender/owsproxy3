@@ -48,7 +48,7 @@ class Log
     protected $requestUrl;
 
     /**
-     * @ORM\Column(name="request_body", type="text")
+     * @ORM\Column(name="request_body", type="text", nullable=true)
      */
     protected $requestBody;
 
