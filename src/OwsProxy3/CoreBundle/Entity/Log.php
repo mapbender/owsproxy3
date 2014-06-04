@@ -23,12 +23,12 @@ class Log
     protected $id;
 
     /**
-     * @ORM\Column(type="string", length=512)
+     * @ORM\Column(type="string", length=512, nullable=true)
      */
     protected $username;
 
     /**
-     * @ORM\Column(type="text")
+     * @ORM\Column(type="text", nullable=true)
      */
     protected $roles;
 
@@ -43,7 +43,7 @@ class Log
     protected $timestamp;
 
     /**
-     * @ORM\Column(name="request_url", type="text")
+     * @ORM\Column(name="request_url", type="text", nullable=true)
      */
     protected $requestUrl;
 
