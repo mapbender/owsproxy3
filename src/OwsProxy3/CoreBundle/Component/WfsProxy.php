@@ -23,9 +23,9 @@ class WfsProxy extends CommonProxy
     /**
      * @param Url $url
      */
-    public function __construct($event_dispatcher, array $proxy_config, ProxyQuery $proxy_query)
+    public function __construct($event_dispatcher, array $proxy_config, ProxyQuery $proxy_query, $userAgent = 'OWSProxy3')
     {
-        parent::__construct($proxy_config, $proxy_query);
+        parent::__construct($proxy_config, $proxy_query, null, null, null $userAgent);
         $this->event_dispatcher = $event_dispatcher;
     }
 
@@ -44,6 +44,7 @@ class WfsProxy extends CommonProxy
             }
             $headers = Utils::prepareHeadersForRequest($this->proxy_query->getHeaders(), $this->headerBlackList,
                     $this->headerWhiteList);
+            $headers['User-Agent'] = $this->userAgent;
             $browserResponse = $browser->post($this->proxy_query->getGetUrl(), $headers, $content);
         } catch (\Exception $e) {
             throw new HTTPStatus502Exception($e->getMessage(), 502);
@@ -72,6 +73,7 @@ class WfsProxy extends CommonProxy
             return implode('; ', $value);
         }, $incoming->headers->all());
 
+        $headers['User-Agent'] = $this->userAgent;
         $browserResponse = $browser->post($url->toString(), $headers, $body);
 
         if ($browserResponse->isOk()) {

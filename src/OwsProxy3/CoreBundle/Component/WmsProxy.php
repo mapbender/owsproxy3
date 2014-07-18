@@ -27,9 +27,9 @@ class WmsProxy extends CommonProxy
      * @param array $proxy_config the proxy configuration
      * @param ContainerInterface $container
      */
-    public function __construct($event_dispatcher, array $proxy_config, ProxyQuery $proxy_query, $logger = null)
+    public function __construct($event_dispatcher, array $proxy_config, ProxyQuery $proxy_query, $logger = null, $userAgent = 'OWSProxy3')
     {
-        parent::__construct($proxy_config, $proxy_query, $logger);
+        parent::__construct($proxy_config, $proxy_query, $logger, null, null, $userAgent);
         $this->event_dispatcher = $event_dispatcher;
     }
 
@@ -60,6 +60,7 @@ class WmsProxy extends CommonProxy
                 }
                 $headers = Utils::prepareHeadersForRequest($this->proxy_query->getHeaders(), $this->headerBlackList,
                         $this->headerWhiteList);
+                $headers['User-Agent'] = $this->userAgent;
                 $browserResponse = $browser->post($this->proxy_query->getGetUrl(), $headers, $content);
             } else if ($this->proxy_query->getMethod() === Utils::$METHOD_GET) {
                 if ($this->logger !== null) {
@@ -67,6 +68,7 @@ class WmsProxy extends CommonProxy
                 }
                 $headers = Utils::prepareHeadersForRequest($this->proxy_query->getHeaders(), $this->headerBlackList,
                         $this->headerWhiteList);
+                $headers['User-Agent'] = $this->userAgent;
                 $browserResponse = $browser->get($this->proxy_query->getGetUrl(), $headers);
             }
         } catch (\Exception $e) {

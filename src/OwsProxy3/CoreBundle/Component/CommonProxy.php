@@ -47,13 +47,19 @@ class CommonProxy
     protected $headerWhiteList = array();
 
     /**
+     * The user-agent to send along with proxy requests
+     * @var String
+     */
+    protected $userAgent;
+
+    /**
      * Creates a common proxy
      *
      * @param array $proxy_config the proxy configuration
      * @param ContainerInterface $container
      */
     public function __construct(array $proxy_config, ProxyQuery $proxy_query, $logger = null, $headerBlackList = null,
-        $headerWhiteList = null)
+        $headerWhiteList = null, $userAgent = 'OWSProxy3')
     {
         $this->proxy_config = $proxy_config;
         $this->proxy_query = $proxy_query;
@@ -64,6 +70,7 @@ class CommonProxy
         if ($headerWhiteList !== null) {
             $this->headerWhiteList = $headerWhiteList;
         }
+        $this->userAgent = $userAgent;
     }
 
     /**
@@ -127,6 +134,7 @@ class CommonProxy
                 }
                 $headers = Utils::prepareHeadersForRequest($this->proxy_query->getHeaders(), $this->headerBlackList,
                         $this->headerWhiteList);
+                $headers['User-Agent'] = $this->userAgent;
                 $browserResponse = $browser->post($this->proxy_query->getGetUrl(), $headers, $content);
             } else if ($this->proxy_query->getMethod() === Utils::$METHOD_GET) {
 
@@ -135,6 +143,7 @@ class CommonProxy
                 }
                 $headers = Utils::prepareHeadersForRequest($this->proxy_query->getHeaders(), $this->headerBlackList,
                         $this->headerWhiteList);
+                $headers['User-Agent'] = $this->userAgent;
                 $browserResponse = $browser->get($this->proxy_query->getGetUrl(), $headers);
             }
         } catch (\Exception $e) {
