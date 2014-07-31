@@ -72,11 +72,15 @@ class WmsProxy extends CommonProxy
                 $browserResponse = $browser->get($this->proxy_query->getGetUrl(), $headers);
             }
         } catch (\Exception $e) {
+            $this->closeConnection($browser);
             if ($this->logger !== null) {
                 $this->logger->err("WmsProxy->handle :" . $e->getMessage());
             }
             throw new HTTPStatus502Exception($e->getMessage(), 502);
         }
+
+        $this->closeConnection($browser);
+
         if ($browserResponse->isOk()) {
             $event = new AfterProxyEvent($this->proxy_query, $browserResponse);
             $this->event_dispatcher->dispatch('owsproxy.after_proxy', $event);
@@ -122,4 +126,14 @@ class WmsProxy extends CommonProxy
         return $browserResponse;
     }
 
+    protected function closeConnection($browser) {
+        // Kick cURL, which tries to hold open connections...
+        $curl = $browser->getClient();
+        $class = new \ReflectionClass(get_class($curl));
+        $property = $class->getProperty("lastCurl");
+        $property->setAccessible(true);
+        if (is_resource($property->getValue())) {
+            curl_close($property->getValue());
+        }
+    }
 }
