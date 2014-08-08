@@ -90,6 +90,8 @@ class OwsProxyController extends Controller
             $signer->checkSignedUrl($proxy_query->getGetUrl());
         } catch(BadSignatureException $e) {
             throw new HTTPStatus403Exception('Invalid URL signature: ' . $e->getMessage());
+        } catch(\Exception $e) {
+            throw new \Exception($e->getMessage(), 500);
         }
         $service = $proxy_query->getServiceType();
         // Switch proxy
