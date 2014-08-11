@@ -132,8 +132,8 @@ class WmsProxy extends CommonProxy
         $class = new \ReflectionClass(get_class($curl));
         $property = $class->getProperty("lastCurl");
         $property->setAccessible(true);
-        if (is_resource($property->getValue())) {
-            curl_close($property->getValue());
+        if (is_resource($property->getValue($curl))) {
+            curl_close($property->getValue($curl));
         }
     }
 }
