@@ -115,9 +115,6 @@ class CommonProxy
                 $headers = Utils::prepareHeadersForRequest($this->proxy_query->getHeaders());
                 $browserResponse = $browser->post($this->proxy_query->getGetUrl(),
                                                   $headers, $content);
-                if($this->logger !== null){                                  
-                    $this->logger->debug("CommonProxy->handle Response: " . print_r($browserResponse, true));
-                }
             } else if($this->proxy_query->getMethod() === Utils::$METHOD_GET)
             {
                 
@@ -128,9 +125,6 @@ class CommonProxy
                 $headers = Utils::prepareHeadersForRequest($this->proxy_query->getHeaders());
                 $browserResponse = $browser->get($this->proxy_query->getGetUrl(),
                                                  $headers);
-                if($this->logger !== null){
-                    $this->logger->debug("CommonProxy->handle Response: " . print_r($browserResponse, true));
-                }
             }
         } catch(\Exception $e)
         {
