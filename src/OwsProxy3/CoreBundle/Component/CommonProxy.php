@@ -81,8 +81,8 @@ class CommonProxy
      */
     protected function createBrowser()
     {
-        if ($this->logger !== null) {
-            $this->logger->debug("CommonProxy->createBrowser rowUrl:" . $this->proxy_query->getRowUrl());
+        if($this->logger !== null){
+            $this->logger->debug("CommonProxy->createBrowser rowUrl:" . print_r($this->proxy_query->getRowUrl(), true));
         }
         $rowUrl = $this->proxy_query->getRowUrl();
         $proxy_config = $this->proxy_config;
@@ -131,6 +131,7 @@ class CommonProxy
                 }
                 if ($this->logger !== null) {
                     $this->logger->debug("CommonProxy->handle POST:" . $this->proxy_query->getGetUrl());
+                    $this->logger->debug("CommonProxy->handle Headers: " . print_r($this->proxy_query->getHeaders(), true));
                 }
                 $headers = Utils::prepareHeadersForRequest($this->proxy_query->getHeaders(), $this->headerBlackList,
                         $this->headerWhiteList);
@@ -140,6 +141,7 @@ class CommonProxy
 
                 if ($this->logger !== null) {
                     $this->logger->debug("CommonProxy->handle GET:" . $this->proxy_query->getGetUrl());
+                    $this->logger->debug("CommonProxy->handle Headers: " . print_r($this->proxy_query->getHeaders(), true));
                 }
                 $headers = Utils::prepareHeadersForRequest($this->proxy_query->getHeaders(), $this->headerBlackList,
                         $this->headerWhiteList);

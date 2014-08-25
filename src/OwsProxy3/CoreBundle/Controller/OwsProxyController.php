@@ -49,8 +49,9 @@ class OwsProxyController extends Controller
                 $content = $request->getContent();
             }
             $proxy_query = ProxyQuery::createFromUrl($url, null, null,
-                    $headers_req, $getParams, $postParams, $content);
-            $proxy = new CommonProxy($proxy_config, $proxy_query);
+                                                     $headers_req, $getParams,
+                                                     $postParams, $content);
+            $proxy = new CommonProxy($proxy_config, $proxy_query, $this->get('logger'));
             $cookies_req = $request->cookies;
             $response = new Response();
             $browserResponse = $proxy->handle();
