@@ -25,7 +25,7 @@ class WfsProxy extends CommonProxy
      */
     public function __construct($event_dispatcher, array $proxy_config, ProxyQuery $proxy_query, $userAgent = 'OWSProxy3')
     {
-        parent::__construct($proxy_config, $proxy_query, null, null, null $userAgent);
+        parent::__construct($proxy_config, $proxy_query, null, null, null, $userAgent);
         $this->event_dispatcher = $event_dispatcher;
     }
 
