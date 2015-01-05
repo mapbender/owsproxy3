@@ -129,23 +129,22 @@ class CommonProxy
                 } else {
                     $content = $this->proxy_query->getPostQueryString();
                 }
+                $headers = Utils::prepareHeadersForRequest($this->proxy_query->getHeaders(), $this->headerBlackList,
+                        $this->headerWhiteList);
+                $headers['User-Agent'] = $this->userAgent;
                 if ($this->logger !== null) {
                     $this->logger->debug("CommonProxy->handle POST:" . $this->proxy_query->getGetUrl());
                     $this->logger->debug("CommonProxy->handle Headers: " . print_r($this->proxy_query->getHeaders(), true));
                 }
+                $browserResponse = $browser->post($this->proxy_query->getGetUrl(), $headers, $content);
+            } else if ($this->proxy_query->getMethod() === Utils::$METHOD_GET) {
                 $headers = Utils::prepareHeadersForRequest($this->proxy_query->getHeaders(), $this->headerBlackList,
                         $this->headerWhiteList);
                 $headers['User-Agent'] = $this->userAgent;
-                $browserResponse = $browser->post($this->proxy_query->getGetUrl(), $headers, $content);
-            } else if ($this->proxy_query->getMethod() === Utils::$METHOD_GET) {
-
                 if ($this->logger !== null) {
                     $this->logger->debug("CommonProxy->handle GET:" . $this->proxy_query->getGetUrl());
                     $this->logger->debug("CommonProxy->handle Headers: " . print_r($this->proxy_query->getHeaders(), true));
                 }
-                $headers = Utils::prepareHeadersForRequest($this->proxy_query->getHeaders(), $this->headerBlackList,
-                        $this->headerWhiteList);
-                $headers['User-Agent'] = $this->userAgent;
                 $browserResponse = $browser->get($this->proxy_query->getGetUrl(), $headers);
             }
         } catch (\Exception $e) {

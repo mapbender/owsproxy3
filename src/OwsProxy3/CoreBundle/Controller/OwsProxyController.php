@@ -103,7 +103,7 @@ class OwsProxyController extends Controller
                     $dispatcher = $this->container->get('event_dispatcher');
                     $proxy_config = $this->container->getParameter("owsproxy.proxy");
                     $proxy = new WmsProxy($dispatcher, $proxy_config,
-                        $proxy_query);
+                        $proxy_query, $this->logger);
                     $browserResponse = $proxy->handle();
 
                     $cookies_req = $request->cookies;
