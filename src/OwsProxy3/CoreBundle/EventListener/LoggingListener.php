@@ -56,14 +56,15 @@ class LoggingListener
 
         $log = new Log();
 
+		// spaces to avoid running into oracle null constraints, do not remove!
         $log->setUserName($user_id);
-        $log->setRoles($roles);
+        $log->setRoles($roles . ' ');
         $log->setIp($ip);
 
         $log->setTimestamp(new \DateTime());
 
         $log->setRequestUrl($event->getRequest()->getUri());
-        $log->setRequestBody($event->getRequest()->getContent());
+        $log->setRequestBody($event->getRequest()->getContent() . ' ');
         $log->setRequestMethod($event->getRequest()->getMethod());
 
         $log->setResponseMimetype($event->getResponse()->headers->get('Content-Type',
