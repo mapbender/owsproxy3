@@ -37,6 +37,7 @@ class OwsProxyController extends Controller
      */
     public function genericProxyAction($url, $content = null)
     {
+        $this->container->get('session')->save();
         $this->logger = $this->container->get('logger');
         $request = $this->get('request');
         try {
@@ -91,6 +92,7 @@ class OwsProxyController extends Controller
      */
     public function entryPointAction()
     {
+        $this->container->get('session')->save();
         $this->logger = $this->container->get('logger');
         $request = $this->get('request');
         $signer = $this->get('signer');
