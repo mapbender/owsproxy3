@@ -37,6 +37,7 @@ class Configuration implements ConfigurationInterface
                 ->scalarNode('timeout')->defaultNull()->end()
                 ->scalarNode('user')->defaultNull()->end()
                 ->scalarNode('password')->defaultNull()->end()
+                ->scalarNode('checkssl')->defaultNull()->end()
                 ->arrayNode("noproxy")
                 ->prototype('scalar')->end()
                 ->end()
