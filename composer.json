@@ -1,0 +1,20 @@
+{
+    "name": "mapbender/owsproxy",
+    "description": "Mapbender",
+    "keywords": ["mapbender", "module", "owsproxy"],
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {"name": "Andreas Schmitz"},
+        {"name": "Paul Schmidt"}
+    ],
+    "require": {
+        "php": ">=5.3.3",
+    },
+    "config": {
+        "bin-dir": "bin"
+    },
+    "autoload": {
+        "psr-4": {"OwsProxy3\\": "src/OwsProxy3"}
+    }
+}
