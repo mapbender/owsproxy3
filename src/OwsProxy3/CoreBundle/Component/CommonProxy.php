@@ -89,6 +89,9 @@ class CommonProxy
         $curl = new Curl();
         $curl->setOption(CURLOPT_TIMEOUT, 60);
         $curl->setOption(CURLOPT_CONNECTTIMEOUT, 30);
+        if ($proxy_config !== null && $proxy_config['checkssl'] !== null && $proxy_config['checkssl'] === false) {
+            $curl->setOption(CURLOPT_SSL_VERIFYPEER, false);
+        }
         if ($proxy_config !== null && $proxy_config['timeout'] !== null) {
             $curl->setOption(CURLOPT_TIMEOUT, $proxy_config['timeout']);
         }
