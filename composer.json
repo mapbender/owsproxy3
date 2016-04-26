@@ -1,6 +1,6 @@
 {
     "name": "mapbender/owsproxy",
-    "description": "Mapbender",
+    "description": "OWS Proxy",
     "keywords": ["mapbender", "module", "owsproxy"],
     "type": "library",
     "license": "MIT",
@@ -9,12 +9,13 @@
         {"name": "Paul Schmidt"}
     ],
     "require": {
-        "php": ">=5.3.3",
+        "php": ">=5.3.3"
     },
     "config": {
         "bin-dir": "bin"
     },
     "autoload": {
-        "psr-4": {"OwsProxy3\\": "src/OwsProxy3"}
-    }
+        "psr-0": {"OwsProxy3\\CoreBundle": "."}
+    },
+    "target-dir": "OwsProxy3/CoreBundle"
 }
