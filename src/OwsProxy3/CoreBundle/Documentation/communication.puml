@@ -1,9 +1,26 @@
 @startuml
 
-group Backend, sectret=password
-Mapbender -> OwsProxy: Init OWS-Proxy
 
-Browser -> Mapbender3: Get application configuration
+box "Mapbender backend"
+	participant Mapbender
+	participant Significator
+	participant OwsProxy
+	participant Configuration
+end box
+
+box "Frontend"
+	participant Browser
+	participant Application
+	participant OpenLayer
+end box
+
+box "External service"
+	participant GeoServer
+end box
+  Browser -> Mapbender: Get application configuration
+
+group Backend, sectret=password
+  Mapbender -> OwsProxy: Init OWS-Proxy
   alt proxy=true,
     Mapbender -> Significator: Get "secret" and signify WMS-URL
     Significator -> Configuration: Set WMS-URL:\nhttp://mapbender.server/owsproxy?\n signature=HASH&\n url=http://wms.server/cgi-bin/mapbender_user.xml
@@ -18,14 +35,25 @@ Application -> OpenLayer:  Creates OpenLayer2 map instance
 Application -> OpenLayer: Create WMS layer
 
 alt proxy=true
-OpenLayer -> OwsProxy: Get WMS layer data
-OwsProxy -> GeoServer: Get WMS layer data
-GeoServer -> OwsProxy: WMS layer data
-OwsProxy -> OpenLayer: WMS layer data
+
+  OpenLayer -> OwsProxy: Get WMS layer data
+  activate OwsProxy
+    OwsProxy -> GeoServer: Get WMS layer data
+    activate OwsProxy
+      activate GeoServer
+        GeoServer -> OwsProxy: WMS layer data
+      deactivate GeoServer
+    deactivate OwsProxy
+    OwsProxy -> OpenLayer: WMS layer data
+  deactivate OwsProxy
 
 else proxy=false
-OpenLayer -> GeoServer: Get WMS layer data
-GeoServer -> OpenLayer: WMS layer data
+  OpenLayer -> GeoServer: <<request>> Get WMS layer data
+  activate GeoServer
+    GeoServer -> OpenLayer: <<response>> WMS layer data
+  deactivate GeoServer
 end
 OpenLayer -> Application:  WMS layer ready
+
+
 @enduml
