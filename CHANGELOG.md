@@ -1,5 +1,9 @@
 # Changelog
 
+* **v3.0.5.4** - 2016-09-xx
+    - Add README.md (README.md)
+    - Add communication schema (src/OwsProxy3/CoreBundle/Documentation/communication.puml)
+
 * **v3.0.5.3** - 2016-02-04
     - Merge branch 'release/3.0.5' of https://github.com/mapbender/owsproxy3 into release/3.0.5
     - Merge pull request #4 from mapbender/hotfix/changelog-5489
