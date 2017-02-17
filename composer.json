@@ -1,0 +1,13 @@
+{
+    "name": "mapbender/owsproxy",
+    "description": "Mapbender3 library",
+    "keywords": ["mapbender", "module", "owsproxy"],
+    "type": "library",
+    "license": "MIT",
+    "require": {
+        "php": ">=5.3.0"
+    },
+    "autoload": {
+        "psr-4": {"OwsProxy3\\": "src/OwsProxy3"}
+    }
+}
