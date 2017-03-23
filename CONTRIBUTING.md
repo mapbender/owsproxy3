@@ -2,10 +2,37 @@
 
 The configuration is done in the file `app/config/config.yml` at the section `ows_proxy3_core`.
 
+## Options
+
+### Logging 
+
+Turn logging  on/off. 
+Saves logs in `owsproxy_log` table
+
+* Key name: `logging`
+* Default: `true`
+
+### Client IP obfuscating
+
+Obfuscate client ip, set `true` to hide the last byte of the client's ip address
+
+* Key name: `obfuscate_client_ip`
+* Default: `true`
+
+### Proxy
+
+Obfuscate client ip, set `true` to hide the last byte of the client's ip address
+
+* Key name: `obfuscate_client_ip`
+* Default: `true`
+
+
+## Configuration example
+
 ```yaml
 ows_proxy3_core:
-    logging: true               # logging of requests, default is true, true logs in table owsproxy_log 
-    obfuscate_client_ip: true   # obfuscats a client ip, use 'true' to hide the last byte of the client's ip address
+    logging: true               
+    obfuscate_client_ip: true 
     proxy:                      # proxy definition for connnection via a proxy server
                                 # at least 'host' and 'port' are needed for proxy definition
             connecttimeout: 30      # default 30s
