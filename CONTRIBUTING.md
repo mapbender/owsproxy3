@@ -1,6 +1,6 @@
 # Configuration
 
-The configuration is done in the file config.yml at the section `ows_proxy3_core`.
+The configuration is done in the file `app/config/config.yml` at the section `ows_proxy3_core`.
 
 ```yaml
 ows_proxy3_core:
