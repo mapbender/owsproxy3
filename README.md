@@ -38,10 +38,17 @@ Obfuscate client ip, set `true` to hide the last byte of the client's ip address
 
 #### Proxy
 
-Obfuscate client ip, set `true` to hide the last byte of the client's ip address
+Proxy definition for connection via a proxy server at least `host` and `port` are needed for proxy definition.
 
-* Key name: `obfuscate_client_ip`
-* Default: `true`
+* **host**:                   host name of the proxy server (define a host for a connection via a proxy server)
+* **port**:                   port number of the proxy server (define a host for a connection via a proxy server)
+* **timeout**:           Default 60s 
+* **connecttimeout**:      Default 30s
+* **user**:                   user name for proxy server (set user for proxy server if needed)
+* **password**:               password for proxy server (set password for proxy server if defined)
+* **noproxy**:                list of hosts to except from proxing
+
+
 
 ### Configuration example
 
@@ -49,16 +56,13 @@ Obfuscate client ip, set `true` to hide the last byte of the client's ip address
 ows_proxy3_core:
     logging: true               
     obfuscate_client_ip: true 
-    proxy:                      # proxy definition for connnection via a proxy server
-                                # at least 'host' and 'port' are needed for proxy definition
-            connecttimeout: 30      # default 30s
-            timeout: 60             # default 60s 
-            host:                   # host name of the proxy server (define a host for a connection via a proxy server)
-            port:                   # port number of the proxy server (define a host for a connection via a proxy server)
-            user:                   # user name for proxy server (set user for proxy server if needed)
-            password:               # password for proxy server (set password for proxy server if defined)
-            noproxy:                # list of hosts for connnections without proxy server
-                - host_a            # host name
+    proxy:                
+        connecttimeout: 30    
+        timeout: 60           
+        host: localhost            
+        port: 8080                 
+        noproxy:               
+            - host_a           
 ```
 
 
