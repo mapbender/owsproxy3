@@ -2,18 +2,14 @@
 
 Secure communicate remote hosts through themselves.
 
-## How to use the OWSProxy3?
-
-We include OWSProxy3, our W*S proxy solution. It is secure and can log proxy calls for billing. It can use a HTTP proxy
-itself to work in tightly secured environments.
-
 ## Features
 
-* significates base of external URL
-* prohibit to communicate not signifiert URL's
-* allows to use server proxies
-* through OwsProxy OpenLayer2 communicates external WMS Servers,
-
+* [Significates](CONTRIBUTING.md#signing-urls) base of external URL
+* Prohibit to communicate not signifiert URL's
+* Allows to use server proxies
+* Let OpenLayer2 communicates external WMS Servers through OwsProxy
+* Uses a HTTP proxy itself to work in tightly secured environments
+* Logs proxy calls for billing
 
 ## Configuration
 
@@ -47,8 +43,7 @@ Proxy definition for connection via a proxy server at least `host` and `port` ar
 * **user**:                   user name for proxy server (set user for proxy server if needed)
 * **password**:               password for proxy server (set password for proxy server if defined)
 * **noproxy**:                list of hosts to except from proxing
-
-
+* **checkssl**: Checks SSL. Default: false
 
 ### Configuration example
 
@@ -62,7 +57,8 @@ ows_proxy3_core:
         host: localhost            
         port: 8080                 
         noproxy:               
-            - host_a           
+            - localhost           
+            - 127.0.0.1           
 ```
 
 
