@@ -1,14 +1,14 @@
 # OWS Proxy
 
-Secure communicate remote hosts through themselves.
-
+ Can be used to relay requests and results form clients to servers that are otherwise not directly accessible to the client.
+ 
 ## Features
 
 * [Significates](CONTRIBUTING.md#signing-urls) base of external URL
-* Prohibit to communicate not signifiert URL's
+* Prohibits to communicate with not verified URL's
 * Allows to use server proxies
-* Let OpenLayer2 communicates external WMS Servers through OwsProxy
-* Uses a HTTP proxy itself to work in tightly secured environments
+* Let OpenLayers2 communicate with external WMS servers through OwsProxy
+* Uses a HTTP proxy to work in tightly secured environments
 * Logs proxy calls for billing
 
 ## Configuration
@@ -26,12 +26,13 @@ Turns logging on/off to save logs in `owsproxy_log` table
 
 #### Client IP obfuscating
 
-Obfuscate client IP option hides the last byte of the client's IP address if value is `true`.
+Conceals client IP, set `true` to hide the last byte of the client's IP address
 
 * Key name: `obfuscate_client_ip`
 * Default: `false`
 
 #### Proxy
+
 
 Proxy option allows to communicate services via custom proxy server.
 The option need some own configurations:

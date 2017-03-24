@@ -1,7 +1,7 @@
 # Client
 
 The URL for the proxy is available as the `Mapbender.configuration.application.urls.proxy` variable.
-You can send WMS and WFS requests there, giving the target URL as the url parameter. Be aware though that the
+You can send WMS and WFS requests there, giving the target URL as the URL parameter. Be aware that the
 target URL must be signed (see below).
 
 # Signing URLs
