@@ -346,12 +346,18 @@ class ProxyQuery
     public function getGetUrl()
     {
         $scheme = empty($this->rowUrl["scheme"]) ? "http://" : $this->rowUrl["scheme"] . "://";
+        $user   = empty($this->rowUrl["user"]) ? "" : $this->rowUrl["user"];
+        $pass   = empty($this->rowUrl["pass"]) ? "" : $this->rowUrl["pass"];
 
-        $user = empty($this->rowUrl["user"]) ? "" : $this->rowUrl["user"];
-        $pass = empty($this->rowUrl["pass"]) ? "" : $this->rowUrl["pass"];
+        // if pass is there, put a : between user and pass (user:pass)
+        if (!empty($pass)) {
+            $user =  rawurlencode($user) .  ":";
+        }
 
-        if (!empty($pass)) $user .= ":";
-        if (!empty($user) || !empty($pass)) $pass .= "@";
+        // if user and password are there, put a @ after pass, so that user:pass@host will be constructed
+        if (!empty($user) || !empty($pass)) {
+            $pass = rawurlencode($pass) . "@";
+        }
 
         $host = $this->rowUrl["host"];
         $port = empty($this->rowUrl["port"]) ? "" : ":" . $this->rowUrl["port"];
