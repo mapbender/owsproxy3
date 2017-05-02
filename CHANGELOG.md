@@ -1,6 +1,24 @@
 # Changelog
 
-* **v3.0.5.4** - 2016-09-xx
+* **v3.0.6.0** - 2017-05-02
+    - Encode name and password by getting URL in ProxyQuery
+    - Merge pull request #8 from RobinSchwammborn/release/3.0.6
+    - Merge branch 'release/3.0.6' into release/3.0.6
+    - Fixed minor typos
+    - Update README.md
+    - Improve and fix configuration options description
+    - Improve documentation. Describe checkssl option
+    - Improve readme configuration
+    - Improve contributing and readme documentation
+    - Improve contributing configuration options
+    - Fix contributing config path
+    - Add configuration to contributing documentation
+    - Add contributing documentation
+    - Add "arsgeografica/signing" library
+    - Add "kriswallsmith/buzz" composer library
+    - Add composer definition
+    - Merge pull request #7 from mapbender/hotfix/changelog
+    - Improve communication.puml diagramm
     - Add README.md (README.md)
     - Add communication schema (src/OwsProxy3/CoreBundle/Documentation/communication.puml)
 
