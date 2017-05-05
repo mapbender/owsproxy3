@@ -1,6 +1,6 @@
 # Changelog
 
-* **v3.0.6.0** - 2017-05-02
+* **v3.0.6.0** - 2017-05-05
     - Encode name and password by getting URL in ProxyQuery
     - Merge pull request #8 from RobinSchwammborn/release/3.0.6
     - Merge branch 'release/3.0.6' into release/3.0.6
