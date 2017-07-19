@@ -1,5 +1,8 @@
 # Changelog
 
+* **v.3.0.6.2** - 2017-07-19
+    - no changes.
+
 * **v.3.0.6.1** - 2017-05-24
     - Delete Log.php~
 
