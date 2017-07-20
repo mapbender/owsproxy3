@@ -1,5 +1,11 @@
 # Changelog
 
+* **v.3.0.6.2** - 2017-07-20
+    - no changes.
+
+* **v.3.0.6.1** - 2017-05-24
+    - Delete Log.php~
+
 * **v3.0.6.0** - 2017-05-05
     - Encode name and password by getting URL in ProxyQuery
     - Merge pull request #8 from RobinSchwammborn/release/3.0.6
