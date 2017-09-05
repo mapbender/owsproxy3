@@ -1,0 +1,3 @@
+'403 FeatureInfoBefore checkFeatureInfo == false': '403 FeatureInfo Operation ist nicht erlaubt.'
+'502 Bad Gateway': '502 Bad Gateway'
+'403 Forbidden': '403 Keine Berechtigung'
