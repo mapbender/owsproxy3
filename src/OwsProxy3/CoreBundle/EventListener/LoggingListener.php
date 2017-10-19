@@ -72,7 +72,7 @@ class LoggingListener
         $log->setResponseCode($event->getResponse()->getStatuscode());
         $log->setResponseSize(strlen($event->getResponse()->getContent()));
 
-        $em = $this->container->get('doctrine')->getEntityManager();
+        $em = $this->container->get('doctrine')->getManager();
         $em->persist($log);
         $em->flush();
     }

@@ -10,6 +10,9 @@
     </parameters>
 
     <services>        
+        <service id="owsproxy" class="OwsProxy3\CoreBundle\Component\ProxyService">
+            <argument type="service" id="service_container" />
+        </service>
         <service id="owsproxy.terminatelistener" class="%owsproxy.terminatelistener.class%">
             <tag name="kernel.event_listener" event="kernel.terminate" method="onTerminate" />
             <argument type="service" id="service_container" />
