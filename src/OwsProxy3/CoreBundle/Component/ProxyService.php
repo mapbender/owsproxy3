@@ -2,8 +2,7 @@
 
 namespace OwsProxy3\CoreBundle\Component;
 
-use Symfony\Component\DependencyInjection\ContainerAwareInterface;
-use Symfony\Component\DependencyInjection\ContainerAwareTrait;
+use Symfony\Component\DependencyInjection\ContainerAware;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -12,10 +11,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @package OwsProxy3\CoreBundle\Component
  * @author  Andriy Oblivantsev <eslider@gmail.com>
  */
-class ProxyService implements ContainerAwareInterface
+class ProxyService extends ContainerAware
 {
-    use ContainerAwareTrait;
-
     /**
      * ProxyService constructor.
      *
