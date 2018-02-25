@@ -1,5 +1,8 @@
 # Changelog
 
+* **v.3.0.6.4**
+    - Remove deprecated call, fix junk after response body
+
 * **v.3.0.6.3** - 2017-07-27
     - no changes.
 
@@ -28,13 +31,14 @@
     - Add composer definition
     - Merge pull request #7 from mapbender/hotfix/changelog
     - Improve communication.puml diagramm
-    - Add README.md (README.md)
+
+* **v3.0.5.4** - 2018-02.20
+    - Remove deprecated call, fix junk after response body
+    - Add README.md
     - Add communication schema (src/OwsProxy3/CoreBundle/Documentation/communication.puml)
 
 * **v3.0.5.3** - 2016-02-04
-    - Merge branch 'release/3.0.5' of https://github.com/mapbender/owsproxy3 into release/3.0.5
-    - Merge pull request #4 from mapbender/hotfix/changelog-5489
-    - added changelog.md information #5489
+    - none
 
 * **v3.0.5.2** - 2015-10-27
     - none
