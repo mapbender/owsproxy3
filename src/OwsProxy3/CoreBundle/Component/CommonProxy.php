@@ -8,6 +8,7 @@ use Buzz\Listener\BasicAuthListener;
 use Buzz\Message\Response;
 use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus502Exception;
 use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 
 /**
  * CommonProxy class for
@@ -70,7 +71,7 @@ class CommonProxy
     {
         $this->proxy_config = $proxy_config;
         $this->proxy_query = $proxy_query;
-        $this->logger = $logger;
+        $this->logger = $logger ?: new NullLogger();
         if ($headerBlackList !== null) {
             $this->headerBlackList = $headerBlackList;
         }
@@ -91,9 +92,8 @@ class CommonProxy
      */
     protected function createBrowser()
     {
-        if($this->logger !== null){
-            $this->logger->debug("CommonProxy->createBrowser rowUrl:" . print_r($this->proxy_query->getRowUrl(), true));
-        }
+        $this->logger->debug("CommonProxy->createBrowser rowUrl:" . print_r($this->proxy_query->getRowUrl(), true));
+
         $rowUrl = $this->proxy_query->getRowUrl();
         $proxy_config = $this->proxy_config;
         $curl = new Curl();
@@ -142,10 +142,10 @@ class CommonProxy
                 $this->headerWhiteList);
             $headers['User-Agent'] = $this->userAgent;
             $url = $this->proxy_query->getGetUrl();
-            if ($this->logger !== null) {
-                $this->logger->debug("{$this->logMessagePrefix}->handle {$method}:" . $url);
-                $this->logger->debug("{$this->logMessagePrefix}->handle Headers: " . print_r($this->proxy_query->getHeaders(), true));
-            }
+
+            $this->logger->debug("{$this->logMessagePrefix}->handle {$method}:" . $url);
+            $this->logger->debug("{$this->logMessagePrefix}->handle Headers: " . print_r($this->proxy_query->getHeaders(), true));
+
             if ($method === Utils::$METHOD_POST) {
                 if ($this->proxy_query->getContent() !== null) {
                     $content = $this->proxy_query->getContent();
@@ -158,9 +158,7 @@ class CommonProxy
             }
             /** @var Response $browserResponse */
         } catch (\Exception $e) {
-            if ($this->logger !== null) {
-                $this->logger->err("{$this->logMessagePrefix}->handle :" . $e->getMessage());
-            }
+            $this->logger->err("{$this->logMessagePrefix}->handle :" . $e->getMessage());
             throw new HTTPStatus502Exception($e->getMessage(), 502);
         }
         return $browserResponse;
