@@ -2,13 +2,11 @@
 
 * **v3.0.5.4** - 2018-02.20
     - Remove deprecated call, fix junk after response body
-    - Add owsproxy as a service
-    - Add README.md (README.md)
+    - Add README.md
     - Add communication schema (src/OwsProxy3/CoreBundle/Documentation/communication.puml)
 
 * **v3.0.5.3** - 2016-02-04
-    - Merge pull request #4 from mapbender/hotfix/changelog-5489
-    - added changelog.md information #5489
+    - none
 
 * **v3.0.5.2** - 2015-10-27
     - none
