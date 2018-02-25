@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file source-language="en" datatype="plaintext" original="file.ext">
+    <body>
+      <trans-unit id="89be5e35ff11f896259cdeee32c6ecdb" resname="403 FeatureInfoBefore checkFeatureInfo == false">
+        <source>403 FeatureInfoBefore checkFeatureInfo == false</source>
+        <target>403 FeatureInfo operation is not allowed</target>
+      </trans-unit>
+      <trans-unit id="ece4f2496fd3e47a3aec9e5f015710e5" resname="502 Bad Gateway">
+        <source>502 Bad Gateway</source>
+        <target>502 Bad Gateway</target>
+      </trans-unit>
+      <trans-unit id="6351030f724f6f42fd11ec9aa6ee8c76" resname="403 Forbidden">
+        <source>403 Forbidden</source>
+        <target>403 Forbidden</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
