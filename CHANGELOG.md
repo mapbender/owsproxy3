@@ -1,6 +1,7 @@
 # Changelog
 
 * **v3.0.5.4** - 2018-02.20
+    - Replaced all deprecated logger->err calls with PSR-conformant logger->error
     - Encode name and password by getting URL in ProxyQuery
     - Remove deprecated call, fix junk after response body
     - Add README.md

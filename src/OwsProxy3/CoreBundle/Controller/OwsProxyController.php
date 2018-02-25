@@ -70,13 +70,13 @@ class OwsProxyController extends Controller
             $response->setContent($browserResponse->getContent());
             return $response;
         } catch (HTTPStatus403Exception $e) {
-            $this->logger->err("OwsProxyController->genericProxyAction 403: " . $e->getMessage() . " " . $e->getCode());
+            $this->logger->error("OwsProxyController->genericProxyAction 403: " . $e->getMessage() . " " . $e->getCode());
             return $this->exceptionImage($e, $request);
         } catch (HTTPStatus502Exception $e) {
-            $this->logger->err("OwsProxyController->genericProxyAction 502: " . $e->getMessage() . " " . $e->getCode());
+            $this->logger->error("OwsProxyController->genericProxyAction 502: " . $e->getMessage() . " " . $e->getCode());
             return $this->exceptionImage($e, $request);
         } catch (\Exception $e) {
-            $this->logger->err("OwsProxyController->genericProxyAction : " . $e->getMessage() . " " . $e->getCode());
+            $this->logger->error("OwsProxyController->genericProxyAction : " . $e->getMessage() . " " . $e->getCode());
             if ($e->getCode() === 0) {
                 $e = new \Exception($e->getMessage(), 500);
             }
@@ -126,15 +126,15 @@ class OwsProxyController extends Controller
                     $response->setContent($content);
                     return $response;
                 } catch (HTTPStatus403Exception $e) {
-                    $this->logger->err("OwsProxyController->entryPointAction WMS 403: " .
+                    $this->logger->error("OwsProxyController->entryPointAction WMS 403: " .
                                        $e->getMessage() . " " . $e->getCode());
                     return $this->exceptionImage($e, $request);
                 } catch (HTTPStatus502Exception $e) {
-                    $this->logger->err("OwsProxyController->entryPointAction WMS 502: " .
+                    $this->logger->error("OwsProxyController->entryPointAction WMS 502: " .
                                        $e->getMessage() . " " . $e->getCode());
                     return $this->exceptionImage($e, $request);
                 } catch (\Exception $e) {
-                    $this->logger->err("OwsProxyController->entryPointAction WMS : " .
+                    $this->logger->error("OwsProxyController->entryPointAction WMS : " .
                                        $e->getMessage() . " " . $e->getCode());
                     if ($e->getCode() === 0) {
                         $e = new \Exception($e->getMessage(), 500);
@@ -159,7 +159,7 @@ class OwsProxyController extends Controller
                     $response->setContent($browserResponse->getContent());
                     return $response;
                 } catch (\RuntimeException $e) {
-                    $this->logger->err("OwsProxyController->entryPointAction WFS : " .
+                    $this->logger->error("OwsProxyController->entryPointAction WFS : " .
                                        $e->getMessage() . " " . $e->getCode());
                     return $this->exceptionHtml(new \Exception($e->getMessage(), 500));
                 }

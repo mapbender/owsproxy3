@@ -158,7 +158,7 @@ class CommonProxy
             }
             /** @var Response $browserResponse */
         } catch (\Exception $e) {
-            $this->logger->err("{$this->logMessagePrefix}->handle :" . $e->getMessage());
+            $this->logger->error("{$this->logMessagePrefix}->handle :" . $e->getMessage());
             throw new HTTPStatus502Exception($e->getMessage(), 502);
         }
         return $browserResponse;
