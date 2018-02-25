@@ -144,7 +144,7 @@ class CommonProxy
             $url = $this->proxy_query->getGetUrl();
 
             $this->logger->debug("{$this->logMessagePrefix}->handle {$method}:" . $url);
-            $this->logger->debug("{$this->logMessagePrefix}->handle Headers: " . print_r($this->proxy_query->getHeaders(), true));
+            $this->logger->debug("{$this->logMessagePrefix}->handle Headers: " . print_r($headers, true));
 
             if ($method === Utils::$METHOD_POST) {
                 if ($this->proxy_query->getContent() !== null) {
