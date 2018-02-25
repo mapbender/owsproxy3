@@ -137,9 +137,7 @@ class ProxyQuery
             $postParams = isset($allParams[Utils::$METHOD_POST]) ?
                     $allParams[Utils::$METHOD_POST] : array();
             // if url containts more get parameters
-            if (isset($allParams[Utils::$METHOD_GET]) && count(isset($allParams[Utils::$METHOD_GET]))
-                    > 0)
-            {
+            if (!empty($allParams[Utils::$METHOD_GET])) {
                 $postParams = array_merge($postParams,
                         $allParams[Utils::$METHOD_GET]);
             }
