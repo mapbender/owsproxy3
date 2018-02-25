@@ -90,9 +90,6 @@ class WmsProxy extends CommonProxy
             } else {
                 throw new HTTPStatus502Exception();
             }
-            if ($this->logger !== null) {
-                $this->logger->err($message !== null ? $message : "WmsProxy->handle browserResponse is not OK.");
-            }
         }
         return $browserResponse;
     }
