@@ -35,20 +35,9 @@ class WfsProxy extends CommonProxy
      */
     public function handle()
     {
-        $browser = $this->createBrowser();
-        try {
-            if ($this->proxy_query->getContent() !== null) {
-                $content = $this->proxy_query->getContent();
-            } else {
-                $content = $this->proxy_query->getPostQueryString();
-            }
-            $headers = Utils::prepareHeadersForRequest($this->proxy_query->getHeaders(), $this->headerBlackList,
-                    $this->headerWhiteList);
-            $headers['User-Agent'] = $this->userAgent;
-            $browserResponse = $browser->post($this->proxy_query->getGetUrl(), $headers, $content);
-        } catch (\Exception $e) {
-            throw new HTTPStatus502Exception($e->getMessage(), 502);
-        }
+        $browserResponse = parent::handle();
+        // quirks mode: on: CommonProxy / WmsProxy let the caller decide what to do with the response
+        // WfsProxy throws
         if ($browserResponse->isOk()) {
             return $browserResponse;
         } else {
