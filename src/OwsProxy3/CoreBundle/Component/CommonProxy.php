@@ -6,6 +6,7 @@ use Buzz\Browser;
 use Buzz\Client\Curl;
 use Buzz\Listener\BasicAuthListener;
 use Buzz\Message\MessageInterface;
+use Doctrine\Common\Util\ClassUtils;
 use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus403Exception;
 use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus502Exception;
 
@@ -52,6 +53,9 @@ class CommonProxy
      */
     protected $userAgent;
 
+    /** @var string the class name */
+    protected $logMessagePrefix;
+
     /**
      * Creates a common proxy
      *
@@ -71,6 +75,9 @@ class CommonProxy
             $this->headerWhiteList = $headerWhiteList;
         }
         $this->userAgent = $userAgent;
+
+        // strip namespace separators, get local class name
+        $this->logMessagePrefix = substr(get_class($this), strrpos(get_class($this), '\\') + 1);
     }
 
     /**
@@ -125,34 +132,30 @@ class CommonProxy
     public function handle()
     {
         $browser = $this->createBrowser();
+
         try {
-            if ($this->proxy_query->getMethod() === Utils::$METHOD_POST) {
+            $method = $this->proxy_query->getMethod();
+            $headers = Utils::prepareHeadersForRequest($this->proxy_query->getHeaders(), $this->headerBlackList,
+                $this->headerWhiteList);
+            $headers['User-Agent'] = $this->userAgent;
+            $url = $this->proxy_query->getGetUrl();
+            if ($this->logger !== null) {
+                $this->logger->debug("{$this->logMessagePrefix}->handle {$method}:" . $url);
+                $this->logger->debug("{$this->logMessagePrefix}->handle Headers: " . print_r($this->proxy_query->getHeaders(), true));
+            }
+            if ($method === Utils::$METHOD_POST) {
                 if ($this->proxy_query->getContent() !== null) {
                     $content = $this->proxy_query->getContent();
                 } else {
                     $content = $this->proxy_query->getPostQueryString();
                 }
-                $headers = Utils::prepareHeadersForRequest($this->proxy_query->getHeaders(), $this->headerBlackList,
-                        $this->headerWhiteList);
-                $headers['User-Agent'] = $this->userAgent;
-                if ($this->logger !== null) {
-                    $this->logger->debug("CommonProxy->handle POST:" . $this->proxy_query->getGetUrl());
-                    $this->logger->debug("CommonProxy->handle Headers: " . print_r($this->proxy_query->getHeaders(), true));
-                }
-                $browserResponse = $browser->post($this->proxy_query->getGetUrl(), $headers, $content);
-            } else if ($this->proxy_query->getMethod() === Utils::$METHOD_GET) {
-                $headers = Utils::prepareHeadersForRequest($this->proxy_query->getHeaders(), $this->headerBlackList,
-                        $this->headerWhiteList);
-                $headers['User-Agent'] = $this->userAgent;
-                if ($this->logger !== null) {
-                    $this->logger->debug("CommonProxy->handle GET:" . $this->proxy_query->getGetUrl());
-                    $this->logger->debug("CommonProxy->handle Headers: " . print_r($this->proxy_query->getHeaders(), true));
-                }
-                $browserResponse = $browser->get($this->proxy_query->getGetUrl(), $headers);
+                $browserResponse = $browser->post($url, $headers, $content);
+            } else if ($method === Utils::$METHOD_GET) {
+                $browserResponse = $browser->get($url, $headers);
             }
         } catch (\Exception $e) {
             if ($this->logger !== null) {
-                $this->logger->err("CommonProxy->handle :" . $e->getMessage());
+                $this->logger->err("{$this->logMessagePrefix}->handle :" . $e->getMessage());
             }
             throw new HTTPStatus502Exception($e->getMessage(), 502);
         }
