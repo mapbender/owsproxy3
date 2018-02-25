@@ -2,14 +2,13 @@
 
 namespace OwsProxy3\CoreBundle\Component;
 
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpFoundation\Response;
-use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus403Exception;
+use Buzz\Message\Response;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus502Exception;
 use OwsProxy3\CoreBundle\Event\AfterProxyEvent;
 use OwsProxy3\CoreBundle\Event\BeforeProxyEvent;
 use Buzz\Browser;
-use Buzz\Client\Curl;
 
 /**
  * WMS Proxy
@@ -25,8 +24,11 @@ class WmsProxy extends CommonProxy
     /**
      * Creates a wms proxy
      *
+     * @param EventDispatcherInterface $event_dispatcher
      * @param array $proxy_config the proxy configuration
-     * @param ContainerInterface $container
+     * @param ProxyQuery $proxy_query
+     * @param LoggerInterface $logger
+     * @param string $userAgent
      */
     public function __construct($event_dispatcher, array $proxy_config, ProxyQuery $proxy_query, $logger = null,
                                 $userAgent = 'OWSProxy3')
@@ -38,7 +40,7 @@ class WmsProxy extends CommonProxy
     /**
      * Handles the request and returns the response.
      *
-     * @return MessageInterface the browser response
+     * @return Response the browser response
      * @throws Exception\HTTPStatus502Exception
      */
     public function handle()
@@ -102,7 +104,7 @@ class WmsProxy extends CommonProxy
      * @param $browser
      * @throws \ReflectionException
      */
-    protected function closeConnection($browser)
+    protected function closeConnection(Browser $browser)
     {
         // Kick cURL, which tries to hold open connections...
         $curl = $browser->getClient();

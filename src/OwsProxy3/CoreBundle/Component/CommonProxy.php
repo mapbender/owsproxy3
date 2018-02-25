@@ -5,10 +5,9 @@ namespace OwsProxy3\CoreBundle\Component;
 use Buzz\Browser;
 use Buzz\Client\Curl;
 use Buzz\Listener\BasicAuthListener;
-use Buzz\Message\MessageInterface;
-use Doctrine\Common\Util\ClassUtils;
-use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus403Exception;
+use Buzz\Message\Response;
 use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus502Exception;
+use Psr\Log\LoggerInterface;
 
 /**
  * CommonProxy class for
@@ -19,7 +18,7 @@ class CommonProxy
 {
     /**
      *
-     * @var ContainerInterface the container
+     * @var ProxyQuery
      */
     protected $proxy_query;
 
@@ -31,7 +30,7 @@ class CommonProxy
 
     /**
      *
-     * @var Logger the logger
+     * @var LoggerInterface the logger
      */
     protected $logger;
 
@@ -60,7 +59,11 @@ class CommonProxy
      * Creates a common proxy
      *
      * @param array $proxy_config the proxy configuration
-     * @param ContainerInterface $container
+     * @param ProxyQuery $proxy_query
+     * @param LoggerInterface|null $logger
+     * @param string[]|null $headerBlackList omit for defaults
+     * @param string[]|null $headerWhiteList omit for defaults
+     * @param string $userAgent
      */
     public function __construct(array $proxy_config, ProxyQuery $proxy_query, $logger = null, $headerBlackList = null,
         $headerWhiteList = null, $userAgent = 'OWSProxy3')
@@ -126,7 +129,7 @@ class CommonProxy
     /**
      * Handles the request and returns the response.
      *
-     * @return MessageInterface the browser response
+     * @return Response the browser response
      * @throws Exception\HTTPStatus502Exception
      */
     public function handle()
@@ -153,6 +156,7 @@ class CommonProxy
             } else if ($method === Utils::$METHOD_GET) {
                 $browserResponse = $browser->get($url, $headers);
             }
+            /** @var Response $browserResponse */
         } catch (\Exception $e) {
             if ($this->logger !== null) {
                 $this->logger->err("{$this->logMessagePrefix}->handle :" . $e->getMessage());
