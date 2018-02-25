@@ -43,42 +43,14 @@ class WmsProxy extends CommonProxy
      */
     public function handle()
     {
-        $browser = $this->createBrowser();
         try {
             $event = new BeforeProxyEvent($this->proxy_query);
             $this->event_dispatcher->dispatch('owsproxy.before_proxy', $event);
         } catch (\RuntimeException $e) {
             throw new HTTPStatus502Exception();
         }
-        try {
-            $method = $this->proxy_query->getMethod();
-            $headers = Utils::prepareHeadersForRequest($this->proxy_query->getHeaders(), $this->headerBlackList,
-                $this->headerWhiteList);
-            $headers['User-Agent'] = $this->userAgent;
-            $url = $this->proxy_query->getGetUrl();
-            if ($this->logger !== null) {
-                $this->logger->debug("{$this->logMessagePrefix}->handle {$method}:" . $url);
-                $this->logger->debug("{$this->logMessagePrefix}->handle Headers: " . print_r($this->proxy_query->getHeaders(), true));
-            }
-            if ($method === Utils::$METHOD_POST) {
-                if ($this->proxy_query->getContent() !== null) {
-                    $content = $this->proxy_query->getContent();
-                } else {
-                    $content = $this->proxy_query->getPostQueryString();
-                }
-                $browserResponse = $browser->post($url, $headers, $content);
-            } else if ($method === Utils::$METHOD_GET) {
-                $browserResponse = $browser->get($url, $headers);
-            }
-        } catch (\Exception $e) {
-            $this->closeConnection($browser);
-            if ($this->logger !== null) {
-                $this->logger->err("{$this->logMessagePrefix}>handle :" . $e->getMessage());
-            }
-            throw new HTTPStatus502Exception($e->getMessage(), 502);
-        }
 
-        $this->closeConnection($browser);
+        $browserResponse = parent::handle();
 
         if ($browserResponse->isOk()) {
             $event = new AfterProxyEvent($this->proxy_query, $browserResponse);
@@ -125,6 +97,14 @@ class WmsProxy extends CommonProxy
         return $browserResponse;
     }
 
+    /**
+     * @deprecated
+     * You don't need this. Just let the browser object go out of scope and it'll clean up after itself.
+     * @see https://github.com/kriswallsmith/Buzz/blob/v0.15/lib/Buzz/Client/Curl.php#L54
+     *
+     * @param $browser
+     * @throws \ReflectionException
+     */
     protected function closeConnection($browser)
     {
         // Kick cURL, which tries to hold open connections...
