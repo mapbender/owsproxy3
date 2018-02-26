@@ -83,9 +83,6 @@ class OwsProxyController extends Controller
             return $this->exceptionImage($e, $request);
         } catch (\Exception $e) {
             $this->logger->error("{$errorMessagePrefix} : " . $e->getMessage() . " " . $e->getCode());
-            if ($e->getCode() === 0) {
-                $e = new \Exception($e->getMessage(), 500);
-            }
             return $this->exceptionHtml($e);
         }
     }
@@ -114,8 +111,6 @@ class OwsProxyController extends Controller
             // deprecated: HTTPStatus403Exception IS NOT a http exception. It does not send code 403. Its result is
             //             a "500 - Internal server error". Upstream signer does not throw BadSignatureException anymore.
             throw new HTTPStatus403Exception('Invalid URL signature: ' . $e->getMessage());
-        } catch (\Exception $e) {
-            throw new \Exception($e->getMessage(), 500);
         }
         $service = strtoupper($proxy_query->getServiceType());
         $errorMessagePrefix = "OwsProxyController->entryPointAction {$service}";
@@ -151,9 +146,6 @@ class OwsProxyController extends Controller
                 } catch (\Exception $e) {
                     $this->logger->error("{$errorMessagePrefix} : " .
                                        $e->getMessage() . " " . $e->getCode());
-                    if ($e->getCode() === 0) {
-                        $e = new \Exception($e->getMessage(), 500);
-                    }
                     return $this->exceptionHtml($e);
                 }
                 // returns in all cases
@@ -176,7 +168,7 @@ class OwsProxyController extends Controller
                 } catch (\RuntimeException $e) {
                     $this->logger->error("{$errorMessagePrefix} : " .
                                        $e->getMessage() . " " . $e->getCode());
-                    return $this->exceptionHtml(new \Exception($e->getMessage(), 500));
+                    return $this->exceptionHtml($e);
                 }
                 // returns in all cases
             default:
@@ -196,7 +188,7 @@ class OwsProxyController extends Controller
         $response = new Response();
         $html = $this->render("OwsProxy3CoreBundle::exception.html.twig", array("exception" => $e));
         $response->headers->set('Content-Type', 'text/html');
-        $response->setStatusCode($e->getCode());
+        $response->setStatusCode($e->getCode() ?: 500);
         $response->setContent($html->getContent());
         return $response;
     }
