@@ -11,5 +11,11 @@
     },
     "autoload": {
         "psr-4": {"OwsProxy3\\": "src/OwsProxy3"}
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-release/3.0.5": "3.0.5.x-dev",
+            "dev-release/3.0.6": "3.0.6.x-dev"
+        }
     }
 }
