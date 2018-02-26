@@ -1,4 +1,6 @@
 # Changelog
+* **v.3.0.7.0**
+    - Convert translation catalogs from xlf to yml
 
 * **v.3.0.6.4**
     - When rejecting request with invalid signature, send correct status (500 => 403)
