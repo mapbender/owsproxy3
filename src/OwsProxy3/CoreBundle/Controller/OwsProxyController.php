@@ -75,11 +75,8 @@ class OwsProxyController extends Controller
             }
             $response->setContent($browserResponse->getContent());
             return $response;
-        } catch (HTTPStatus403Exception $e) {
-            $this->logger->error("{$errorMessagePrefix} 403: " . $e->getMessage() . " " . $e->getCode());
-            return $this->exceptionImage($e, $request);
-        } catch (HTTPStatus502Exception $e) {
-            $this->logger->error("{$errorMessagePrefix} 502: " . $e->getMessage() . " " . $e->getCode());
+        } catch (HttpException $e) {
+            $this->logger->error("{$errorMessagePrefix} {$e->getCode()}: " . $e->getMessage() . " " . $e->getCode());
             return $this->exceptionImage($e, $request);
         } catch (\Exception $e) {
             $this->logger->error("{$errorMessagePrefix} : " . $e->getMessage() . " " . $e->getCode());
@@ -133,12 +130,8 @@ class OwsProxyController extends Controller
                     $content = $browserResponse->getContent();
                     $response->setContent($content);
                     return $response;
-                } catch (HTTPStatus403Exception $e) {
-                    $this->logger->error("{$errorMessagePrefix} 403: " .
-                                       $e->getMessage() . " " . $e->getCode());
-                    return $this->exceptionImage($e, $request);
-                } catch (HTTPStatus502Exception $e) {
-                    $this->logger->error("{$errorMessagePrefix} 502: " .
+                } catch (HttpException $e) {
+                    $this->logger->error("{$errorMessagePrefix} {$e->getCode()}: " .
                                        $e->getMessage() . " " . $e->getCode());
                     return $this->exceptionImage($e, $request);
                 } catch (\Exception $e) {
