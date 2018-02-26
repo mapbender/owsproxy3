@@ -1,7 +1,8 @@
 # Changelog
 
 * **v3.0.5.4** - 2018-02.20
-    - When debug-logging proxy requests, log the actual headers sent
+    - When rejecting request with invalid signature, send correct status (500 => 403)
+    - When debug-logging headers in proxy requests, log the actual headers sent
     - Replaced all deprecated logger->err calls with PSR-conformant logger->error
     - Encode name and password by getting URL in ProxyQuery
     - Remove deprecated call, fix junk after response body

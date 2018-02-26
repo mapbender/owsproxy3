@@ -1,6 +1,7 @@
 <?php
 namespace OwsProxy3\CoreBundle\Controller;
 
+use ArsGeografica\Signing\BadSignatureException;
 use Mapbender\CoreBundle\Component\Signer;
 use OwsProxy3\CoreBundle\Component\Utils;
 use OwsProxy3\CoreBundle\Component\CommonProxy;
