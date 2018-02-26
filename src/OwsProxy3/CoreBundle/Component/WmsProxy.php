@@ -2,14 +2,13 @@
 
 namespace OwsProxy3\CoreBundle\Component;
 
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpFoundation\Response;
-use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus403Exception;
+use Buzz\Message\Response;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus502Exception;
 use OwsProxy3\CoreBundle\Event\AfterProxyEvent;
 use OwsProxy3\CoreBundle\Event\BeforeProxyEvent;
 use Buzz\Browser;
-use Buzz\Client\Curl;
 
 /**
  * WMS Proxy
@@ -25,8 +24,11 @@ class WmsProxy extends CommonProxy
     /**
      * Creates a wms proxy
      *
+     * @param EventDispatcherInterface $event_dispatcher
      * @param array $proxy_config the proxy configuration
-     * @param ContainerInterface $container
+     * @param ProxyQuery $proxy_query
+     * @param LoggerInterface $logger
+     * @param string $userAgent
      */
     public function __construct($event_dispatcher, array $proxy_config, ProxyQuery $proxy_query, $logger = null,
                                 $userAgent = 'OWSProxy3')
@@ -38,52 +40,19 @@ class WmsProxy extends CommonProxy
     /**
      * Handles the request and returns the response.
      *
-     * @return MessageInterface the browser response
+     * @return Response the browser response
      * @throws Exception\HTTPStatus502Exception
      */
     public function handle()
     {
-        $browser = $this->createBrowser();
         try {
             $event = new BeforeProxyEvent($this->proxy_query);
             $this->event_dispatcher->dispatch('owsproxy.before_proxy', $event);
         } catch (\RuntimeException $e) {
             throw new HTTPStatus502Exception();
         }
-        try {
-            if ($this->proxy_query->getMethod() === Utils::$METHOD_POST) {
-                if ($this->proxy_query->getContent() !== null) {
-                    $content = $this->proxy_query->getContent();
-                } else {
-                    $content = $this->proxy_query->getPostQueryString();
-                }
-                $headers = Utils::prepareHeadersForRequest($this->proxy_query->getHeaders(), $this->headerBlackList,
-                                                           $this->headerWhiteList);
-                $headers['User-Agent'] = $this->userAgent;
-                if ($this->logger !== null) {
-                    $this->logger->debug("WmsProxy->handle POST:" . $this->proxy_query->getGetUrl());
-                    $this->logger->debug("WmsProxy->handle Headers: " . print_r($this->proxy_query->getHeaders(), true));
-                }
-                $browserResponse = $browser->post($this->proxy_query->getGetUrl(), $headers, $content);
-            } else if ($this->proxy_query->getMethod() === Utils::$METHOD_GET) {
-                $headers = Utils::prepareHeadersForRequest($this->proxy_query->getHeaders(), $this->headerBlackList,
-                                                           $this->headerWhiteList);
-                $headers['User-Agent'] = $this->userAgent;
-                if ($this->logger !== null) {
-                    $this->logger->debug("WmsProxy->handle GET:" . $this->proxy_query->getGetUrl());
-                    $this->logger->debug("WmsProxy->handle Headers: " . print_r($this->proxy_query->getHeaders(), true));
-                }
-                $browserResponse = $browser->get($this->proxy_query->getGetUrl(), $headers);
-            }
-        } catch (\Exception $e) {
-            $this->closeConnection($browser);
-            if ($this->logger !== null) {
-                $this->logger->err("WmsProxy->handle :" . $e->getMessage());
-            }
-            throw new HTTPStatus502Exception($e->getMessage(), 502);
-        }
 
-        $this->closeConnection($browser);
+        $browserResponse = parent::handle();
 
         if ($browserResponse->isOk()) {
             $event = new AfterProxyEvent($this->proxy_query, $browserResponse);
@@ -123,14 +92,19 @@ class WmsProxy extends CommonProxy
             } else {
                 throw new HTTPStatus502Exception();
             }
-            if ($this->logger !== null) {
-                $this->logger->err($message !== null ? $message : "WmsProxy->handle browserResponse is not OK.");
-            }
         }
         return $browserResponse;
     }
 
-    protected function closeConnection($browser)
+    /**
+     * @deprecated
+     * You don't need this. Just let the browser object go out of scope and it'll clean up after itself.
+     * @see https://github.com/kriswallsmith/Buzz/blob/v0.15/lib/Buzz/Client/Curl.php#L54
+     *
+     * @param $browser
+     * @throws \ReflectionException
+     */
+    protected function closeConnection(Browser $browser)
     {
         // Kick cURL, which tries to hold open connections...
         $curl = $browser->getClient();
