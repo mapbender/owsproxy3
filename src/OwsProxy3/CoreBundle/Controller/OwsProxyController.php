@@ -17,6 +17,7 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 //use OwsProxy3\CoreBundle\Component\Url;
 
@@ -74,17 +75,11 @@ class OwsProxyController extends Controller
             }
             $response->setContent($browserResponse->getContent());
             return $response;
-        } catch (HTTPStatus403Exception $e) {
-            $this->logger->error("{$errorMessagePrefix} 403: " . $e->getMessage() . " " . $e->getCode());
-            return $this->exceptionImage($e, $request);
-        } catch (HTTPStatus502Exception $e) {
-            $this->logger->error("{$errorMessagePrefix} 502: " . $e->getMessage() . " " . $e->getCode());
+        } catch (HttpException $e) {
+            $this->logger->error("{$errorMessagePrefix} {$e->getCode()}: " . $e->getMessage() . " " . $e->getCode());
             return $this->exceptionImage($e, $request);
         } catch (\Exception $e) {
             $this->logger->error("{$errorMessagePrefix} : " . $e->getMessage() . " " . $e->getCode());
-            if ($e->getCode() === 0) {
-                $e = new \Exception($e->getMessage(), 500);
-            }
             return $this->exceptionHtml($e);
         }
     }
@@ -106,10 +101,11 @@ class OwsProxyController extends Controller
         $proxy_query = ProxyQuery::createFromRequest($request);
         try {
             $signer->checkSignedUrl($proxy_query->getGetUrl());
+        } catch (HttpException $e) {
+            // let http exceptions run through unmodified
+            throw $e;
         } catch (BadSignatureException $e) {
             throw new HTTPStatus403Exception('Invalid URL signature: ' . $e->getMessage());
-        } catch (\Exception $e) {
-            throw new \Exception($e->getMessage(), 500);
         }
         $service = strtoupper($proxy_query->getServiceType());
         $errorMessagePrefix = "OwsProxyController->entryPointAction {$service}";
@@ -134,20 +130,13 @@ class OwsProxyController extends Controller
                     $content = $browserResponse->getContent();
                     $response->setContent($content);
                     return $response;
-                } catch (HTTPStatus403Exception $e) {
-                    $this->logger->error("{$errorMessagePrefix} 403: " .
-                                       $e->getMessage() . " " . $e->getCode());
-                    return $this->exceptionImage($e, $request);
-                } catch (HTTPStatus502Exception $e) {
-                    $this->logger->error("{$errorMessagePrefix} 502: " .
+                } catch (HttpException $e) {
+                    $this->logger->error("{$errorMessagePrefix} {$e->getCode()}: " .
                                        $e->getMessage() . " " . $e->getCode());
                     return $this->exceptionImage($e, $request);
                 } catch (\Exception $e) {
                     $this->logger->error("{$errorMessagePrefix} : " .
                                        $e->getMessage() . " " . $e->getCode());
-                    if ($e->getCode() === 0) {
-                        $e = new \Exception($e->getMessage(), 500);
-                    }
                     return $this->exceptionHtml($e);
                 }
                 // returns in all cases
@@ -170,7 +159,7 @@ class OwsProxyController extends Controller
                 } catch (\RuntimeException $e) {
                     $this->logger->error("{$errorMessagePrefix} : " .
                                        $e->getMessage() . " " . $e->getCode());
-                    return $this->exceptionHtml(new \Exception($e->getMessage(), 500));
+                    return $this->exceptionHtml($e);
                 }
                 // returns in all cases
             default:
@@ -190,7 +179,7 @@ class OwsProxyController extends Controller
         $response = new Response();
         $html = $this->render("OwsProxy3CoreBundle::exception.html.twig", array("exception" => $e));
         $response->headers->set('Content-Type', 'text/html');
-        $response->setStatusCode($e->getCode());
+        $response->setStatusCode($e->getCode() ?: 500);
         $response->setContent($html->getContent());
         return $response;
     }
