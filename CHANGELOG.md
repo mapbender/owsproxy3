@@ -2,6 +2,7 @@
 
 * **v.3.0.6.4**
     - When rejecting request with invalid signature, send correct status (500 => 403)
+    - Deprecate custom HTTP exceptions, extend from HttpException
     - When debug-logging headers in proxy requests, log the actual headers sent
     - Replaced all deprecated logger->err calls with PSR-conformant logger->error
     - Remove deprecated call, fix junk after response body
