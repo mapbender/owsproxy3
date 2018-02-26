@@ -5,7 +5,6 @@ namespace OwsProxy3\CoreBundle\Component;
 use Buzz\Message\MessageInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus502Exception;
 
 /**
  * Utils class with help functions
@@ -174,9 +173,10 @@ class Utils
     }
 
     /**
-     * Returns the headers from BrowserResponse
-     * 
-     * @param Buzz\Message\MessageInterface $request
+     * Returns the headers from BrowserResponse; converts Buzz-format "Name: Value" single strings
+     * into a "Name" => "Value" mapping.
+     *
+     * @param MessageInterface $browserResponse
      * @return array the headers
      */
     public static function getHeadersFromBrowserResponse(MessageInterface $browserResponse)
@@ -213,11 +213,12 @@ class Utils
     }
 
     /**
-     * Prepares the HTTP headers
-     * 
+     * Filters the HTTP headers according blacklist / whitelist. Key comparisons use the lower-case version of
+     * the input keys, so blacklist / whitelist must also use lower-case keys to work.
+     *
      * @param array $headers the HTTP headers
-     * @param array $blackList the array with header names to remove
-     * @param array $whiteList the array with header names to remove
+     * @param array $blackList the array with header names to remove MUST BE LOWER CASE TO BE EFFECTIVE
+     * @param array $whiteList the array with header names to remove MUST BE LOWER CASE TO BE EFFECTIVE
      * @return array the prepared HTTP headers
      */
     public static function prepareHeadersForRequest(array $headers, array $blackList, array $whiteList)
