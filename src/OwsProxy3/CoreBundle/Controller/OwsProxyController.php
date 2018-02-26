@@ -108,8 +108,6 @@ class OwsProxyController extends Controller
             // let http exceptions run through unmodified
             throw $e;
         } catch (BadSignatureException $e) {
-            // deprecated: HTTPStatus403Exception IS NOT a http exception. It does not send code 403. Its result is
-            //             a "500 - Internal server error". Upstream signer does not throw BadSignatureException anymore.
             throw new HTTPStatus403Exception('Invalid URL signature: ' . $e->getMessage());
         }
         $service = strtoupper($proxy_query->getServiceType());
