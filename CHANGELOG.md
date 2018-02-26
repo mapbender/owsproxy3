@@ -1,6 +1,9 @@
 # Changelog
 
 * **v.3.0.6.4**
+    - When rejecting request with invalid signature, send correct status (500 => 403)
+    - When debug-logging headers in proxy requests, log the actual headers sent
+    - Replaced all deprecated logger->err calls with PSR-conformant logger->error
     - Remove deprecated call, fix junk after response body
 
 * **v.3.0.6.3** - 2017-07-27
