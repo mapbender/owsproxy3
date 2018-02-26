@@ -43,6 +43,7 @@ class OwsProxyController extends Controller
         $this->logger = $this->container->get('logger');
         /** @var Request $request */
         $request = $this->get('request');
+        $errorMessagePrefix = "OwsProxyController->genericProxyAction";
         try {
             $this->logger->debug("OwsProxyController->genericProxyAction");
             $proxy_config = $this->container->getParameter("owsproxy.proxy");
@@ -73,13 +74,13 @@ class OwsProxyController extends Controller
             $response->setContent($browserResponse->getContent());
             return $response;
         } catch (HTTPStatus403Exception $e) {
-            $this->logger->error("OwsProxyController->genericProxyAction 403: " . $e->getMessage() . " " . $e->getCode());
+            $this->logger->error("{$errorMessagePrefix} 403: " . $e->getMessage() . " " . $e->getCode());
             return $this->exceptionImage($e, $request);
         } catch (HTTPStatus502Exception $e) {
-            $this->logger->error("OwsProxyController->genericProxyAction 502: " . $e->getMessage() . " " . $e->getCode());
+            $this->logger->error("{$errorMessagePrefix} 502: " . $e->getMessage() . " " . $e->getCode());
             return $this->exceptionImage($e, $request);
         } catch (\Exception $e) {
-            $this->logger->error("OwsProxyController->genericProxyAction : " . $e->getMessage() . " " . $e->getCode());
+            $this->logger->error("{$errorMessagePrefix} : " . $e->getMessage() . " " . $e->getCode());
             if ($e->getCode() === 0) {
                 $e = new \Exception($e->getMessage(), 500);
             }
@@ -109,9 +110,10 @@ class OwsProxyController extends Controller
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage(), 500);
         }
-        $service = $proxy_query->getServiceType();
+        $service = strtoupper($proxy_query->getServiceType());
+        $errorMessagePrefix = "OwsProxyController->entryPointAction {$service}";
         // Switch proxy
-        switch (strtoupper($service)) {
+        switch ($service) {
             case 'WMS':
                 try {
                     $this->logger->debug("OwsProxyController->entryPointAction");
@@ -132,15 +134,15 @@ class OwsProxyController extends Controller
                     $response->setContent($content);
                     return $response;
                 } catch (HTTPStatus403Exception $e) {
-                    $this->logger->error("OwsProxyController->entryPointAction WMS 403: " .
+                    $this->logger->error("{$errorMessagePrefix} 403: " .
                                        $e->getMessage() . " " . $e->getCode());
                     return $this->exceptionImage($e, $request);
                 } catch (HTTPStatus502Exception $e) {
-                    $this->logger->error("OwsProxyController->entryPointAction WMS 502: " .
+                    $this->logger->error("{$errorMessagePrefix} 502: " .
                                        $e->getMessage() . " " . $e->getCode());
                     return $this->exceptionImage($e, $request);
                 } catch (\Exception $e) {
-                    $this->logger->error("OwsProxyController->entryPointAction WMS : " .
+                    $this->logger->error("{$errorMessagePrefix} : " .
                                        $e->getMessage() . " " . $e->getCode());
                     if ($e->getCode() === 0) {
                         $e = new \Exception($e->getMessage(), 500);
@@ -165,7 +167,7 @@ class OwsProxyController extends Controller
                     $response->setContent($browserResponse->getContent());
                     return $response;
                 } catch (\RuntimeException $e) {
-                    $this->logger->error("OwsProxyController->entryPointAction WFS : " .
+                    $this->logger->error("{$errorMessagePrefix} : " .
                                        $e->getMessage() . " " . $e->getCode());
                     return $this->exceptionHtml(new \Exception($e->getMessage(), 500));
                 }
