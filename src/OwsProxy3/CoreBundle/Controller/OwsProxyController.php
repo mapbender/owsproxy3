@@ -17,6 +17,7 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 //use OwsProxy3\CoreBundle\Component\Url;
 
@@ -106,7 +107,12 @@ class OwsProxyController extends Controller
         $proxy_query = ProxyQuery::createFromRequest($request);
         try {
             $signer->checkSignedUrl($proxy_query->getGetUrl());
+        } catch (HttpException $e) {
+            // let http exceptions run through unmodified
+            throw $e;
         } catch (BadSignatureException $e) {
+            // deprecated: HTTPStatus403Exception IS NOT a http exception. It does not send code 403. Its result is
+            //             a "500 - Internal server error". Upstream signer does not throw BadSignatureException anymore.
             throw new HTTPStatus403Exception('Invalid URL signature: ' . $e->getMessage());
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage(), 500);
