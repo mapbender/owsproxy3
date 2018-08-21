@@ -5,8 +5,8 @@
     "type": "library",
     "license": "MIT",
     "require": {
-        "php": ">=5.4.0",
-        "kriswallsmith/buzz": "v0.15",
+        "php": ">=5.3.3",
+        "kriswallsmith/buzz": "~0.15.0",
         "arsgeografica/signing": "1.1.x"
     },
     "autoload": {

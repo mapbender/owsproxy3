@@ -24,7 +24,7 @@ class HTTPStatus502Exception extends HttpException
      * @param string $message the exception message
      * @param int $code the exception code ignored, fixed at 502
      */
-    public function __construct($message = "502 Bad Gateway", $code)
+    public function __construct($message = "502 Bad Gateway", $code = -1)
     {
         parent::__construct(502, $message);
     }

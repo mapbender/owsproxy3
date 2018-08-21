@@ -2,18 +2,12 @@
 * **v.3.0.7.0**
     - Convert translation catalogs from xlf to yml
 
-* **v.3.0.6.4**
+* **v.3.0.6.2** - 2018-02-26
     - When rejecting request with invalid signature, send correct status (500 => 403)
     - Deprecate custom HTTP exceptions, extend from HttpException
     - When debug-logging headers in proxy requests, log the actual headers sent
     - Replaced all deprecated logger->err calls with PSR-conformant logger->error
     - Remove deprecated call, fix junk after response body
-
-* **v.3.0.6.3** - 2017-07-27
-    - no changes.
-
-* **v.3.0.6.2** - 2017-07-20
-    - no changes.
 
 * **v.3.0.6.1** - 2017-05-24
     - Delete Log.php~
