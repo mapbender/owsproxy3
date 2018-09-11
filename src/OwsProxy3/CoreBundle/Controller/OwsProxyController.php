@@ -33,6 +33,7 @@ class OwsProxyController extends Controller
 
     /**
      * Handles the client's request
+     * NOTE: no route; only reachable via Symfony internal SubRequest
      *
      * @param string $url the url
      * @param string $content the POST content
