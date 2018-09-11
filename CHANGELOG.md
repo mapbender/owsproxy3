@@ -1,12 +1,15 @@
 # Changelog
 
-* **v3.0.6.3** - 2018-09-12
+* **v3.0.6.4** - 2018-09-12
     - Add public utility method to convert Buzz Response to HttpFoundation Response
     - Fix invalid user agent in WfsProxy
     - Removed redundant translations that were
       - for messages that could never be translated
       - for messages that could never be emitted
       - not translating (input = output)
+
+* **v3.0.6.3** - 2018-04-20
+    - Allow updated versions of buzz to be installed
 
 * **v3.0.6.2** - 2018-02-26
     - When rejecting request with invalid signature, send correct status (500 => 403)
