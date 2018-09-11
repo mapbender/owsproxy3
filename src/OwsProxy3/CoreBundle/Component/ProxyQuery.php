@@ -3,10 +3,7 @@
 namespace OwsProxy3\CoreBundle\Component;
 
 use Symfony\Component\HttpFoundation\Request;
-use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus403Exception;
 use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus502Exception;
-use ArsGeografica\Signing\BadSignatureException;
-use ArsGeografica\Signing\Signer;
 
 
 /**
@@ -20,7 +17,7 @@ class ProxyQuery
 
     /**
      *
-     * @var string the parsed url (PHP parse_url()) without get parameters
+     * @var string[] the parsed url (PHP parse_url()) without get parameters
      */
     protected $rowUrl;
 
@@ -140,9 +137,7 @@ class ProxyQuery
             $postParams = isset($allParams[Utils::$METHOD_POST]) ?
                     $allParams[Utils::$METHOD_POST] : array();
             // if url containts more get parameters
-            if (isset($allParams[Utils::$METHOD_GET]) && count(isset($allParams[Utils::$METHOD_GET]))
-                    > 0)
-            {
+            if (!empty($allParams[Utils::$METHOD_GET])) {
                 $postParams = array_merge($postParams,
                         $allParams[Utils::$METHOD_GET]);
             }
@@ -198,10 +193,11 @@ class ProxyQuery
     }
 
     /**
-     * Adds a POST parameter
+     * Adds a POST parameter if not already present
      *
      * @param string $name
      * @param string $value
+     * @return boolean true if added false if not
      */
     public function addPostParameter($name, $value)
     {
@@ -217,10 +213,11 @@ class ProxyQuery
     }
 
     /**
-     * Adds a GET parameter
+     * Adds a GET parameter if not already present
      *
      * @param string $name
      * @param string $value
+     * @return boolean true if added false if not
      */
     public function addGetParameter($name, $value)
     {
@@ -236,10 +233,11 @@ class ProxyQuery
     }
 
     /**
-     * Adds a POST/GET parameter
+     * Adds a POST/GET parameter, depending on method, if it's not already present
      *
      * @param string $name
      * @param string $value
+     * @return boolean|null true if added, false if not added, null for unsupported method
      */
     public function addQueryParameter($name, $value)
     {
@@ -267,6 +265,7 @@ class ProxyQuery
                 return false;
             }
         }
+        return null;
     }
 
     /**
@@ -301,7 +300,7 @@ class ProxyQuery
 
     /**
      * Returns the row url (without GET parameter)
-     * @return string url
+     * @return string[]
      */
     public function getRowUrl()
     {
@@ -320,8 +319,7 @@ class ProxyQuery
 
     /**
      * Sets the headers
-     *
-     * @return array headers
+     * @param string[] key => value
      */
     public function setHeaders($headers)
     {
@@ -329,9 +327,11 @@ class ProxyQuery
     }
     
     /**
-     * Sets the headers
+     * Appends a header, doesn't support keys.
      *
-     * @return array headers
+     * @internal
+     * @deprecated
+     * @param mixed $header
      */
     public function addHeader($header)
     {

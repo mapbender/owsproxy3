@@ -1,12 +1,24 @@
 # Changelog
 
-* **v.3.0.6.3** - 2017-07-27
-    - no changes.
+* **v3.0.6.4** - 2018-09-12
+    - Add public utility method to convert Buzz Response to HttpFoundation Response
+    - Fix invalid user agent in WfsProxy
+    - Removed redundant translations that were
+      - for messages that could never be translated
+      - for messages that could never be emitted
+      - not translating (input = output)
 
-* **v.3.0.6.2** - 2017-07-20
-    - no changes.
+* **v3.0.6.3** - 2018-04-20
+    - Allow updated versions of buzz to be installed
 
-* **v.3.0.6.1** - 2017-05-24
+* **v3.0.6.2** - 2018-02-26
+    - When rejecting request with invalid signature, send correct status (500 => 403)
+    - Deprecate custom HTTP exceptions, extend from HttpException
+    - When debug-logging headers in proxy requests, log the actual headers sent
+    - Replaced all deprecated logger->err calls with PSR-conformant logger->error
+    - Remove deprecated call, fix junk after response body
+
+* **v3.0.6.1** - 2017-05-24
     - Delete Log.php~
 
 * **v3.0.6.0** - 2017-05-05
@@ -28,13 +40,19 @@
     - Add composer definition
     - Merge pull request #7 from mapbender/hotfix/changelog
     - Improve communication.puml diagramm
-    - Add README.md (README.md)
+
+* **v3.0.5.4** - 2018-02.20
+    - When rejecting request with invalid signature, send correct status (500 => 403)
+    - Deprecate custom HTTP exceptions, extend from HttpException
+    - When debug-logging headers in proxy requests, log the actual headers sent
+    - Replaced all deprecated logger->err calls with PSR-conformant logger->error
+    - Encode name and password by getting URL in ProxyQuery
+    - Remove deprecated call, fix junk after response body
+    - Add README.md
     - Add communication schema (src/OwsProxy3/CoreBundle/Documentation/communication.puml)
 
 * **v3.0.5.3** - 2016-02-04
-    - Merge branch 'release/3.0.5' of https://github.com/mapbender/owsproxy3 into release/3.0.5
-    - Merge pull request #4 from mapbender/hotfix/changelog-5489
-    - added changelog.md information #5489
+    - none
 
 * **v3.0.5.2** - 2015-10-27
     - none

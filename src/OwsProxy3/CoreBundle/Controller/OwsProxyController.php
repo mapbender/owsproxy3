@@ -1,20 +1,22 @@
 <?php
 namespace OwsProxy3\CoreBundle\Controller;
 
-use Buzz\Message\MessageInterface;
+use ArsGeografica\Signing\BadSignatureException;
+use Mapbender\CoreBundle\Component\Signer;
 use OwsProxy3\CoreBundle\Component\Utils;
 use OwsProxy3\CoreBundle\Component\CommonProxy;
 use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus403Exception;
-use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus502Exception;
 use OwsProxy3\CoreBundle\Component\ProxyQuery;
 use OwsProxy3\CoreBundle\Component\WmsProxy;
 use OwsProxy3\CoreBundle\Component\WfsProxy;
+use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use ArsGeografica\Signing\Signer;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 //use OwsProxy3\CoreBundle\Component\Url;
 
@@ -26,20 +28,24 @@ use ArsGeografica\Signing\Signer;
  */
 class OwsProxyController extends Controller
 {
+    /** @var LoggerInterface */
     protected $logger = null;
 
     /**
      * Handles the client's request
+     * NOTE: no route; only reachable via Symfony internal SubRequest
      *
-     * @param type $url the url
-     * @param type $content the POST content
+     * @param string $url the url
+     * @param string $content the POST content
      * @return \Symfony\Component\HttpFoundation\Response the response
      */
     public function genericProxyAction($url, $content = null)
     {
         $this->container->get('session')->save();
         $this->logger = $this->container->get('logger');
+        /** @var Request $request */
         $request = $this->get('request');
+        $errorMessagePrefix = "OwsProxyController->genericProxyAction";
         try {
             $this->logger->debug("OwsProxyController->genericProxyAction");
             $proxy_config = $this->container->getParameter("owsproxy.proxy");
@@ -58,7 +64,7 @@ class OwsProxyController extends Controller
                 $postParams,
                 $content
             );
-            $proxy = new CommonProxy($proxy_config, $proxy_query, $this->get('logger'));
+            $proxy = new CommonProxy($proxy_config, $proxy_query, $this->logger);
             $cookies_req = $request->cookies;
             $response = new Response();
             $browserResponse = $proxy->handle();
@@ -69,17 +75,8 @@ class OwsProxyController extends Controller
             }
             $response->setContent($browserResponse->getContent());
             return $response;
-        } catch (HTTPStatus403Exception $e) {
-            $this->logger->err("OwsProxyController->genericProxyAction 403: " . $e->getMessage() . " " . $e->getCode());
-            return $this->exceptionImage($e, $request);
-        } catch (HTTPStatus502Exception $e) {
-            $this->logger->err("OwsProxyController->genericProxyAction 502: " . $e->getMessage() . " " . $e->getCode());
-            return $this->exceptionImage($e, $request);
         } catch (\Exception $e) {
-            $this->logger->err("OwsProxyController->genericProxyAction : " . $e->getMessage() . " " . $e->getCode());
-            if ($e->getCode() === 0) {
-                $e = new \Exception($e->getMessage(), 500);
-            }
+            $this->logger->error("{$errorMessagePrefix} : " . $e->getMessage() . " " . $e->getCode());
             return $this->exceptionHtml($e);
         }
     }
@@ -94,79 +91,55 @@ class OwsProxyController extends Controller
     {
         $this->container->get('session')->save();
         $this->logger = $this->container->get('logger');
+        /** @var Request $request */
         $request = $this->get('request');
+        /** @var Signer $signer */
         $signer = $this->get('signer');
         $proxy_query = ProxyQuery::createFromRequest($request);
         try {
             $signer->checkSignedUrl($proxy_query->getGetUrl());
+        } catch (HttpException $e) {
+            // let http exceptions run through unmodified
+            throw $e;
         } catch (BadSignatureException $e) {
             throw new HTTPStatus403Exception('Invalid URL signature: ' . $e->getMessage());
-        } catch (\Exception $e) {
-            throw new \Exception($e->getMessage(), 500);
         }
-        $service = $proxy_query->getServiceType();
-        // Switch proxy
-        switch (strtoupper($service)) {
+
+        $service = strtoupper($proxy_query->getServiceType());
+        $errorMessagePrefix = "OwsProxyController->entryPointAction {$service}";
+        $this->logger->debug("OwsProxyController->entryPointAction");
+        /** @var EventDispatcherInterface $dispatcher */
+        $dispatcher = $this->container->get('event_dispatcher');
+        $proxy_config = $this->container->getParameter("owsproxy.proxy");
+
+        switch ($service) {
             case 'WMS':
-                try {
-                    $this->logger->debug("OwsProxyController->entryPointAction");
-                    $dispatcher = $this->container->get('event_dispatcher');
-                    $proxy_config = $this->container->getParameter("owsproxy.proxy");
-                    $proxy = new WmsProxy($dispatcher, $proxy_config, $proxy_query, $this->logger);
-                    $browserResponse = $proxy->handle();
-
-                    $cookies_req = $request->cookies;
-                    $response = new Response();
-                    Utils::setHeadersFromBrowserResponse($response, $browserResponse);
-                    foreach ($cookies_req as $key => $value) {
-                        $response->headers->removeCookie($key);
-                        $response->headers->setCookie(new Cookie($key, $value));
-                    }
-                    $content = $browserResponse->getContent();
-                    $response->setContent($content);
-                    return $response;
-                } catch (HTTPStatus403Exception $e) {
-                    $this->logger->err("OwsProxyController->entryPointAction WMS 403: " .
-                                       $e->getMessage() . " " . $e->getCode());
-                    return $this->exceptionImage($e, $request);
-                } catch (HTTPStatus502Exception $e) {
-                    $this->logger->err("OwsProxyController->entryPointAction WMS 502: " .
-                                       $e->getMessage() . " " . $e->getCode());
-                    return $this->exceptionImage($e, $request);
-                } catch (\Exception $e) {
-                    $this->logger->err("OwsProxyController->entryPointAction WMS : " .
-                                       $e->getMessage() . " " . $e->getCode());
-                    if ($e->getCode() === 0) {
-                        $e = new \Exception($e->getMessage(), 500);
-                    }
-                    return $this->exceptionHtml($e);
-                }
-                // returns in all cases
+                $proxy = new WmsProxy($dispatcher, $proxy_config, $proxy_query, $this->logger);
+                break;
             case 'WFS':
-                try {
-                    $dispatcher = $this->container->get('event_dispatcher');
-                    $proxy_config = $this->container->getParameter("owsproxy.proxy");
-                    $proxy = new WfsProxy($dispatcher, $proxy_config, $proxy_query);
-                    $browserResponse = $proxy->handle();
-
-                    $cookies_req = $request->cookies;
-                    $response = new Response();
-                    Utils::setHeadersFromBrowserResponse($response, $browserResponse);
-                    foreach ($cookies_req as $key => $value) {
-                        $response->headers->removeCookie($key);
-                        $response->headers->setCookie(new Cookie($key, $value));
-                    }
-                    $response->setContent($browserResponse->getContent());
-                    return $response;
-                } catch (\RuntimeException $e) {
-                    $this->logger->err("OwsProxyController->entryPointAction WFS : " .
-                                       $e->getMessage() . " " . $e->getCode());
-                    return $this->exceptionHtml(new \Exception($e->getMessage(), 500));
-                }
-                // returns in all cases
+                $proxy = new WfsProxy($dispatcher, $proxy_config, $proxy_query, 'OWSProxy3', $this->logger);
+                break;
             default:
                 //@TODO ?
                 return $this->exceptionHtml(new \Exception('Unknown Service Type', 404));
+        }
+
+        try {
+            $browserResponse = $proxy->handle();
+
+            $cookies_req = $request->cookies;
+            $response = new Response();
+            Utils::setHeadersFromBrowserResponse($response, $browserResponse);
+            foreach ($cookies_req as $key => $value) {
+                $response->headers->removeCookie($key);
+                $response->headers->setCookie(new Cookie($key, $value));
+            }
+            $content = $browserResponse->getContent();
+            $response->setContent($content);
+            return $response;
+        } catch (\Exception $e) {
+            $this->logger->error("{$errorMessagePrefix}: {$e->getCode()} " . $e->getMessage());
+            return $this->exceptionHtml($e);
         }
     }
 
@@ -181,64 +154,8 @@ class OwsProxyController extends Controller
         $response = new Response();
         $html = $this->render("OwsProxy3CoreBundle::exception.html.twig", array("exception" => $e));
         $response->headers->set('Content-Type', 'text/html');
-        $response->setStatusCode($e->getCode());
+        $response->setStatusCode($e->getCode() ?: 500);
         $response->setContent($html->getContent());
         return $response;
     }
-
-    /**
-     * Creates a response with an exception as png image
-     *
-     * @param \Exception $e the exception
-     * @param Request $request the request
-     * @return \Symfony\Component\HttpFoundation\Response the response
-     */
-    private function exceptionImage(\Exception $e, $request)
-    {
-        $format = Utils::getParamValueFromAll($request, "format", true);
-        $w = Utils::getParamValueFromAll($request, "width", true);
-        $h = Utils::getParamValueFromAll($request, "height", true);
-        if ($format === null || $w === null || $h === null
-            || !is_int(strpos(strtolower($format), "image"))
-            || intval($w) === 0 || intval($h) === 0) {
-            return $this->exceptionHtml($e);
-        }
-        return $this->exceptionHtml($e);
-        try {
-            $image = new \Imagick();
-            $draw = new \ImagickDraw();
-            $pixel = new \ImagickPixel('none');
-
-            $image->newImage(intval($w), intval($h), $pixel);
-
-            $draw->setFillColor('grey');
-            $draw->setFontSize(30);
-            $st_x = 200;
-            $st_y = 200;
-            $ang = -45;
-            for ($x = 10; $x < $w; $x += $st_x) {
-                for ($y = 10; $y < $h; $y += $st_y) {
-                    $image->annotateImage(
-                        $draw,
-                        $x,
-                        $y,
-                        $ang,
-                        $this->container->get('translator')->trans($e->getMessage())
-                    );
-                }
-            }
-
-            $image->setImageFormat('png');
-
-            $response = new Response();
-            $response->headers->set('Content-Type', "image/png");
-            $response->setStatusCode($e->getCode());
-            $response->setContent($image->getimageblob());
-
-            return $response;
-        } catch (\Exception $e) {
-            return $this->exceptionHtml($e);
-        }
-    }
-
 }
