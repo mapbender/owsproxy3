@@ -232,4 +232,41 @@ class Utils
         return $headers;
     }
 
+    /**
+     * Convert a Buzz Response to a Symfony HttpFoundation Response.
+     *
+     * Preserves original status code and message.
+     *
+     * Note: We do not do anything about cookies here. Buzz\Response::getHeaders() DOES NOT return received cookies.
+     *       When using the Mapbender host as a proxy, none of the upstream cookies have any meaning to begin with,
+     *       as they are for a domain the client never talked to directly. As such, cookie handling of any form
+     *       is redundant for the proxy use case via Buzz.
+     *
+     * @param \Buzz\Message\Response $buzzResponse
+     * @return Response
+     */
+    public static function buzzResponseToResponse($buzzResponse)
+    {
+        // adapt header formatting: Buzz uses a flat list of lines, HttpFoundation expects a name: value mapping
+        $headers = array();
+        foreach ($buzzResponse->getHeaders() as $headerLine) {
+            $parts = explode(':', $headerLine, 2);
+            /**
+             * Forward all headers except Transfer-Encoding.
+             * Buzz (actually curl) pipes this through even though the content is
+             * never chunked and never compressed.
+             * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Transfer-Encoding
+             */
+            if (count($parts) == 2 && strtolower($parts[0]) != 'transfer-encoding') {
+                $headers[$parts[0]] = $parts[1];
+            }
+        }
+        $response = new Response($buzzResponse->getContent(), $buzzResponse->getStatusCode(), $headers);
+        $response->setProtocolVersion($buzzResponse->getProtocolVersion());
+        $statusText = $buzzResponse->getReasonPhrase();
+        if ($statusText) {
+            $response->setStatusCode($buzzResponse->getStatusCode(), $statusText);
+        }
+        return $response;
+    }
 }
