@@ -116,7 +116,7 @@ class OwsProxyController extends Controller
                 $proxy = new WmsProxy($dispatcher, $proxy_config, $proxy_query, $this->logger);
                 break;
             case 'WFS':
-                $proxy = new WfsProxy($dispatcher, $proxy_config, $proxy_query);
+                $proxy = new WfsProxy($dispatcher, $proxy_config, $proxy_query, 'OWSProxy3', $this->logger);
                 break;
             default:
                 //@TODO ?
