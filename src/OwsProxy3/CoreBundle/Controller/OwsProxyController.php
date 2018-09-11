@@ -6,7 +6,6 @@ use Mapbender\CoreBundle\Component\Signer;
 use OwsProxy3\CoreBundle\Component\Utils;
 use OwsProxy3\CoreBundle\Component\CommonProxy;
 use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus403Exception;
-use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus502Exception;
 use OwsProxy3\CoreBundle\Component\ProxyQuery;
 use OwsProxy3\CoreBundle\Component\WmsProxy;
 use OwsProxy3\CoreBundle\Component\WfsProxy;
@@ -75,9 +74,6 @@ class OwsProxyController extends Controller
             }
             $response->setContent($browserResponse->getContent());
             return $response;
-        } catch (HttpException $e) {
-            $this->logger->error("{$errorMessagePrefix} {$e->getCode()}: " . $e->getMessage() . " " . $e->getCode());
-            return $this->exceptionImage($e, $request);
         } catch (\Exception $e) {
             $this->logger->error("{$errorMessagePrefix} : " . $e->getMessage() . " " . $e->getCode());
             return $this->exceptionHtml($e);
@@ -130,13 +126,8 @@ class OwsProxyController extends Controller
                     $content = $browserResponse->getContent();
                     $response->setContent($content);
                     return $response;
-                } catch (HttpException $e) {
-                    $this->logger->error("{$errorMessagePrefix} {$e->getCode()}: " .
-                                       $e->getMessage() . " " . $e->getCode());
-                    return $this->exceptionImage($e, $request);
                 } catch (\Exception $e) {
-                    $this->logger->error("{$errorMessagePrefix} : " .
-                                       $e->getMessage() . " " . $e->getCode());
+                    $this->logger->error("{$errorMessagePrefix}: {$e->getCode()} " . $e->getMessage());
                     return $this->exceptionHtml($e);
                 }
                 // returns in all cases
@@ -156,9 +147,8 @@ class OwsProxyController extends Controller
                     }
                     $response->setContent($browserResponse->getContent());
                     return $response;
-                } catch (\RuntimeException $e) {
-                    $this->logger->error("{$errorMessagePrefix} : " .
-                                       $e->getMessage() . " " . $e->getCode());
+                } catch (\Exception $e) {
+                    $this->logger->error("{$errorMessagePrefix}: {$e->getCode()} " . $e->getMessage());
                     return $this->exceptionHtml($e);
                 }
                 // returns in all cases
@@ -183,17 +173,4 @@ class OwsProxyController extends Controller
         $response->setContent($html->getContent());
         return $response;
     }
-
-    /**
-     * Creates a response with an exception as HTML
-     *
-     * @param \Exception $e the exception
-     * @param Request $request the request
-     * @return \Symfony\Component\HttpFoundation\Response the response
-     */
-    private function exceptionImage(\Exception $e, $request)
-    {
-        return $this->exceptionHtml($e);
-    }
-
 }
