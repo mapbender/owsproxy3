@@ -103,58 +103,42 @@ class OwsProxyController extends Controller
         } catch (BadSignatureException $e) {
             throw new HTTPStatus403Exception('Invalid URL signature: ' . $e->getMessage());
         }
+
         $service = strtoupper($proxy_query->getServiceType());
         $errorMessagePrefix = "OwsProxyController->entryPointAction {$service}";
-        // Switch proxy
+        $this->logger->debug("OwsProxyController->entryPointAction");
+        /** @var EventDispatcherInterface $dispatcher */
+        $dispatcher = $this->container->get('event_dispatcher');
+        $proxy_config = $this->container->getParameter("owsproxy.proxy");
+
         switch ($service) {
             case 'WMS':
-                try {
-                    $this->logger->debug("OwsProxyController->entryPointAction");
-                    /** @var EventDispatcherInterface $dispatcher */
-                    $dispatcher = $this->container->get('event_dispatcher');
-                    $proxy_config = $this->container->getParameter("owsproxy.proxy");
-                    $proxy = new WmsProxy($dispatcher, $proxy_config, $proxy_query, $this->logger);
-                    $browserResponse = $proxy->handle();
-
-                    $cookies_req = $request->cookies;
-                    $response = new Response();
-                    Utils::setHeadersFromBrowserResponse($response, $browserResponse);
-                    foreach ($cookies_req as $key => $value) {
-                        $response->headers->removeCookie($key);
-                        $response->headers->setCookie(new Cookie($key, $value));
-                    }
-                    $content = $browserResponse->getContent();
-                    $response->setContent($content);
-                    return $response;
-                } catch (\Exception $e) {
-                    $this->logger->error("{$errorMessagePrefix}: {$e->getCode()} " . $e->getMessage());
-                    return $this->exceptionHtml($e);
-                }
-                // returns in all cases
+                $proxy = new WmsProxy($dispatcher, $proxy_config, $proxy_query, $this->logger);
+                break;
             case 'WFS':
-                try {
-                    $dispatcher = $this->container->get('event_dispatcher');
-                    $proxy_config = $this->container->getParameter("owsproxy.proxy");
-                    $proxy = new WfsProxy($dispatcher, $proxy_config, $proxy_query);
-                    $browserResponse = $proxy->handle();
-
-                    $cookies_req = $request->cookies;
-                    $response = new Response();
-                    Utils::setHeadersFromBrowserResponse($response, $browserResponse);
-                    foreach ($cookies_req as $key => $value) {
-                        $response->headers->removeCookie($key);
-                        $response->headers->setCookie(new Cookie($key, $value));
-                    }
-                    $response->setContent($browserResponse->getContent());
-                    return $response;
-                } catch (\Exception $e) {
-                    $this->logger->error("{$errorMessagePrefix}: {$e->getCode()} " . $e->getMessage());
-                    return $this->exceptionHtml($e);
-                }
-                // returns in all cases
+                $proxy = new WfsProxy($dispatcher, $proxy_config, $proxy_query);
+                break;
             default:
                 //@TODO ?
                 return $this->exceptionHtml(new \Exception('Unknown Service Type', 404));
+        }
+
+        try {
+            $browserResponse = $proxy->handle();
+
+            $cookies_req = $request->cookies;
+            $response = new Response();
+            Utils::setHeadersFromBrowserResponse($response, $browserResponse);
+            foreach ($cookies_req as $key => $value) {
+                $response->headers->removeCookie($key);
+                $response->headers->setCookie(new Cookie($key, $value));
+            }
+            $content = $browserResponse->getContent();
+            $response->setContent($content);
+            return $response;
+        } catch (\Exception $e) {
+            $this->logger->error("{$errorMessagePrefix}: {$e->getCode()} " . $e->getMessage());
+            return $this->exceptionHtml($e);
         }
     }
 
