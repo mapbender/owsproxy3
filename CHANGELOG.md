@@ -1,6 +1,4 @@
 # Changelog
-* **v.3.0.7.0**
-    - Convert translation catalogs from xlf to yml
 
 * **v3.0.6.4** - 2018-09-12
     - Add public utility method to convert Buzz Response to HttpFoundation Response
