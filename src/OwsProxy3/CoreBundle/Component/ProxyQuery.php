@@ -577,10 +577,14 @@ class ProxyQuery
     public function getServiceType() {
         if($this->hasGetParamValue('service', true)) return $this->getGetParamValue('service', true);
         if($this->hasPostParamValue('service', true)) return $this->getPostParamValue('service', true);
-
-        $dom = new \DOMDocument();
-        $dom->loadXML($this->content);
-        return $dom->documentElement->getAttribute('service');
+        
+        if ($this->content !== '') {
+            $dom = new \DOMDocument();
+            $dom->loadXML($this->content);
+            return $dom->documentElement->getAttribute('service');
+        }
+        
+        return '';
     }
 
 }

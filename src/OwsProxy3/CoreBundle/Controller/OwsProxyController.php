@@ -96,8 +96,14 @@ class OwsProxyController extends Controller
         /** @var Signer $signer */
         $signer = $this->get('signer');
         $proxy_query = ProxyQuery::createFromRequest($request);
+        $service = strtoupper($proxy_query->getServiceType());
+
         try {
-            $signer->checkSignedUrl($proxy_query->getGetUrl());
+            if ($service === 'WMTS') {
+                $signer->checkSignedWmtsUrl($proxy_query->getGetUrl());
+            } else {
+                $signer->checkSignedUrl($proxy_query->getGetUrl());
+            }
         } catch (HttpException $e) {
             // let http exceptions run through unmodified
             throw $e;
@@ -105,7 +111,6 @@ class OwsProxyController extends Controller
             throw new HTTPStatus403Exception('Invalid URL signature: ' . $e->getMessage());
         }
 
-        $service = strtoupper($proxy_query->getServiceType());
         $errorMessagePrefix = "OwsProxyController->entryPointAction {$service}";
         $this->logger->debug("OwsProxyController->entryPointAction");
         /** @var EventDispatcherInterface $dispatcher */
@@ -114,6 +119,7 @@ class OwsProxyController extends Controller
 
         switch ($service) {
             case 'WMS':
+            case 'WMTS':
                 $proxy = new WmsProxy($dispatcher, $proxy_config, $proxy_query, $this->logger);
                 break;
             case 'WFS':
