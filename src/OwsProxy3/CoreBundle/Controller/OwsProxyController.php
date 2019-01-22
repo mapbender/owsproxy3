@@ -44,7 +44,7 @@ class OwsProxyController extends Controller
         $this->container->get('session')->save();
         $this->logger = $this->container->get('logger');
         /** @var Request $request */
-        $request = $this->get('request');
+        $request = $this->get('request_stack')->getCurrentRequest();
         $errorMessagePrefix = "OwsProxyController->genericProxyAction";
         try {
             $this->logger->debug("OwsProxyController->genericProxyAction");
@@ -92,7 +92,7 @@ class OwsProxyController extends Controller
         $this->container->get('session')->save();
         $this->logger = $this->container->get('logger');
         /** @var Request $request */
-        $request = $this->get('request');
+        $request = $this->get('request_stack')->getCurrentRequest();
         /** @var Signer $signer */
         $signer = $this->get('signer');
         $proxy_query = ProxyQuery::createFromRequest($request);
