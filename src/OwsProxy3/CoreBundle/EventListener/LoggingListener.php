@@ -2,7 +2,8 @@
 
 namespace OwsProxy3\CoreBundle\EventListener;
 
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Doctrine\ORM\EntityManagerInterface;
 use OwsProxy3\CoreBundle\Event\ProxyTerminateEvent;
 use OwsProxy3\CoreBundle\Entity\Log;
 
@@ -13,23 +14,47 @@ use OwsProxy3\CoreBundle\Entity\Log;
  */
 class LoggingListener
 {
+    /** @var TokenStorageInterface */
+    protected $tokenStorage;
 
-    protected $container;
+    /** @var EntityManagerInterface */
+    protected $entityManager;
 
-    public function __construct(ContainerInterface $container)
-    {
-        $this->container = $container;
+    protected $owsproxyLogging;
+
+    protected $owsproxyObfuscateClientIp;
+
+    /**
+     * LoggingListener constructor.
+     * @param TokenStorageInterface $tokenStorage
+     * @param EntityManagerInterface $entityManager
+     * @param $owsproxyLogging
+     * @param $owsproxyObfuscateClientIp
+     */
+    public function __construct(
+        TokenStorageInterface $tokenStorage,
+        EntityManagerInterface $entityManager,
+        $owsproxyLogging,
+        $owsproxyObfuscateClientIp
+    ) {
+        $this->tokenStorage = $tokenStorage;
+        $this->entityManager = $entityManager;
+        $this->owsproxyLogging = $owsproxyLogging;
+        $this->owsproxyObfuscateClientIp = $owsproxyObfuscateClientIp;
     }
 
+    /**
+     * @param ProxyTerminateEvent $event
+     * @throws \Exception
+     */
     public function onTerminate(ProxyTerminateEvent $event)
     {
-        if(!$this->container->getParameter('owsproxy.logging'))
-        {
+        if(!$this->owsproxyLogging) {
             return;
         }
 
         // User is either an object or string for anonymous users
-        $user = $this->container->get('security.context')->getToken()->getUser();
+        $user = $this->tokenStorage->getToken()->getUser();
         if(is_object($user))
         {
             $user_id = get_class($user) . '-' .
@@ -45,11 +70,8 @@ class LoggingListener
 
         // IP is obfuscated for privacy reasons, see bundle configuration
         $ip = $event->getRequest()->getClientIp();
-        if($this->container->getParameter('owsproxy.obfuscate_client_ip'))
-        {
-            if(false !== ($pos = strrpos($ip, '.')) ||
-                    false !== ($pos = strrpos($ip, ':')))
-            {
+        if($this->owsproxyObfuscateClientIp) {
+            if(false !== ($pos = strrpos($ip, '.')) || false !== ($pos = strrpos($ip, ':'))) {
                 $ip = substr($ip, 0, $pos);
             }
         }
@@ -72,9 +94,7 @@ class LoggingListener
         $log->setResponseCode($event->getResponse()->getStatuscode());
         $log->setResponseSize(strlen($event->getResponse()->getContent()));
 
-        $em = $this->container->get('doctrine')->getManager();
-        $em->persist($log);
-        $em->flush();
+        $this->entityManager->persist($log);
+        $this->entityManager->flush();
     }
-
 }
