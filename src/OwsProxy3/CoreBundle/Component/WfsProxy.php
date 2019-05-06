@@ -12,12 +12,9 @@ use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus502Exception;
  */
 class WfsProxy extends CommonProxy
 {
-    protected $event_dispatcher;
-
     public function __construct($event_dispatcher, array $proxy_config, ProxyQuery $proxy_query, $userAgent = 'OWSProxy3', $logger = null)
     {
         parent::__construct($proxy_config, $proxy_query, $logger, null, null, $userAgent);
-        $this->event_dispatcher = $event_dispatcher;
     }
 
     /**
