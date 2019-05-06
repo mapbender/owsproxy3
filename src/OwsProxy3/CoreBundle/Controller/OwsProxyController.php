@@ -35,16 +35,15 @@ class OwsProxyController extends Controller
      * Handles the client's request
      * NOTE: no route; only reachable via Symfony internal SubRequest
      *
+     * @param Request $request
      * @param string $url the url
      * @param string $content the POST content
      * @return \Symfony\Component\HttpFoundation\Response the response
      */
-    public function genericProxyAction($url, $content = null)
+    public function genericProxyAction(Request $request, $url, $content = null)
     {
         $this->container->get('session')->save();
         $this->logger = $this->container->get('logger');
-        /** @var Request $request */
-        $request = $this->get('request_stack')->getCurrentRequest();
         $errorMessagePrefix = "OwsProxyController->genericProxyAction";
         try {
             $this->logger->debug("OwsProxyController->genericProxyAction");
@@ -85,14 +84,13 @@ class OwsProxyController extends Controller
      * Handles the client's request
      *
      * @Route("/")
+     * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response the response
      */
-    public function entryPointAction()
+    public function entryPointAction(Request $request)
     {
         $this->container->get('session')->save();
         $this->logger = $this->container->get('logger');
-        /** @var Request $request */
-        $request = $this->get('request_stack')->getCurrentRequest();
         /** @var Signer $signer */
         $signer = $this->get('signer');
         $proxy_query = ProxyQuery::createFromRequest($request);
