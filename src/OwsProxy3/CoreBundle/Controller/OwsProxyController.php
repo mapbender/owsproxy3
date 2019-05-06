@@ -115,8 +115,8 @@ class OwsProxyController extends Controller
                 $proxy = new WfsProxy($dispatcher, $proxy_config, $proxy_query, 'OWSProxy3', $logger);
                 break;
             default:
-                //@TODO ?
-                return $this->exceptionHtml(new \Exception('Unknown Service Type', 404));
+                $proxy = new CommonProxy($proxy_config, $proxy_query, $this->logger);
+                break;
         }
 
         try {
