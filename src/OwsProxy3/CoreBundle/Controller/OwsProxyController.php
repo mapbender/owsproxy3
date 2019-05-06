@@ -18,8 +18,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
-//use OwsProxy3\CoreBundle\Component\Url;
-
 /**
  * Description of OwsProxyController
  *
@@ -28,8 +26,6 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
  */
 class OwsProxyController extends Controller
 {
-    /** @var LoggerInterface */
-    protected $logger = null;
 
     /**
      * Handles the client's request
@@ -42,11 +38,11 @@ class OwsProxyController extends Controller
      */
     public function genericProxyAction(Request $request, $url, $content = null)
     {
-        $this->container->get('session')->save();
-        $this->logger = $this->container->get('logger');
+        $request->getSession()->save();
+        $logger = $this->getLogger();
         $errorMessagePrefix = "OwsProxyController->genericProxyAction";
         try {
-            $this->logger->debug("OwsProxyController->genericProxyAction");
+            $logger->debug("OwsProxyController->genericProxyAction");
             $proxy_config = $this->container->getParameter("owsproxy.proxy");
             $headers_req = Utils::getHeadersFromRequest($request);
             $getParams = Utils::getParams($request, Utils::$METHOD_GET);
@@ -63,7 +59,7 @@ class OwsProxyController extends Controller
                 $postParams,
                 $content
             );
-            $proxy = new CommonProxy($proxy_config, $proxy_query, $this->logger);
+            $proxy = new CommonProxy($proxy_config, $proxy_query, $logger);
             $cookies_req = $request->cookies;
             $response = new Response();
             $browserResponse = $proxy->handle();
@@ -73,9 +69,10 @@ class OwsProxyController extends Controller
                 $response->headers->setCookie(new Cookie($key, $value));
             }
             $response->setContent($browserResponse->getContent());
+            $response->setStatusCode($browserResponse->getStatusCode());
             return $response;
         } catch (\Exception $e) {
-            $this->logger->error("{$errorMessagePrefix} : " . $e->getMessage() . " " . $e->getCode());
+            $logger->error("{$errorMessagePrefix} : " . $e->getMessage() . " " . $e->getCode());
             return $this->exceptionHtml($e);
         }
     }
@@ -89,8 +86,8 @@ class OwsProxyController extends Controller
      */
     public function entryPointAction(Request $request)
     {
-        $this->container->get('session')->save();
-        $this->logger = $this->container->get('logger');
+        $request->getSession()->save();
+        $logger = $this->getLogger();
         /** @var Signer $signer */
         $signer = $this->get('signer');
         $proxy_query = ProxyQuery::createFromRequest($request);
@@ -105,17 +102,17 @@ class OwsProxyController extends Controller
 
         $service = strtoupper($proxy_query->getServiceType());
         $errorMessagePrefix = "OwsProxyController->entryPointAction {$service}";
-        $this->logger->debug("OwsProxyController->entryPointAction");
+        $logger->debug("OwsProxyController->entryPointAction");
         /** @var EventDispatcherInterface $dispatcher */
         $dispatcher = $this->container->get('event_dispatcher');
         $proxy_config = $this->container->getParameter("owsproxy.proxy");
 
         switch ($service) {
             case 'WMS':
-                $proxy = new WmsProxy($dispatcher, $proxy_config, $proxy_query, $this->logger);
+                $proxy = new WmsProxy($dispatcher, $proxy_config, $proxy_query, $logger);
                 break;
             case 'WFS':
-                $proxy = new WfsProxy($dispatcher, $proxy_config, $proxy_query, 'OWSProxy3', $this->logger);
+                $proxy = new WfsProxy($dispatcher, $proxy_config, $proxy_query, 'OWSProxy3', $logger);
                 break;
             default:
                 //@TODO ?
@@ -137,7 +134,7 @@ class OwsProxyController extends Controller
             $response->setStatusCode($browserResponse->getStatusCode());
             return $response;
         } catch (\Exception $e) {
-            $this->logger->error("{$errorMessagePrefix}: {$e->getCode()} " . $e->getMessage());
+            $logger->error("{$errorMessagePrefix}: {$e->getCode()} " . $e->getMessage());
             return $this->exceptionHtml($e);
         }
     }
@@ -156,5 +153,15 @@ class OwsProxyController extends Controller
         $response->setStatusCode($e->getCode() ?: 500);
         $response->setContent($html->getContent());
         return $response;
+    }
+
+    /**
+     * @return LoggerInterface
+     */
+    protected function getLogger()
+    {
+        /** @var LoggerInterface $logger */
+        $logger = $this->get('logger');
+        return $logger;
     }
 }
