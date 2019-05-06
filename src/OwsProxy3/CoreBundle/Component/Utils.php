@@ -74,6 +74,7 @@ class Utils
      * (default false)
      * @param string $name the parameter name
      * @return string the parameter value or null
+     * @deprecated
      */
     public static function getParamValue(Request $request, $name,
             $method = null, $ignoreCase = false)
@@ -112,6 +113,7 @@ class Utils
      * 
      * @param \Symfony\Component\HttpFoundation\Request $request
      * @return array the associative array with all parameters
+     * @deprecated use Request methods directly
      */
     public static function getAllParams(Request $request)
     {
@@ -141,6 +143,7 @@ class Utils
      * @param boolean $ignoreCase if the parameter name is case sensitive
      *  => false (default false)
      * @return string|null the parameter value
+     * @deprecated
      */
     public static function getParamValueFromAll(Request $request, $name,
             $ignoreCase = false)
