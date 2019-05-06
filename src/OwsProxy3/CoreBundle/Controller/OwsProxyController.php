@@ -134,6 +134,7 @@ class OwsProxyController extends Controller
             }
             $content = $browserResponse->getContent();
             $response->setContent($content);
+            $response->setStatusCode($browserResponse->getStatusCode());
             return $response;
         } catch (\Exception $e) {
             $this->logger->error("{$errorMessagePrefix}: {$e->getCode()} " . $e->getMessage());

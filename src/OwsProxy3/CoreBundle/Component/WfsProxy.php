@@ -29,7 +29,7 @@ class WfsProxy extends CommonProxy
         $browserResponse = parent::handle();
         // quirks mode: on: CommonProxy / WmsProxy let the caller decide what to do with the response
         // WfsProxy throws
-        if ($browserResponse->isOk()) {
+        if ($browserResponse->isOk() || $browserResponse->isEmpty()) {
             return $browserResponse;
         } else {
             throw new HTTPStatus502Exception();

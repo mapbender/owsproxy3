@@ -54,7 +54,7 @@ class WmsProxy extends CommonProxy
 
         $browserResponse = parent::handle();
 
-        if ($browserResponse->isOk()) {
+        if ($browserResponse->isOk() || $browserResponse->isEmpty()) {
             $event = new AfterProxyEvent($this->proxy_query, $browserResponse);
             $this->event_dispatcher->dispatch('owsproxy.after_proxy', $event);
         } else {
