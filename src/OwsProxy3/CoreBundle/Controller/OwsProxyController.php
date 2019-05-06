@@ -45,8 +45,6 @@ class OwsProxyController extends Controller
             $logger->debug("OwsProxyController->genericProxyAction");
             $proxy_config = $this->container->getParameter("owsproxy.proxy");
             $headers_req = Utils::getHeadersFromRequest($request);
-            $getParams = Utils::getParams($request, Utils::$METHOD_GET);
-            $postParams = Utils::getParams($request, Utils::$METHOD_POST);
             if (null === $content) {
                 $content = $request->getContent();
             }
@@ -55,8 +53,8 @@ class OwsProxyController extends Controller
                 null,
                 null,
                 $headers_req,
-                $getParams,
-                $postParams,
+                $request->query->all(),
+                $request->request->all(),
                 $content
             );
             $proxy = new CommonProxy($proxy_config, $proxy_query, $logger);

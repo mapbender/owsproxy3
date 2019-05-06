@@ -106,9 +106,7 @@ class ProxyQuery
      */
     public static function createFromRequest(Request $request)
     {
-        $rowUrl = urldecode(Utils::getParamValue($request, Utils::$PARAMETER_URL,
-                        Utils::$METHOD_GET, false));
-        $rowUrl = parse_url($rowUrl);
+        $rowUrl = parse_url($request->query->get(Utils::$PARAMETER_URL));
         if (empty($rowUrl["host"]))
         {
             throw new HTTPStatus502Exception("The host is not defined", 502);
@@ -119,35 +117,18 @@ class ProxyQuery
             parse_str($rowUrl["query"], $getParams);
             unset($rowUrl["query"]);
         }
+        $extraGetParams = $request->query->all();
+        unset($extraGetParams[Utils::$PARAMETER_URL]);
 
-        $allParams = Utils::getAllParams($request);
-
-        if (isset($allParams[Utils::$METHOD_GET]) &&
-                isset($allParams[Utils::$METHOD_GET][Utils::$PARAMETER_URL]))
-        {
-            unset($allParams[Utils::$METHOD_GET][Utils::$PARAMETER_URL]);
-        }
-        $content    = null;
-        $postParams = array();
-        if (isset($allParams[Utils::$CONTENT]) || isset($allParams[Utils::$METHOD_POST]))
-        {
+        $content    = $request->getContent() ?: null;
+        $postParams = $request->request->all();
+        if ($content || $postParams) {
             $method     = Utils::$METHOD_POST;
-            $content    = isset($allParams[Utils::$CONTENT]) ?
-                $allParams[Utils::$CONTENT] : $request->getContent();
-            $postParams = isset($allParams[Utils::$METHOD_POST]) ?
-                    $allParams[Utils::$METHOD_POST] : array();
             // if url containts more get parameters
-            if (!empty($allParams[Utils::$METHOD_GET])) {
-                $postParams = array_merge($postParams,
-                        $allParams[Utils::$METHOD_GET]);
-            }
-        }
-        else
-        {
-            $method        = Utils::$METHOD_GET;
-            $getParamshelp = isset($allParams[Utils::$METHOD_GET]) ?
-                    $allParams[Utils::$METHOD_GET] : array();
-            $getParams     = array_merge($getParams, $getParamshelp);
+            $postParams = array_merge($postParams, $extraGetParams);
+        } else {
+            $method = Utils::$METHOD_GET;
+            $getParams = array_merge($getParams, $extraGetParams);
         }
         $headers = Utils::getHeadersFromRequest($request);
 
@@ -576,7 +557,7 @@ class ProxyQuery
 
     public function getServiceType()
     {
-        $type = $this->$this->getGetParamValue('service', true);
+        $type = $this->getGetParamValue('service', true);
         $type = $type ?: $this->getPostParamValue('service', true);
         return $type ?: null;
     }
