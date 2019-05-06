@@ -156,97 +156,22 @@ class ProxyQuery
         $this->content    = $content;
         $this->getParams  = array();
         $this->postParams = array();
-        foreach ($getParams as $key => $value)
-        {
-            if (!$this->hasGetPostParamValue($key, true))
-            {
+        $usedKeys = array();
+        foreach ($getParams as $key => $value) {
+            $lcKey = strtolower($key);
+            if (!in_array($lcKey, $usedKeys)) {
                 $this->getParams[$key] = $value;
+                $usedKeys[] = $lcKey;
             }
         }
-        foreach ($postParams as $key => $value)
-        {
-            if (!$this->hasGetPostParamValue($key, true))
-            {
+        foreach ($postParams as $key => $value) {
+            $lcKey = strtolower($key);
+            if (!in_array($lcKey, $usedKeys)) {
                 $this->postParams[$key] = $value;
+                $usedKeys[] = $lcKey;
             }
         }
         $this->headers = $headers;
-    }
-
-    /**
-     * Adds a POST parameter if not already present
-     *
-     * @param string $name
-     * @param string $value
-     * @return boolean true if added false if not
-     */
-    public function addPostParameter($name, $value)
-    {
-        if (!$this->hasGetPostParamValue($name, true))
-        {
-            $this->postParams[$name] = $value;
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    /**
-     * Adds a GET parameter if not already present
-     *
-     * @param string $name
-     * @param string $value
-     * @return boolean true if added false if not
-     */
-    public function addGetParameter($name, $value)
-    {
-        if (!$this->hasGetPostParamValue($name, true))
-        {
-            $this->getParams[$name] = $value;
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    /**
-     * Adds a POST/GET parameter, depending on method, if it's not already present
-     *
-     * @param string $name
-     * @param string $value
-     * @return boolean|null true if added, false if not added, null for unsupported method
-     */
-    public function addQueryParameter($name, $value)
-    {
-        if ($this->method === Utils::$METHOD_GET)
-        {
-            if (!$this->hasGetPostParamValue($name, true))
-            {
-                $this->addGetParameter($name, $value);
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-        else if ($this->method === Utils::$METHOD_POST)
-        {
-            if (!$this->hasGetPostParamValue($name, true))
-            {
-                $this->addPostParameter($name, $value);
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-        return null;
     }
 
     /**
@@ -299,27 +224,6 @@ class ProxyQuery
     }
 
     /**
-     * Sets the headers
-     * @param string[] key => value
-     */
-    public function setHeaders($headers)
-    {
-        $this->headers = $headers;
-    }
-    
-    /**
-     * Appends a header, doesn't support keys.
-     *
-     * @internal
-     * @deprecated
-     * @param mixed $header
-     */
-    public function addHeader($header)
-    {
-        $this->headers[] = $header;
-    }
-    
-    /**
      * Generats the url for HTTP GET
      *
      * @return string the HTTP GET url
@@ -353,212 +257,18 @@ class ProxyQuery
         return $scheme . $user . $pass . $host . $port . $path . $urlquery;
     }
 
-    /**
-     * Returns the parameter value from GET/POST parameters
-     *
-     * @param string $name the parameter name
-     * @param boolean $ignoreCase to ignore the parameter name case sensitivity
-     * @return string|null the parameter value or null
-     */
-    public function getGetPostParamValue($name, $ignoreCase = false)
-    {
-        $param = $this->getGetParamValue($name, $ignoreCase);
-        if ($param !== null)
-        {
-            return $param;
-        }
-        else
-        {
-            return $this->getPostParamValue($name, $ignoreCase);
-        }
-    }
-
-    /**
-     * Returns the parameter value from GET parameters
-     *
-     * @param string $name the parameter name
-     * @param boolean $ignoreCase to ignore the parameter name case sensitivity
-     * @return string|null the parameter value or null
-     */
-    public function getGetParamValue($name, $ignoreCase = false)
-    {
-        if ($ignoreCase)
-        {
-            $name = strtolower($name);
-            foreach ($this->getParams as $key => $value)
-            {
-                if (strtolower($key) === $name)
-                {
-                    return $value;
-                }
-            }
-        }
-        else
-        {
-            foreach ($this->getParams as $key => $value)
-            {
-                if ($key === $name)
-                {
-                    return $value;
-                }
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Returns the parameter value from POST parameters
-     *
-     * @param string $name the parameter name
-     * @param boolean $ignoreCase  to ignore the parameter name case sensitivity
-     * @return string|null the parameter value or null
-     */
-    public function getPostParamValue($name, $ignoreCase = false)
-    {
-        if ($ignoreCase)
-        {
-            $name = strtolower($name);
-            foreach ($this->postParams as $key => $value)
-            {
-                if (strtolower($key) === $name)
-                {
-                    return $value;
-                }
-            }
-        }
-        else
-        {
-            foreach ($this->postParams as $key => $value)
-            {
-                if ($key === $name)
-                {
-                    return $value;
-                }
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Removes a GET parameter.
-     * @param string $name parameter name
-     * @return boolean true if parameter removed
-     */
-    public function removeGetParameter($name)
-    {
-        if (isset($this->getParams[$name]))
-        {
-            unset($this->getParams[$name]);
-            return true;
-        }
-        else return false;
-    }
-
-    /**
-     * Removes a POST parameter.
-     * @param string $name parameter name
-     * @return boolean true if parameter removed
-     */
-    public function removePostParameter($name)
-    {
-        if (isset($this->postParams[$name]))
-        {
-            unset($this->postParams[$name]);
-            return true;
-        }
-        else return false;
-    }
-
-    /**
-     * Checks if a GET/POST parameter exists
-     *
-     * @param string $name the parameter name
-     * @param boolean $ignoreCase to ignore the parameter name case sensitivity
-     * @return boolean true if a parameter exists
-     */
-    public function hasGetPostParamValue($name, $ignoreCase = false)
-    {
-        $param = $this->hasGetParamValue($name, $ignoreCase);
-        if ($param !== null)
-        {
-            return $param;
-        }
-        else
-        {
-            return $this->hasPostParamValue($name, $ignoreCase);
-        }
-    }
-
-    /**
-     * Checks if a GET parameter exists
-     *
-     * @param string $name the parameter name
-     * @param boolean $ignoreCase to ignore the parameter name case sensitivity
-     * @return boolean true if a parameter exists
-     */
-    public function hasGetParamValue($name, $ignoreCase = false)
-    {
-        if ($ignoreCase)
-        {
-            $name = strtolower($name);
-            foreach ($this->getParams as $key => $value)
-            {
-                if (strtolower($key) === $name)
-                {
-                    return true;
-                }
-            }
-        }
-        else
-        {
-            foreach ($this->getParams as $key => $value)
-            {
-                if ($key === $name)
-                {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Checks if a POST parameter exists
-     *
-     * @param string $name the parameter name
-     * @param boolean $ignoreCase  to ignore the parameter name case sensitivity
-     * @return boolean true if a parameter exists
-     */
-    public function hasPostParamValue($name, $ignoreCase = false)
-    {
-        if ($ignoreCase)
-        {
-            $name = strtolower($name);
-            foreach ($this->postParams as $key => $value)
-            {
-                if (strtolower($key) === $name)
-                {
-                    return true;
-                }
-            }
-        }
-        else
-        {
-            foreach ($this->postParams as $key => $value)
-            {
-                if ($key === $name)
-                {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
     public function getServiceType()
     {
-        $type = $this->getGetParamValue('service', true);
-        $type = $type ?: $this->getPostParamValue('service', true);
-        return $type ?: null;
+        foreach ($this->getParams as $key => $value) {
+            if (strtolower($key) === 'service') {
+                return $value;
+            }
+        }
+        foreach ($this->postParams as $key => $value) {
+            if (strtolower($key) === 'service') {
+                return $value;
+            }
+        }
+        return null;
     }
 }
