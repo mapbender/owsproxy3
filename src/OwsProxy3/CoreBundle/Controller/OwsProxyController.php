@@ -39,7 +39,6 @@ class OwsProxyController extends Controller
     public function genericProxyAction(Request $request, $url, $content = null)
     {
         $request->getSession()->save();
-        $logger = $this->getLogger();
         $proxy = null;
         try {
             $headers_req = Utils::getHeadersFromRequest($request);
@@ -58,13 +57,8 @@ class OwsProxyController extends Controller
         } catch (\InvalidArgumentException $e) {
             throw new BadRequestHttpException($e->getMessage(), $e);
         }
-        try {
-            $proxy = $this->proxyFactory($proxy_query, null);
-            return $this->getProxyResponse($proxy, $request);
-        } catch (\Exception $e) {
-            $logger->error($e->getMessage() . " " . $e->getCode() . ($proxy ? (" " . get_class($proxy)) : ''));
-            return $this->exceptionHtml($e);
-        }
+        $proxy = $this->proxyFactory($proxy_query, null);
+        return $this->getProxyResponse($proxy, $request);
     }
 
     /**
@@ -77,7 +71,6 @@ class OwsProxyController extends Controller
     public function entryPointAction(Request $request)
     {
         $request->getSession()->save();
-        $logger = $this->getLogger();
         /** @var Signer $signer */
         $signer = $this->get('signer');
 
@@ -96,12 +89,7 @@ class OwsProxyController extends Controller
 
         $service = strtoupper($proxy_query->getServiceType());
         $proxy = $this->proxyFactory($proxy_query, $service);
-        try {
-            return $this->getProxyResponse($proxy, $request);
-        } catch (\Exception $e) {
-            $logger->error($e->getMessage() . " " . $e->getCode() . ($proxy ? (" " . get_class($proxy)) : ''));
-            return $this->exceptionHtml($e);
-        }
+        return $this->getProxyResponse($proxy, $request);
     }
 
     /**
@@ -112,15 +100,15 @@ class OwsProxyController extends Controller
      */
     private function exceptionHtml(\Exception $e)
     {
-        $response = new Response();
-        $html = $this->render("OwsProxy3CoreBundle::exception.html.twig", array("exception" => $e));
+        $response = $this->render("OwsProxy3CoreBundle::exception.html.twig", array(
+            "exception" => $e,
+        ));
         $response->headers->set('Content-Type', 'text/html');
         if ($e instanceof HttpException) {
             $response->setStatusCode($e->getCode());
         } else {
             $response->setStatusCode(500);
         }
-        $response->setContent($html->getContent());
         return $response;
     }
 
@@ -131,7 +119,12 @@ class OwsProxyController extends Controller
      */
     protected function getProxyResponse(CommonProxy $proxy, Request $request)
     {
-        $browserResponse = $proxy->handle();
+        try {
+            $browserResponse = $proxy->handle();
+        } catch (\Exception $e) {
+            $this->getLogger()->error($e->getMessage() . " " . $e->getCode() . " " . get_class($proxy));
+            return $this->exceptionHtml($e);
+        }
 
         $cookies_req = $request->cookies;
         $response = new Response();
