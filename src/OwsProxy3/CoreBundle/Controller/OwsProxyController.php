@@ -40,9 +40,8 @@ class OwsProxyController extends Controller
     {
         $request->getSession()->save();
         $logger = $this->getLogger();
-        $errorMessagePrefix = "OwsProxyController->genericProxyAction";
+        $proxy = null;
         try {
-            $logger->debug("OwsProxyController->genericProxyAction");
             $headers_req = Utils::getHeadersFromRequest($request);
             if (null === $content) {
                 $content = $request->getContent();
@@ -59,7 +58,7 @@ class OwsProxyController extends Controller
             $proxy = $this->proxyFactory($proxy_query, null);
             return $this->getProxyResponse($proxy, $request);
         } catch (\Exception $e) {
-            $logger->error("{$errorMessagePrefix} : " . $e->getMessage() . " " . $e->getCode());
+            $logger->error($e->getMessage() . " " . $e->getCode() . ($proxy ? (" " . get_class($proxy)) : ''));
             return $this->exceptionHtml($e);
         }
     }
@@ -89,12 +88,10 @@ class OwsProxyController extends Controller
 
         $service = strtoupper($proxy_query->getServiceType());
         $proxy = $this->proxyFactory($proxy_query, $service);
-        $errorMessagePrefix = "OwsProxyController->entryPointAction {$service}";
-        $logger->debug("OwsProxyController->entryPointAction");
         try {
             return $this->getProxyResponse($proxy, $request);
         } catch (\Exception $e) {
-            $logger->error("{$errorMessagePrefix}: {$e->getCode()} " . $e->getMessage());
+            $logger->error($e->getMessage() . " " . $e->getCode() . ($proxy ? (" " . get_class($proxy)) : ''));
             return $this->exceptionHtml($e);
         }
     }
