@@ -18,7 +18,7 @@ class ProxyQuery
      *
      * @var string[] the parsed url (PHP parse_url()) without get parameters
      */
-    protected $rowUrl;
+    protected $urlParts;
 
     /**
      *
@@ -148,7 +148,7 @@ class ProxyQuery
     private function __construct($rowUrl, $method, $content, $getParams,
             $postParams, $headers)
     {
-        $this->rowUrl     = $rowUrl;
+        $this->urlParts = $rowUrl;
         $this->method     = $method;
         $this->content    = $content;
         $this->getParams  = array();
@@ -169,6 +169,11 @@ class ProxyQuery
             }
         }
         $this->headers = $headers;
+    }
+
+    public function getHostname()
+    {
+        return $this->urlParts['host'];
     }
 
     /**
@@ -207,7 +212,7 @@ class ProxyQuery
      */
     public function getRowUrl()
     {
-        return $this->rowUrl;
+        return $this->urlParts;
     }
 
     /**
@@ -227,9 +232,9 @@ class ProxyQuery
      */
     public function getGetUrl()
     {
-        $scheme = empty($this->rowUrl["scheme"]) ? "http://" : $this->rowUrl["scheme"] . "://";
-        $user   = empty($this->rowUrl["user"]) ? "" : $this->rowUrl["user"];
-        $pass   = empty($this->rowUrl["pass"]) ? "" : $this->rowUrl["pass"];
+        $scheme = empty($this->urlParts["scheme"]) ? "http://" : $this->urlParts["scheme"] . "://";
+        $user   = empty($this->urlParts["user"]) ? "" : $this->urlParts["user"];
+        $pass   = empty($this->urlParts["pass"]) ? "" : $this->urlParts["pass"];
 
         // if pass is there, put a : between user and pass (user:pass)
         if (!empty($pass)) {
@@ -241,10 +246,10 @@ class ProxyQuery
             $pass = rawurlencode($pass) . "@";
         }
 
-        $host = $this->rowUrl["host"];
-        $port = empty($this->rowUrl["port"]) ? "" : ":" . $this->rowUrl["port"];
+        $host = $this->urlParts["host"];
+        $port = empty($this->urlParts["port"]) ? "" : ":" . $this->urlParts["port"];
 
-        $path = empty($this->rowUrl["path"]) ? "" : $this->rowUrl["path"];
+        $path = empty($this->urlParts["path"]) ? "" : $this->urlParts["path"];
 
         $urlquery = "";
         if (count($this->getParams) > 0)

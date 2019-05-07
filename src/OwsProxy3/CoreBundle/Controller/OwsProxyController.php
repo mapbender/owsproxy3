@@ -6,7 +6,6 @@ use Mapbender\CoreBundle\Component\Signer;
 use OwsProxy3\CoreBundle\Component\Utils;
 use OwsProxy3\CoreBundle\Component\CommonProxy;
 use OwsProxy3\CoreBundle\Component\ProxyQuery;
-use OwsProxy3\CoreBundle\Component\WmsProxy;
 use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -56,7 +55,7 @@ class OwsProxyController extends Controller
         } catch (\InvalidArgumentException $e) {
             throw new BadRequestHttpException($e->getMessage(), $e);
         }
-        $proxy = $this->proxyFactory($proxy_query, null);
+        $proxy = $this->proxyFactory($proxy_query);
         return $this->getProxyResponse($proxy, $request);
     }
 
@@ -86,8 +85,7 @@ class OwsProxyController extends Controller
             throw new AccessDeniedHttpException('Invalid URL signature: ' . $e->getMessage());
         }
 
-        $service = strtoupper($proxy_query->getServiceType());
-        $proxy = $this->proxyFactory($proxy_query, $service);
+        $proxy = $this->proxyFactory($proxy_query);
         return $this->getProxyResponse($proxy, $request);
     }
 
@@ -124,6 +122,18 @@ class OwsProxyController extends Controller
             $this->getLogger()->error($e->getMessage() . " " . $e->getCode() . " " . get_class($proxy));
             return $this->exceptionHtml($e);
         }
+        if (!($browserResponse->isOk() || $browserResponse->isEmpty())) {
+            $statusCode = $browserResponse->getStatusCode();
+            $host = $proxy->getProxyQuery()->getHostname();
+            $message = "{$host} says: {$statusCode} {$browserResponse->getReasonPhrase()}";
+            $response = $this->render("OwsProxy3CoreBundle::exception.html.twig", array(
+                'exception' => array(
+                    'message' => $message,
+                ),
+            ));
+            $response->setStatusCode($statusCode, $browserResponse->getReasonPhrase());
+            return $response;
+        }
 
         $cookies_req = $request->cookies;
         $response = new Response();
@@ -140,20 +150,13 @@ class OwsProxyController extends Controller
 
     /**
      * @param ProxyQuery $query
-     * @param string|null $serviceType
      * @return CommonProxy
      */
-    protected function proxyFactory(ProxyQuery $query, $serviceType)
+    protected function proxyFactory(ProxyQuery $query)
     {
         $config = $this->container->getParameter("owsproxy.proxy");
         $logger = $this->getLogger();
-
-        switch (strtoupper($serviceType)) {
-            case 'WMS':
-                return new WmsProxy(null, $config, $query, $logger);
-            default:
-                return new CommonProxy($config, $query, $logger);
-        }
+        return new CommonProxy($config, $query, $logger);
     }
 
     /**

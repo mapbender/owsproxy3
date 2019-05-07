@@ -160,4 +160,12 @@ class CommonProxy
         throw new \RuntimeException("Unsupported method {$method}");
     }
 
+    /**
+     * @return ProxyQuery
+     */
+    public function getProxyQuery()
+    {
+        return $this->proxy_query;
+    }
+
 }
