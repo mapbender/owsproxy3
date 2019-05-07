@@ -5,7 +5,6 @@ namespace OwsProxy3\CoreBundle\Component;
 use Buzz\Message\Response;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus502Exception;
 use OwsProxy3\CoreBundle\Event\AfterProxyEvent;
 use OwsProxy3\CoreBundle\Event\BeforeProxyEvent;
 use Buzz\Browser;
@@ -41,16 +40,12 @@ class WmsProxy extends CommonProxy
      * Handles the request and returns the response.
      *
      * @return Response the browser response
-     * @throws Exception\HTTPStatus502Exception
+     * @throws \Exception
      */
     public function handle()
     {
-        try {
-            $event = new BeforeProxyEvent($this->proxy_query);
-            $this->event_dispatcher->dispatch('owsproxy.before_proxy', $event);
-        } catch (\RuntimeException $e) {
-            throw new HTTPStatus502Exception();
-        }
+        $event = new BeforeProxyEvent($this->proxy_query);
+        $this->event_dispatcher->dispatch('owsproxy.before_proxy', $event);
 
         $browserResponse = parent::handle();
 
@@ -84,14 +79,9 @@ class WmsProxy extends CommonProxy
                 }
                 return $browserResponse;
             }
-            $message = null;
-            if ($browserResponse->getReasonPhrase() !== null) {
-                $rawUrl = $this->proxy_query->getRowUrl();
-                $message = 'Server "' . $rawUrl['host'] . '" says: ' . $browserResponse->getReasonPhrase();
-                throw new HTTPStatus502Exception($message);
-            } else {
-                throw new HTTPStatus502Exception();
-            }
+            $rawUrl = $this->proxy_query->getRowUrl();
+            $message = "Server {$rawUrl['host']} says: {$browserResponse->getStatusCode()} / '{$browserResponse->getReasonPhrase()}'";
+            throw new \RuntimeException($message);
         }
         return $browserResponse;
     }

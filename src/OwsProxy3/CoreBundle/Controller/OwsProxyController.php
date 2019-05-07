@@ -15,6 +15,7 @@ use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
@@ -54,6 +55,10 @@ class OwsProxyController extends Controller
                 $request->request->all(),
                 $content
             );
+        } catch (\InvalidArgumentException $e) {
+            throw new BadRequestHttpException($e->getMessage(), $e);
+        }
+        try {
             $proxy = $this->proxyFactory($proxy_query, null);
             return $this->getProxyResponse($proxy, $request);
         } catch (\Exception $e) {
@@ -75,12 +80,12 @@ class OwsProxyController extends Controller
         $logger = $this->getLogger();
         /** @var Signer $signer */
         $signer = $this->get('signer');
-        $proxy_query = ProxyQuery::createFromRequest($request);
+
         try {
+            $proxy_query = ProxyQuery::createFromRequest($request);
             $signer->checkSignedUrl($proxy_query->getGetUrl());
-        } catch (HttpException $e) {
-            // let http exceptions run through unmodified
-            throw $e;
+        } catch (\InvalidArgumentException $e) {
+            throw new BadRequestHttpException($e->getMessage(), $e);
         } catch (BadSignatureException $e) {
             throw new AccessDeniedHttpException('Invalid URL signature: ' . $e->getMessage());
         }
@@ -106,7 +111,11 @@ class OwsProxyController extends Controller
         $response = new Response();
         $html = $this->render("OwsProxy3CoreBundle::exception.html.twig", array("exception" => $e));
         $response->headers->set('Content-Type', 'text/html');
-        $response->setStatusCode($e->getCode() ?: 500);
+        if ($e instanceof HttpException) {
+            $response->setStatusCode($e->getCode());
+        } else {
+            $response->setStatusCode(500);
+        }
         $response->setContent($html->getContent());
         return $response;
     }
