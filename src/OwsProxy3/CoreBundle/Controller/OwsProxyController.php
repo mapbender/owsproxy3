@@ -58,17 +58,7 @@ class OwsProxyController extends Controller
                 $content
             );
             $proxy = new CommonProxy($proxy_config, $proxy_query, $logger);
-            $cookies_req = $request->cookies;
-            $response = new Response();
-            $browserResponse = $proxy->handle();
-            Utils::setHeadersFromBrowserResponse($response, $browserResponse);
-            foreach ($cookies_req as $key => $value) {
-                $response->headers->removeCookie($key);
-                $response->headers->setCookie(new Cookie($key, $value));
-            }
-            $response->setContent($browserResponse->getContent());
-            $response->setStatusCode($browserResponse->getStatusCode());
-            return $response;
+            return $this->getProxyResponse($proxy, $request);
         } catch (\Exception $e) {
             $logger->error("{$errorMessagePrefix} : " . $e->getMessage() . " " . $e->getCode());
             return $this->exceptionHtml($e);
@@ -101,16 +91,16 @@ class OwsProxyController extends Controller
         $service = strtoupper($proxy_query->getServiceType());
         $errorMessagePrefix = "OwsProxyController->entryPointAction {$service}";
         $logger->debug("OwsProxyController->entryPointAction");
-        /** @var EventDispatcherInterface $dispatcher */
-        $dispatcher = $this->container->get('event_dispatcher');
         $proxy_config = $this->container->getParameter("owsproxy.proxy");
 
         switch ($service) {
             case 'WMS':
+                /** @var EventDispatcherInterface $dispatcher */
+                $dispatcher = $this->get('event_dispatcher');
                 $proxy = new WmsProxy($dispatcher, $proxy_config, $proxy_query, $logger);
                 break;
             case 'WFS':
-                $proxy = new WfsProxy($dispatcher, $proxy_config, $proxy_query, 'OWSProxy3', $logger);
+                $proxy = new WfsProxy(null, $proxy_config, $proxy_query, 'OWSProxy3', $logger);
                 break;
             default:
                 $proxy = new CommonProxy($proxy_config, $proxy_query, $logger);
@@ -118,19 +108,7 @@ class OwsProxyController extends Controller
         }
 
         try {
-            $browserResponse = $proxy->handle();
-
-            $cookies_req = $request->cookies;
-            $response = new Response();
-            Utils::setHeadersFromBrowserResponse($response, $browserResponse);
-            foreach ($cookies_req as $key => $value) {
-                $response->headers->removeCookie($key);
-                $response->headers->setCookie(new Cookie($key, $value));
-            }
-            $content = $browserResponse->getContent();
-            $response->setContent($content);
-            $response->setStatusCode($browserResponse->getStatusCode());
-            return $response;
+            return $this->getProxyResponse($proxy, $request);
         } catch (\Exception $e) {
             $logger->error("{$errorMessagePrefix}: {$e->getCode()} " . $e->getMessage());
             return $this->exceptionHtml($e);
@@ -150,6 +128,28 @@ class OwsProxyController extends Controller
         $response->headers->set('Content-Type', 'text/html');
         $response->setStatusCode($e->getCode() ?: 500);
         $response->setContent($html->getContent());
+        return $response;
+    }
+
+    /**
+     * @param CommonProxy $proxy
+     * @param Request $request
+     * @return Response
+     */
+    protected function getProxyResponse(CommonProxy $proxy, Request $request)
+    {
+        $browserResponse = $proxy->handle();
+
+        $cookies_req = $request->cookies;
+        $response = new Response();
+        Utils::setHeadersFromBrowserResponse($response, $browserResponse);
+        foreach ($cookies_req as $key => $value) {
+            $response->headers->removeCookie($key);
+            $response->headers->setCookie(new Cookie($key, $value));
+        }
+        $content = $browserResponse->getContent();
+        $response->setContent($content);
+        $response->setStatusCode($browserResponse->getStatusCode());
         return $response;
     }
 
