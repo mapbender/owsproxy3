@@ -68,28 +68,22 @@ class ProxyQuery
             $content = null)
     {
         $rowUrl = parse_url($url);
-        if (empty($rowUrl["host"])) {
-            throw new \InvalidArgumentException("Missing host name");
-        }
-        if ($user !== null)
-        {
+        if ($user !== null) {
             $rowUrl["user"] = $user;
             $rowUrl["pass"] = $password === null ? "" : $password;
         }
         $getParamsHelp = array();
-        if (isset($rowUrl["query"]))
-        {
+        if (isset($rowUrl["query"])) {
             parse_str($rowUrl["query"], $getParamsHelp);
             unset($rowUrl["query"]);
         }
         $getParams = array_merge($getParamsHelp, $getParams);
-        $method    = Utils::$METHOD_GET;
-        if ($content !== null || count($postParams) > 0)
-        {
-            $method = Utils::$METHOD_POST;
-        }
 
-        $headers['Host'] = $rowUrl['host'];
+        if ($content !== null || $postParams) {
+            $method = Utils::$METHOD_POST;
+        } else {
+            $method = Utils::$METHOD_GET;
+        }
 
         return new ProxyQuery($rowUrl, $method, $content, $getParams,
                 $postParams, $headers);
@@ -105,12 +99,8 @@ class ProxyQuery
     public static function createFromRequest(Request $request)
     {
         $rowUrl = parse_url($request->query->get(Utils::$PARAMETER_URL));
-        if (empty($rowUrl["host"])) {
-            throw new \InvalidArgumentException("Missing host name");
-        }
         $getParams = array();
-        if (isset($rowUrl["query"]))
-        {
+        if (isset($rowUrl["query"])) {
             parse_str($rowUrl["query"], $getParams);
             unset($rowUrl["query"]);
         }
@@ -129,8 +119,6 @@ class ProxyQuery
         }
         $headers = Utils::getHeadersFromRequest($request);
 
-        $headers['Host'] = $rowUrl['host'];
-
         return new ProxyQuery($rowUrl, $method, $content, $getParams,
                 $postParams, $headers);
     }
@@ -138,17 +126,22 @@ class ProxyQuery
     /**
      * Creates an instance
      *
-     * @param array $rowUrl the parsed url (parse_url()) without "query"
+     * @param array $urlParts the parsed url (parse_url()) without "query"
      * @param string $method the GET/POST HTTP method
      * @param string $content the POST content
      * @param array $getParams the GET parameter
      * @param array $postParams the POST parameter
      * @param array $headers the HTTP headers
      */
-    private function __construct($rowUrl, $method, $content, $getParams,
-            $postParams, $headers)
+    private function __construct($urlParts, $method, $content, $getParams,
+                                 $postParams, $headers)
     {
-        $this->urlParts = $rowUrl;
+        if (empty($urlParts["host"])) {
+            throw new \InvalidArgumentException("Missing host name");
+        }
+        $headers['Host'] = $urlParts['host'];
+
+        $this->urlParts = $urlParts;
         $this->method     = $method;
         $this->content    = $content;
         $this->getParams  = array();
@@ -257,20 +250,5 @@ class ProxyQuery
             $urlquery = "?" . http_build_query($this->getParams);
         }
         return $scheme . $user . $pass . $host . $port . $path . $urlquery;
-    }
-
-    public function getServiceType()
-    {
-        foreach ($this->getParams as $key => $value) {
-            if (strtolower($key) === 'service') {
-                return $value;
-            }
-        }
-        foreach ($this->postParams as $key => $value) {
-            if (strtolower($key) === 'service') {
-                return $value;
-            }
-        }
-        return null;
     }
 }
