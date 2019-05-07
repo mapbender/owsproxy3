@@ -2,9 +2,9 @@
 
 namespace OwsProxy3\CoreBundle\EventListener;
 
+use Symfony\Component\HttpKernel\Event\PostResponseEvent;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Doctrine\ORM\EntityManagerInterface;
-use OwsProxy3\CoreBundle\Event\ProxyTerminateEvent;
 use OwsProxy3\CoreBundle\Entity\Log;
 
 /**
@@ -44,10 +44,10 @@ class LoggingListener
     }
 
     /**
-     * @param ProxyTerminateEvent $event
+     * @param PostResponseEvent $event
      * @throws \Exception
      */
-    public function onTerminate(ProxyTerminateEvent $event)
+    public function onTerminate(PostResponseEvent $event)
     {
         if(!$this->owsproxyLogging) {
             return;
