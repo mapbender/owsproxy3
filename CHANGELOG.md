@@ -1,4 +1,12 @@
-# Changelog
+* **dev-master @ 4ea5eb4**
+  - Remove WmsProxy / WfsProxy specializations
+  - Remove unused components Clipping, SrsPoint, AbstractWorker, AbstractClipWorker
+  - Remove unused view svg.html.twig
+  - Remove custom Http exceptions
+  - Remove custom events owsproxy.before_proxy, owsproxy.after_proxy, owsproxy.terminate
+  - Reduce ProxyQuery public API
+  - Remove interactive HTTP auth challenge forwarding
+
 * **v3.0.6.5** - 2019-05-07
   - Resolve Symfony 3 compatibility issues ([PR#17](https://github.com/mapbender/owsproxy3/pull/17))
   - Support forwarding of valid empty and 304 Not Modified responses
