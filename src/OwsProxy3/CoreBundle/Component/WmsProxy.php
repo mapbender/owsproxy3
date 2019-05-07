@@ -5,8 +5,6 @@ namespace OwsProxy3\CoreBundle\Component;
 use Buzz\Message\Response;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use OwsProxy3\CoreBundle\Event\AfterProxyEvent;
-use OwsProxy3\CoreBundle\Event\BeforeProxyEvent;
 use Buzz\Browser;
 
 /**
@@ -17,8 +15,6 @@ use Buzz\Browser;
  */
 class WmsProxy extends CommonProxy
 {
-
-    protected $event_dispatcher;
 
     /**
      * Creates a wms proxy
@@ -33,7 +29,6 @@ class WmsProxy extends CommonProxy
                                 $userAgent = 'OWSProxy3')
     {
         parent::__construct($proxy_config, $proxy_query, $logger, null, null, $userAgent);
-        $this->event_dispatcher = $event_dispatcher;
     }
 
     /**
@@ -44,20 +39,14 @@ class WmsProxy extends CommonProxy
      */
     public function handle()
     {
-        $event = new BeforeProxyEvent($this->proxy_query);
-        $this->event_dispatcher->dispatch('owsproxy.before_proxy', $event);
-
         $browserResponse = parent::handle();
-
         if ($browserResponse->isOk() || $browserResponse->isEmpty()) {
-            $event = new AfterProxyEvent($this->proxy_query, $browserResponse);
-            $this->event_dispatcher->dispatch('owsproxy.after_proxy', $event);
+            return $browserResponse;
         } else {
             $rawUrl = $this->proxy_query->getRowUrl();
             $message = "Server {$rawUrl['host']} says: {$browserResponse->getStatusCode()} / '{$browserResponse->getReasonPhrase()}'";
             throw new \RuntimeException($message);
         }
-        return $browserResponse;
     }
 
     /**

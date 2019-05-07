@@ -10,7 +10,6 @@ use OwsProxy3\CoreBundle\Component\WmsProxy;
 use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -151,9 +150,7 @@ class OwsProxyController extends Controller
 
         switch (strtoupper($serviceType)) {
             case 'WMS':
-                /** @var EventDispatcherInterface $dispatcher */
-                $dispatcher = $this->get('event_dispatcher');
-                return new WmsProxy($dispatcher, $config, $query, $logger);
+                return new WmsProxy(null, $config, $query, $logger);
             default:
                 return new CommonProxy($config, $query, $logger);
         }
