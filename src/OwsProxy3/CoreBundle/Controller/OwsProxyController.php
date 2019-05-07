@@ -5,7 +5,6 @@ use ArsGeografica\Signing\BadSignatureException;
 use Mapbender\CoreBundle\Component\Signer;
 use OwsProxy3\CoreBundle\Component\Utils;
 use OwsProxy3\CoreBundle\Component\CommonProxy;
-use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus403Exception;
 use OwsProxy3\CoreBundle\Component\ProxyQuery;
 use OwsProxy3\CoreBundle\Component\WmsProxy;
 use OwsProxy3\CoreBundle\Component\WfsProxy;
@@ -16,6 +15,7 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
@@ -95,7 +95,7 @@ class OwsProxyController extends Controller
             // let http exceptions run through unmodified
             throw $e;
         } catch (BadSignatureException $e) {
-            throw new HTTPStatus403Exception('Invalid URL signature: ' . $e->getMessage());
+            throw new AccessDeniedHttpException('Invalid URL signature: ' . $e->getMessage());
         }
 
         $service = strtoupper($proxy_query->getServiceType());
