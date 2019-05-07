@@ -7,7 +7,6 @@ use OwsProxy3\CoreBundle\Component\Utils;
 use OwsProxy3\CoreBundle\Component\CommonProxy;
 use OwsProxy3\CoreBundle\Component\ProxyQuery;
 use OwsProxy3\CoreBundle\Component\WmsProxy;
-use OwsProxy3\CoreBundle\Component\WfsProxy;
 use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -149,8 +148,6 @@ class OwsProxyController extends Controller
                 /** @var EventDispatcherInterface $dispatcher */
                 $dispatcher = $this->get('event_dispatcher');
                 return new WmsProxy($dispatcher, $config, $query, $logger);
-            case 'WFS':
-                return new WfsProxy(null, $config, $query, 'OWSProxy3', $logger);
             default:
                 return new CommonProxy($config, $query, $logger);
         }
