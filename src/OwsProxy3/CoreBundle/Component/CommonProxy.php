@@ -92,29 +92,12 @@ class CommonProxy
     protected function createBrowser()
     {
         $this->logger->debug("CommonProxy->createBrowser rowUrl:" . print_r($this->proxy_query->getRowUrl(), true));
-
-        $rowUrl = $this->proxy_query->getRowUrl();
-        $proxy_config = $this->proxy_config;
         $curl = new Curl();
-        $curl->setOption(CURLOPT_TIMEOUT, 60);
-        $curl->setOption(CURLOPT_CONNECTTIMEOUT, 30);
-        if ($proxy_config !== null && $proxy_config['checkssl'] !== null && $proxy_config['checkssl'] === false) {
-            $curl->setOption(CURLOPT_SSL_VERIFYPEER, false);
+        $curlOptions = $this->getCurlOptions($this->proxy_query->getHostName(), $this->proxy_config);
+        foreach ($curlOptions as $optionId => $optionValue) {
+            $curl->setOption($optionId, $optionValue);
         }
-        if ($proxy_config !== null && $proxy_config['timeout'] !== null) {
-            $curl->setOption(CURLOPT_TIMEOUT, $proxy_config['timeout']);
-        }
-        if ($proxy_config !== null && $proxy_config['connecttimeout'] !== null) {
-            $curl->setOption(CURLOPT_CONNECTTIMEOUT, $proxy_config['connecttimeout']);
-        }
-        if ($proxy_config !== null && $proxy_config['host'] !== null
-            && !in_array($rowUrl['host'], $proxy_config['noproxy'])) {
-            $curl->setOption(CURLOPT_PROXY, $proxy_config['host']);
-            $curl->setOption(CURLOPT_PROXYPORT, $proxy_config['port']);
-            if ($proxy_config['user'] !== null && $proxy_config['password'] !== null) {
-                $curl->setOption(CURLOPT_PROXYUSERPWD, $proxy_config['user'] . ':' . $proxy_config['password']);
-            }
-        }
+        $rowUrl = $this->proxy_query->getRowUrl();
         $browser = new Browser($curl);
 
         if(array_key_exists('user', $rowUrl) && $rowUrl['user'] != ''
@@ -166,6 +149,41 @@ class CommonProxy
     public function getProxyQuery()
     {
         return $this->proxy_query;
+    }
+
+    /**
+     * @param string $hostName
+     * @param array $config
+     * @return array
+     */
+    public static function getCurlOptions($hostName, $config)
+    {
+        $options = array(
+            CURLOPT_TIMEOUT => 60,
+            CURLOPT_CONNECTTIMEOUT => 30,
+        );
+        if (isset($config['timeout'])) {
+            $options[CURLOPT_TIMEOUT] = $config['timeout'];
+        }
+        if (isset($config['connecttimeout'])) {
+            $options[CURLOPT_CONNECTTIMEOUT] = $config['connecttimeout'];
+        }
+        if (isset($config['checkssl'])) {
+            $options[CURLOPT_SSL_VERIFYPEER] = !!$config['checkssl'];
+        }
+        if (isset($config['host']) && (empty($config['noproxy']) || !in_array($hostName, $config['noproxy']))) {
+            $proxyOptions = array(
+                CURLOPT_PROXY => $config['host'],
+                CURLOPT_PROXYPORT => $config['port'],
+            );
+            if (isset($config['user']) && isset($config['password'])) {
+                $proxyOptions = array_replace($proxyOptions, array(
+                    CURLOPT_PROXYUSERPWD => "{$config['user']}:{$config['password']}",
+                ));
+            }
+            $options = array_replace($options, $proxyOptions);
+        }
+        return $options;
     }
 
 }
