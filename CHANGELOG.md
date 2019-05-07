@@ -1,5 +1,5 @@
 # Changelog
-* **dev-release/3.0.6 @ 54daf4f**
+* **v3.0.6.5** - 2019-05-07
   - Resolve Symfony 3 compatibility issues ([PR#17](https://github.com/mapbender/owsproxy3/pull/17))
   - Support forwarding of valid empty and 304 Not Modified responses
   - Support forwarding of requests with no `SERVICE=` parameter
