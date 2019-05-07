@@ -86,6 +86,10 @@ class OwsProxyController extends Controller
             $signer->checkSignedUrl($proxy_query->getGetUrl());
         } catch (\InvalidArgumentException $e) {
             throw new BadRequestHttpException($e->getMessage(), $e);
+            // NOTE: ProxySignatureException is not defined in Mapbender < 3.0.8.1
+            //       PHP is supposed to tolerate undefined classes in catch clauses
+        } catch (\Mapbender\CoreBundle\Component\Exception\ProxySignatureException $e) {
+            throw new AccessDeniedHttpException($e->getMessage(), $e);
         } catch (BadSignatureException $e) {
             throw new AccessDeniedHttpException('Invalid URL signature: ' . $e->getMessage());
         }
