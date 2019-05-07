@@ -43,7 +43,6 @@ class OwsProxyController extends Controller
         $errorMessagePrefix = "OwsProxyController->genericProxyAction";
         try {
             $logger->debug("OwsProxyController->genericProxyAction");
-            $proxy_config = $this->container->getParameter("owsproxy.proxy");
             $headers_req = Utils::getHeadersFromRequest($request);
             if (null === $content) {
                 $content = $request->getContent();
@@ -57,7 +56,7 @@ class OwsProxyController extends Controller
                 $request->request->all(),
                 $content
             );
-            $proxy = new CommonProxy($proxy_config, $proxy_query, $logger);
+            $proxy = $this->proxyFactory($proxy_query, null);
             return $this->getProxyResponse($proxy, $request);
         } catch (\Exception $e) {
             $logger->error("{$errorMessagePrefix} : " . $e->getMessage() . " " . $e->getCode());
@@ -89,24 +88,9 @@ class OwsProxyController extends Controller
         }
 
         $service = strtoupper($proxy_query->getServiceType());
+        $proxy = $this->proxyFactory($proxy_query, $service);
         $errorMessagePrefix = "OwsProxyController->entryPointAction {$service}";
         $logger->debug("OwsProxyController->entryPointAction");
-        $proxy_config = $this->container->getParameter("owsproxy.proxy");
-
-        switch ($service) {
-            case 'WMS':
-                /** @var EventDispatcherInterface $dispatcher */
-                $dispatcher = $this->get('event_dispatcher');
-                $proxy = new WmsProxy($dispatcher, $proxy_config, $proxy_query, $logger);
-                break;
-            case 'WFS':
-                $proxy = new WfsProxy(null, $proxy_config, $proxy_query, 'OWSProxy3', $logger);
-                break;
-            default:
-                $proxy = new CommonProxy($proxy_config, $proxy_query, $logger);
-                break;
-        }
-
         try {
             return $this->getProxyResponse($proxy, $request);
         } catch (\Exception $e) {
@@ -151,6 +135,28 @@ class OwsProxyController extends Controller
         $response->setContent($content);
         $response->setStatusCode($browserResponse->getStatusCode());
         return $response;
+    }
+
+    /**
+     * @param ProxyQuery $query
+     * @param string|null $serviceType
+     * @return CommonProxy
+     */
+    protected function proxyFactory(ProxyQuery $query, $serviceType)
+    {
+        $config = $this->container->getParameter("owsproxy.proxy");
+        $logger = $this->getLogger();
+
+        switch (strtoupper($serviceType)) {
+            case 'WMS':
+                /** @var EventDispatcherInterface $dispatcher */
+                $dispatcher = $this->get('event_dispatcher');
+                return new WmsProxy($dispatcher, $config, $query, $logger);
+            case 'WFS':
+                return new WfsProxy(null, $config, $query, 'OWSProxy3', $logger);
+            default:
+                return new CommonProxy($config, $query, $logger);
+        }
     }
 
     /**
