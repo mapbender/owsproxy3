@@ -1,8 +1,10 @@
 # Changelog
-* **dev-release/3.0.6 @ 287e7e0**
+* **v3.0.6.5** - 2019-05-07
   - Resolve Symfony 3 compatibility issues ([PR#17](https://github.com/mapbender/owsproxy3/pull/17))
   - Support forwarding of valid empty and 304 Not Modified responses
   - Support forwarding of requests with no `SERVICE=` parameter
+  - Replace custom HTTP Exceptions with Symfony equivalents
+  - Replace HTTP exceptions thrown from internal components with appropriate non-HTTP exceptions
 
 * **v3.0.6.4** - 2018-09-12
     - Add public utility method to convert Buzz Response to HttpFoundation Response

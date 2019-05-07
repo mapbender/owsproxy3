@@ -3,7 +3,6 @@
 namespace OwsProxy3\CoreBundle\Component;
 
 use Symfony\Component\HttpFoundation\Request;
-use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus502Exception;
 
 
 /**
@@ -62,16 +61,15 @@ class ProxyQuery
      * @param array $postParams the POST parameters
      * @param string $content the POST content
      * @return ProxyQuery a new instance
-     * @throws HTTPStatus502Exception if the host is not defined at $url
+     * @throws \InvalidArgumentException for invalid url
      */
     public static function createFromUrl($url, $user = null, $password = null,
             $headers = array(), $getParams = array(), $postParams = array(),
             $content = null)
     {
         $rowUrl = parse_url($url);
-        if (empty($rowUrl["host"]))
-        {
-            throw new HTTPStatus502Exception("The host is not defined", 502);
+        if (empty($rowUrl["host"])) {
+            throw new \InvalidArgumentException("Missing host name");
         }
         if ($user !== null)
         {
@@ -102,14 +100,13 @@ class ProxyQuery
      *
      * @param Request $request
      * @return ProxyQuery a new instance
-     * @throws HTTPStatus502Exception if the host is not defined
+     * @throws \InvalidArgumentException for invalid url
      */
     public static function createFromRequest(Request $request)
     {
         $rowUrl = parse_url($request->query->get(Utils::$PARAMETER_URL));
-        if (empty($rowUrl["host"]))
-        {
-            throw new HTTPStatus502Exception("The host is not defined", 502);
+        if (empty($rowUrl["host"])) {
+            throw new \InvalidArgumentException("Missing host name");
         }
         $getParams = array();
         if (isset($rowUrl["query"]))

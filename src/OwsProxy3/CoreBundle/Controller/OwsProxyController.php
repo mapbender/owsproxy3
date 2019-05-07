@@ -5,10 +5,8 @@ use ArsGeografica\Signing\BadSignatureException;
 use Mapbender\CoreBundle\Component\Signer;
 use OwsProxy3\CoreBundle\Component\Utils;
 use OwsProxy3\CoreBundle\Component\CommonProxy;
-use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus403Exception;
 use OwsProxy3\CoreBundle\Component\ProxyQuery;
 use OwsProxy3\CoreBundle\Component\WmsProxy;
-use OwsProxy3\CoreBundle\Component\WfsProxy;
 use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -16,6 +14,8 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
@@ -39,11 +39,8 @@ class OwsProxyController extends Controller
     public function genericProxyAction(Request $request, $url, $content = null)
     {
         $request->getSession()->save();
-        $logger = $this->getLogger();
-        $errorMessagePrefix = "OwsProxyController->genericProxyAction";
+        $proxy = null;
         try {
-            $logger->debug("OwsProxyController->genericProxyAction");
-            $proxy_config = $this->container->getParameter("owsproxy.proxy");
             $headers_req = Utils::getHeadersFromRequest($request);
             if (null === $content) {
                 $content = $request->getContent();
@@ -57,22 +54,11 @@ class OwsProxyController extends Controller
                 $request->request->all(),
                 $content
             );
-            $proxy = new CommonProxy($proxy_config, $proxy_query, $logger);
-            $cookies_req = $request->cookies;
-            $response = new Response();
-            $browserResponse = $proxy->handle();
-            Utils::setHeadersFromBrowserResponse($response, $browserResponse);
-            foreach ($cookies_req as $key => $value) {
-                $response->headers->removeCookie($key);
-                $response->headers->setCookie(new Cookie($key, $value));
-            }
-            $response->setContent($browserResponse->getContent());
-            $response->setStatusCode($browserResponse->getStatusCode());
-            return $response;
-        } catch (\Exception $e) {
-            $logger->error("{$errorMessagePrefix} : " . $e->getMessage() . " " . $e->getCode());
-            return $this->exceptionHtml($e);
+        } catch (\InvalidArgumentException $e) {
+            throw new BadRequestHttpException($e->getMessage(), $e);
         }
+        $proxy = $this->proxyFactory($proxy_query, null);
+        return $this->getProxyResponse($proxy, $request);
     }
 
     /**
@@ -85,56 +71,25 @@ class OwsProxyController extends Controller
     public function entryPointAction(Request $request)
     {
         $request->getSession()->save();
-        $logger = $this->getLogger();
         /** @var Signer $signer */
         $signer = $this->get('signer');
-        $proxy_query = ProxyQuery::createFromRequest($request);
+
         try {
+            $proxy_query = ProxyQuery::createFromRequest($request);
             $signer->checkSignedUrl($proxy_query->getGetUrl());
-        } catch (HttpException $e) {
-            // let http exceptions run through unmodified
-            throw $e;
+        } catch (\InvalidArgumentException $e) {
+            throw new BadRequestHttpException($e->getMessage(), $e);
+            // NOTE: ProxySignatureException is not defined in Mapbender < 3.0.8.1
+            //       PHP is supposed to tolerate undefined classes in catch clauses
+        } catch (\Mapbender\CoreBundle\Component\Exception\ProxySignatureException $e) {
+            throw new AccessDeniedHttpException($e->getMessage(), $e);
         } catch (BadSignatureException $e) {
-            throw new HTTPStatus403Exception('Invalid URL signature: ' . $e->getMessage());
+            throw new AccessDeniedHttpException('Invalid URL signature: ' . $e->getMessage());
         }
 
         $service = strtoupper($proxy_query->getServiceType());
-        $errorMessagePrefix = "OwsProxyController->entryPointAction {$service}";
-        $logger->debug("OwsProxyController->entryPointAction");
-        /** @var EventDispatcherInterface $dispatcher */
-        $dispatcher = $this->container->get('event_dispatcher');
-        $proxy_config = $this->container->getParameter("owsproxy.proxy");
-
-        switch ($service) {
-            case 'WMS':
-                $proxy = new WmsProxy($dispatcher, $proxy_config, $proxy_query, $logger);
-                break;
-            case 'WFS':
-                $proxy = new WfsProxy($dispatcher, $proxy_config, $proxy_query, 'OWSProxy3', $logger);
-                break;
-            default:
-                $proxy = new CommonProxy($proxy_config, $proxy_query, $logger);
-                break;
-        }
-
-        try {
-            $browserResponse = $proxy->handle();
-
-            $cookies_req = $request->cookies;
-            $response = new Response();
-            Utils::setHeadersFromBrowserResponse($response, $browserResponse);
-            foreach ($cookies_req as $key => $value) {
-                $response->headers->removeCookie($key);
-                $response->headers->setCookie(new Cookie($key, $value));
-            }
-            $content = $browserResponse->getContent();
-            $response->setContent($content);
-            $response->setStatusCode($browserResponse->getStatusCode());
-            return $response;
-        } catch (\Exception $e) {
-            $logger->error("{$errorMessagePrefix}: {$e->getCode()} " . $e->getMessage());
-            return $this->exceptionHtml($e);
-        }
+        $proxy = $this->proxyFactory($proxy_query, $service);
+        return $this->getProxyResponse($proxy, $request);
     }
 
     /**
@@ -145,12 +100,63 @@ class OwsProxyController extends Controller
      */
     private function exceptionHtml(\Exception $e)
     {
-        $response = new Response();
-        $html = $this->render("OwsProxy3CoreBundle::exception.html.twig", array("exception" => $e));
+        $response = $this->render("OwsProxy3CoreBundle::exception.html.twig", array(
+            "exception" => $e,
+        ));
         $response->headers->set('Content-Type', 'text/html');
-        $response->setStatusCode($e->getCode() ?: 500);
-        $response->setContent($html->getContent());
+        if ($e instanceof HttpException) {
+            $response->setStatusCode($e->getCode());
+        } else {
+            $response->setStatusCode(500);
+        }
         return $response;
+    }
+
+    /**
+     * @param CommonProxy $proxy
+     * @param Request $request
+     * @return Response
+     */
+    protected function getProxyResponse(CommonProxy $proxy, Request $request)
+    {
+        try {
+            $browserResponse = $proxy->handle();
+        } catch (\Exception $e) {
+            $this->getLogger()->error($e->getMessage() . " " . $e->getCode() . " " . get_class($proxy));
+            return $this->exceptionHtml($e);
+        }
+
+        $cookies_req = $request->cookies;
+        $response = new Response();
+        Utils::setHeadersFromBrowserResponse($response, $browserResponse);
+        foreach ($cookies_req as $key => $value) {
+            $response->headers->removeCookie($key);
+            $response->headers->setCookie(new Cookie($key, $value));
+        }
+        $content = $browserResponse->getContent();
+        $response->setContent($content);
+        $response->setStatusCode($browserResponse->getStatusCode());
+        return $response;
+    }
+
+    /**
+     * @param ProxyQuery $query
+     * @param string|null $serviceType
+     * @return CommonProxy
+     */
+    protected function proxyFactory(ProxyQuery $query, $serviceType)
+    {
+        $config = $this->container->getParameter("owsproxy.proxy");
+        $logger = $this->getLogger();
+
+        switch (strtoupper($serviceType)) {
+            case 'WMS':
+                /** @var EventDispatcherInterface $dispatcher */
+                $dispatcher = $this->get('event_dispatcher');
+                return new WmsProxy($dispatcher, $config, $query, $logger);
+            default:
+                return new CommonProxy($config, $query, $logger);
+        }
     }
 
     /**

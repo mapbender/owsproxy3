@@ -6,7 +6,6 @@ use Buzz\Browser;
 use Buzz\Client\Curl;
 use Buzz\Listener\BasicAuthListener;
 use Buzz\Message\Response;
-use OwsProxy3\CoreBundle\Component\Exception\HTTPStatus502Exception;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
@@ -130,38 +129,35 @@ class CommonProxy
      * Handles the request and returns the response.
      *
      * @return Response the browser response
-     * @throws Exception\HTTPStatus502Exception
+     * @throws \Exception
      */
     public function handle()
     {
         $browser = $this->createBrowser();
 
-        try {
-            $method = $this->proxy_query->getMethod();
-            $headers = Utils::prepareHeadersForRequest($this->proxy_query->getHeaders(), $this->headerBlackList,
-                $this->headerWhiteList);
-            $headers['User-Agent'] = $this->userAgent;
-            $url = $this->proxy_query->getGetUrl();
+        $method = $this->proxy_query->getMethod();
+        $headers = Utils::prepareHeadersForRequest($this->proxy_query->getHeaders(), $this->headerBlackList,
+            $this->headerWhiteList);
+        $headers['User-Agent'] = $this->userAgent;
+        $url = $this->proxy_query->getGetUrl();
 
-            $this->logger->debug("{$this->logMessagePrefix}->handle {$method}:" . $url);
-            $this->logger->debug("{$this->logMessagePrefix}->handle Headers: " . print_r($headers, true));
+        $this->logger->debug("{$this->logMessagePrefix}->handle {$method}:" . $url);
+        $this->logger->debug("{$this->logMessagePrefix}->handle Headers: " . print_r($headers, true));
 
-            if ($method === Utils::$METHOD_POST) {
-                if ($this->proxy_query->getContent() !== null) {
-                    $content = $this->proxy_query->getContent();
-                } else {
-                    $content = $this->proxy_query->getPostQueryString();
-                }
-                $browserResponse = $browser->post($url, $headers, $content);
-            } else if ($method === Utils::$METHOD_GET) {
-                $browserResponse = $browser->get($url, $headers);
+        /** @var Response $browserResponse */
+        if ($method === Utils::$METHOD_POST) {
+            if ($this->proxy_query->getContent() !== null) {
+                $content = $this->proxy_query->getContent();
+            } else {
+                $content = $this->proxy_query->getPostQueryString();
             }
-            /** @var Response $browserResponse */
-        } catch (\Exception $e) {
-            $this->logger->error("{$this->logMessagePrefix}->handle :" . $e->getMessage());
-            throw new HTTPStatus502Exception($e->getMessage(), 502);
+            $browserResponse = $browser->post($url, $headers, $content);
+            return $browserResponse;
+        } else if ($method === Utils::$METHOD_GET) {
+            $browserResponse = $browser->get($url, $headers);
+            return $browserResponse;
         }
-        return $browserResponse;
+        throw new \RuntimeException("Unsupported method {$method}");
     }
 
 }
