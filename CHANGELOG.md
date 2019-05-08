@@ -1,4 +1,4 @@
-* **dev-master @ 4ea5eb4**
+* **v3.1.0**
   - Remove WmsProxy / WfsProxy specializations
   - Remove unused components Clipping, SrsPoint, AbstractWorker, AbstractClipWorker
   - Remove unused view svg.html.twig
@@ -6,6 +6,7 @@
   - Remove custom events owsproxy.before_proxy, owsproxy.after_proxy, owsproxy.terminate
   - Reduce ProxyQuery public API
   - Remove interactive HTTP auth challenge forwarding
+  - Allow installation of kriswallsmith/buzz 0.16.x on PHP>=5.4
 
 * **v3.0.6.5** - 2019-05-07
   - Resolve Symfony 3 compatibility issues ([PR#17](https://github.com/mapbender/owsproxy3/pull/17))
