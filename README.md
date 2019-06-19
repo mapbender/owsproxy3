@@ -37,13 +37,13 @@ Conceals client IP, set `true` to hide the last byte of the client's IP address
 Proxy option allows to communicate services via custom proxy server.
 The option need some own configurations:
 
-* `host`: Proxy server host name. If sets to `null`, OwsProxy works without proxy.
+* `host`: Proxy server host name. If set to `null`, OwsProxy works without proxy.
 * `port`: Proxy server port number.
-* `timeout`: Give up, if OwsProxy don't retrieved response from given proxy in `number` seconds.  Default: 60 seconds. 
-* `connecttimeout`: Give up, if OwsProxy don't reach `host` in ` number` seconds. Default: 30 seconds.
+* `timeout`: Give up if OwsProxy doesn't retrieve response from given proxy in `number` seconds.  Default: 60 seconds. 
+* `connecttimeout`: Give up if OwsProxy doesn't reach `host` in ` number` seconds. Default: 30 seconds.
 * `user`:  Proxy server user name. Default: `null`.
 * `password`: Proxy server password for proxy server. Default: `null`.
-* `noproxy`:  Exclude hosts from connecting throught proxy server. Default: `null`. Hostnames and IP's can be given as an YAML array.
+* `noproxy`:  Exclude hosts from connecting through proxy server. Default: `null`. Hostnames and IP's can be given as an YAML array.
 * `checkssl`: Checks SSL. Default: false
 
 ### Configuration example
