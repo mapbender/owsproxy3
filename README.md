@@ -35,7 +35,7 @@ Conceals client IP, set `true` to hide the last byte of the client's IP address
 
 
 Proxy option allows to communicate services via custom proxy server.
-The option need some own configurations:
+The option needs some own configurations:
 
 * `host`: Proxy server host name. If set to `null`, OwsProxy works without proxy.
 * `port`: Proxy server port number.
