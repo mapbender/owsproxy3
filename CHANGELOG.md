@@ -1,3 +1,6 @@
+## v3.1.1
+- Fix errors in logging for unauthenticated users ([PR#18](https://github.com/mapbender/owsproxy3/pull/18))
+
 ## v3.1.0
 - Remove WmsProxy / WfsProxy specializations
 - Remove unused components Clipping, SrsPoint, AbstractWorker, AbstractClipWorker
