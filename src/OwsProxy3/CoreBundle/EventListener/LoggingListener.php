@@ -52,9 +52,15 @@ class LoggingListener
         if(!$this->owsproxyLogging) {
             return;
         }
-
+        $token = $this->tokenStorage->getToken();
         // User is either an object or string for anonymous users
-        $user = $this->tokenStorage->getToken()->getUser();
+        // If kernel.terminate Event is fired from outside of any firewall there will be no token object e.G. mapbender_core_login_login
+        if($token){
+            $user =$token->getUser();
+        } else {
+            $user = "anon.";
+        }
+        
         if(is_object($user))
         {
             $user_id = get_class($user) . '-' .
