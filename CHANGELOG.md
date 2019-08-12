@@ -1,3 +1,6 @@
+## v3.1.2
+- Update basic auth handling to work with buzz 0.16.1; require buzz 0.16.1
+
 ## v3.1.1
 - Fix errors in logging for unauthenticated users ([PR#18](https://github.com/mapbender/owsproxy3/pull/18))
 - Misc spelling corrections
