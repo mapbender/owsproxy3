@@ -5,8 +5,8 @@
     "type": "library",
     "license": "MIT",
     "require": {
-        "php": ">=5.3.3",
-        "kriswallsmith/buzz": "~0.15.0|~0.16.0"
+        "php": "^5.4|^7.0",
+        "kriswallsmith/buzz": "~0.16.1"
     },
     "autoload": {
         "psr-4": {"OwsProxy3\\": "src/OwsProxy3"}

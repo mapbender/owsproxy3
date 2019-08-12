@@ -4,8 +4,8 @@ namespace OwsProxy3\CoreBundle\Component;
 
 use Buzz\Browser;
 use Buzz\Client\Curl;
-use Buzz\Listener\BasicAuthListener;
 use Buzz\Message\Response;
+use Buzz\Middleware\BasicAuthMiddleware;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
@@ -97,12 +97,10 @@ class CommonProxy
         foreach ($curlOptions as $optionId => $optionValue) {
             $curl->setOption($optionId, $optionValue);
         }
-        $rowUrl = $this->proxy_query->getRowUrl();
+        $parts = $this->proxy_query->getRowUrl();
         $browser = new Browser($curl);
-
-        if(array_key_exists('user', $rowUrl) && $rowUrl['user'] != ''
-            && array_key_exists('pass', $rowUrl) && $rowUrl['pass'] != '') {
-            $browser->addListener(new BasicAuthListener($rowUrl['user'], $rowUrl['pass']));
+        if (!empty($parts['user']) && !empty($parts['pass'])) {
+            $browser->addMiddleware(new BasicAuthMiddleware($parts['user'], $parts['pass']));
         }
 
         return $browser;
