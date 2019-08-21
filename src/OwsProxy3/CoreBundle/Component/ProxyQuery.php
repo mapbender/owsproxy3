@@ -68,10 +68,21 @@ class ProxyQuery
             $content = null)
     {
         $rowUrl = parse_url($url);
-        if ($user !== null) {
+        if ($user) {
             $rowUrl["user"] = $user;
-            $rowUrl["pass"] = $password === null ? "" : $password;
+            $rowUrl["pass"] = $password ?: "";
+        } else {
+            if (!empty($rowUrl['user'])) {
+                $rowUrl['user'] = rawurldecode($rowUrl['user']);
+                if (!empty($rowUrl['pass'])) {
+                    $rowUrl['pass'] = rawurldecode($rowUrl['pass']);
+                }
+            } else {
+                unset($rowUrl['user']);
+                unset($rowUrl['pass']);
+            }
         }
+
         $getParamsHelp = array();
         if (isset($rowUrl["query"])) {
             parse_str($rowUrl["query"], $getParamsHelp);
@@ -98,7 +109,12 @@ class ProxyQuery
      */
     public static function createFromRequest(Request $request)
     {
-        $rowUrl = parse_url($request->query->get(Utils::$PARAMETER_URL));
+        $url = $request->query->get(Utils::$PARAMETER_URL);
+        $dummyQuery = static::createFromUrl($url);
+        $rowUrl = $dummyQuery->getRowUrl();
+        if ($query = parse_url($url, PHP_URL_QUERY)) {
+            $rowUrl['query'] = $query;
+        }
         $getParams = array();
         if (isset($rowUrl["query"])) {
             parse_str($rowUrl["query"], $getParams);
