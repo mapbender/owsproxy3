@@ -71,10 +71,11 @@ class OwsProxyController extends Controller
         $request->getSession()->save();
         /** @var Signer $signer */
         $signer = $this->get('signer');
+        $url = $request->query->get('url');
 
         try {
             $proxy_query = ProxyQuery::createFromRequest($request);
-            $signer->checkSignedUrl($proxy_query->getGetUrl());
+            $signer->checkSignedUrl($url);
         } catch (\InvalidArgumentException $e) {
             throw new BadRequestHttpException($e->getMessage(), $e);
             // NOTE: ProxySignatureException is not defined in Mapbender < 3.0.8.1
