@@ -34,12 +34,6 @@ class ProxyQuery
 
     /**
      *
-     * @var array the POST parameter
-     */
-    protected $postParams;
-
-    /**
-     *
      * @var string the POST content
      */
     protected $content;
@@ -88,6 +82,19 @@ class ProxyQuery
             $url = preg_replace('#(?<=//)([^@]+@)?#', $credentialsEnc . '@', $url, 1);
             return static::createFromUrl($url, null, null, $headers, array(), $postParams, $content);
         }
+
+        if ($postParams) {
+            if ($content) {
+                $content .= '&';
+            }
+            $content .= \http_build_query($postParams);
+            $method = Utils::$METHOD_POST;
+        } elseif ($content !== null) {
+            $method = Utils::$METHOD_POST;
+        } else {
+            $method = Utils::$METHOD_GET;
+        }
+
         $parts = parse_url($url);
         if (!empty($parts['user'])) {
             $parts['user'] = rawurldecode($parts['user']);
@@ -105,14 +112,7 @@ class ProxyQuery
             unset($parts["query"]);
         }
 
-        if ($content !== null || $postParams) {
-            $method = Utils::$METHOD_POST;
-        } else {
-            $method = Utils::$METHOD_GET;
-        }
-
-        return new ProxyQuery($parts, $method, $content, $getParams,
-                $postParams, $headers);
+        return new ProxyQuery($parts, $method, $content, $getParams, $headers);
     }
 
     /**
@@ -143,11 +143,10 @@ class ProxyQuery
      * @param string $method the GET/POST HTTP method
      * @param string $content the POST content
      * @param array $getParams the GET parameter
-     * @param array $postParams the POST parameter
      * @param array $headers the HTTP headers
      */
     private function __construct($urlParts, $method, $content, $getParams,
-                                 $postParams, $headers)
+                                 $headers)
     {
         if (empty($urlParts["host"])) {
             throw new \InvalidArgumentException("Missing host name");
@@ -158,19 +157,11 @@ class ProxyQuery
         $this->method     = $method;
         $this->content    = $content;
         $this->getParams  = array();
-        $this->postParams = array();
         $usedKeys = array();
         foreach ($getParams as $key => $value) {
             $lcKey = strtolower($key);
             if (!in_array($lcKey, $usedKeys)) {
                 $this->getParams[$key] = $value;
-                $usedKeys[] = $lcKey;
-            }
-        }
-        foreach ($postParams as $key => $value) {
-            $lcKey = strtolower($key);
-            if (!in_array($lcKey, $usedKeys)) {
-                $this->postParams[$key] = $value;
                 $usedKeys[] = $lcKey;
             }
         }
@@ -180,16 +171,6 @@ class ProxyQuery
     public function getHostname()
     {
         return $this->urlParts['host'];
-    }
-
-    /**
-     * Returns the query string for POST request
-     *
-     * @return string the query string for POST request
-     */
-    public function getPostQueryString()
-    {
-        return http_build_query($this->postParams);
     }
 
     /**

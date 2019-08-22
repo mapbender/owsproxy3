@@ -128,12 +128,7 @@ class CommonProxy
 
         /** @var Response $browserResponse */
         if ($method === Utils::$METHOD_POST) {
-            if ($this->proxy_query->getContent() !== null) {
-                $content = $this->proxy_query->getContent();
-            } else {
-                $content = $this->proxy_query->getPostQueryString();
-            }
-            $browserResponse = $browser->post($url, $headers, $content);
+            $browserResponse = $browser->post($url, $headers, $this->proxy_query->getContent());
             return $browserResponse;
         } else if ($method === Utils::$METHOD_GET) {
             $browserResponse = $browser->get($url, $headers);
