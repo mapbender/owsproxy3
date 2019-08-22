@@ -91,16 +91,17 @@ class CommonProxy
      */
     protected function createBrowser()
     {
-        $parts = $this->proxy_query->getRowUrl();
+        $pq = $this->proxy_query;
+        $parts = $pq->getRowUrl();
         $this->logger->debug("CommonProxy->createBrowser rowUrl:" . print_r($parts, true));
         $curl = new Curl();
-        $curlOptions = $this->getCurlOptions($this->proxy_query->getHostName(), $this->proxy_config);
+        $curlOptions = $this->getCurlOptions($pq->getHostName(), $this->proxy_config);
         foreach ($curlOptions as $optionId => $optionValue) {
             $curl->setOption($optionId, $optionValue);
         }
         $browser = new Browser($curl);
-        if (!empty($parts['user']) && !empty($parts['pass'])) {
-            $browser->addMiddleware(new BasicAuthMiddleware($parts['user'], $parts['pass']));
+        if ($pq->getUsername()) {
+            $browser->addMiddleware(new BasicAuthMiddleware($pq->getUsername(), $pq->getPassword()));
         }
 
         return $browser;

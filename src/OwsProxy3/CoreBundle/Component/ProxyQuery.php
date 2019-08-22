@@ -129,13 +129,11 @@ class ProxyQuery
         unset($extraGetParams[Utils::$PARAMETER_URL]);
         $headers = Utils::getHeadersFromRequest($request);
         if ($request->getMethod() === 'POST') {
-            $postParams = $request->request->all();
             $content = $request->getContent();
         } else {
-            $postParams = array();
             $content = null;
         }
-        return static::createFromUrl($url, null, null, $headers, $extraGetParams, $postParams, $content);
+        return static::createFromUrl($url, null, null, $headers, $extraGetParams, array(), $content);
     }
 
     /**
@@ -221,6 +219,24 @@ class ProxyQuery
     public function getRowUrl()
     {
         return $this->urlParts;
+    }
+
+    public function getUsername()
+    {
+        if (!empty($this->urlParts['user'])) {
+            return $this->urlParts['user'];
+        } else {
+            return null;
+        }
+    }
+
+    public function getPassword()
+    {
+        if (!empty($this->urlParts['pass'])) {
+            return $this->urlParts['pass'];
+        } else {
+            return null;
+        }
     }
 
     /**
