@@ -67,28 +67,43 @@ class ProxyQuery
             $headers = array(), $getParams = array(), $postParams = array(),
             $content = null)
     {
-        $rowUrl = parse_url($url);
-        if ($user) {
-            $rowUrl["user"] = $user;
-            $rowUrl["pass"] = $password ?: "";
-        } else {
-            if (!empty($rowUrl['user'])) {
-                $rowUrl['user'] = rawurldecode($rowUrl['user']);
-                if (!empty($rowUrl['pass'])) {
-                    $rowUrl['pass'] = rawurldecode($rowUrl['pass']);
-                }
+        // strip fragment
+        $url = preg_replace('/#.*$/', '', $url);
+        $url = rtrim($url, '&?');
+        if ($getParams) {
+            $extraQuery = \http_build_query($getParams);
+            if (preg_match('#\?#', $url)) {
+                $url = "{$url}&{$extraQuery}";
             } else {
-                unset($rowUrl['user']);
-                unset($rowUrl['pass']);
+                $url = "{$url}?{$extraQuery}";
             }
+            return static::createFromUrl($url, $user, $password, $headers, array(), $postParams, $content);
         }
 
-        $getParamsHelp = array();
-        if (isset($rowUrl["query"])) {
-            parse_str($rowUrl["query"], $getParamsHelp);
-            unset($rowUrl["query"]);
+        if ($user) {
+            $credentialsEnc = implode(':', array(
+                rawurlencode($user),
+                rawurlencode($password ?: ''),
+            ));
+            $url = preg_replace('#(?<=//)([^@]+@)?#', $credentialsEnc . '@', $url, 1);
+            return static::createFromUrl($url, null, null, $headers, array(), $postParams, $content);
         }
-        $getParams = array_merge($getParamsHelp, $getParams);
+        $parts = parse_url($url);
+        if (!empty($parts['user'])) {
+            $parts['user'] = rawurldecode($parts['user']);
+            if (!empty($parts['pass'])) {
+                $parts['pass'] = rawurldecode($parts['pass']);
+            }
+        } else {
+            unset($parts['user']);
+            unset($parts['pass']);
+        }
+
+        $getParams = array();
+        if (isset($parts["query"])) {
+            parse_str($parts["query"], $getParams);
+            unset($parts["query"]);
+        }
 
         if ($content !== null || $postParams) {
             $method = Utils::$METHOD_POST;
@@ -96,7 +111,7 @@ class ProxyQuery
             $method = Utils::$METHOD_GET;
         }
 
-        return new ProxyQuery($rowUrl, $method, $content, $getParams,
+        return new ProxyQuery($parts, $method, $content, $getParams,
                 $postParams, $headers);
     }
 
@@ -110,33 +125,17 @@ class ProxyQuery
     public static function createFromRequest(Request $request)
     {
         $url = $request->query->get(Utils::$PARAMETER_URL);
-        $dummyQuery = static::createFromUrl($url);
-        $rowUrl = $dummyQuery->getRowUrl();
-        if ($query = parse_url($url, PHP_URL_QUERY)) {
-            $rowUrl['query'] = $query;
-        }
-        $getParams = array();
-        if (isset($rowUrl["query"])) {
-            parse_str($rowUrl["query"], $getParams);
-            unset($rowUrl["query"]);
-        }
         $extraGetParams = $request->query->all();
         unset($extraGetParams[Utils::$PARAMETER_URL]);
-
-        $content    = $request->getContent() ?: null;
-        $postParams = $request->request->all();
-        if ($content || $postParams) {
-            $method     = Utils::$METHOD_POST;
-            // if url containts more get parameters
-            $postParams = array_merge($postParams, $extraGetParams);
-        } else {
-            $method = Utils::$METHOD_GET;
-            $getParams = array_merge($getParams, $extraGetParams);
-        }
         $headers = Utils::getHeadersFromRequest($request);
-
-        return new ProxyQuery($rowUrl, $method, $content, $getParams,
-                $postParams, $headers);
+        if ($request->getMethod() === 'POST') {
+            $postParams = $request->request->all();
+            $content = $request->getContent();
+        } else {
+            $postParams = array();
+            $content = null;
+        }
+        return static::createFromUrl($url, null, null, $headers, $extraGetParams, $postParams, $content);
     }
 
     /**
