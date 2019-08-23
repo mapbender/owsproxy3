@@ -152,6 +152,7 @@ class ProxyQuery
                 $lcKey = strtolower($key);
                 if (in_array($lcKey, $usedKeys)) {
                     unset($this->getParams[$key]);
+                    $url = rtrim(preg_replace('#(?<=[&?])' . preg_quote($key, '#') . '[^&]*(&|$)#', '', $url), '&?');
                 } else {
                     $usedKeys[] = $lcKey;
                 }
