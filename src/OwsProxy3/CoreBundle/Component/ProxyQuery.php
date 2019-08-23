@@ -71,7 +71,6 @@ class ProxyQuery
             } else {
                 $url = "{$url}?{$extraQuery}";
             }
-            return static::createFromUrl($url, $user, $password, $headers, array(), $postParams, $content);
         }
 
         if ($user) {
@@ -80,7 +79,6 @@ class ProxyQuery
                 rawurlencode($password ?: ''),
             ));
             $url = preg_replace('#(?<=//)([^@]+@)?#', $credentialsEnc . '@', $url, 1);
-            return static::createFromUrl($url, null, null, $headers, array(), $postParams, $content);
         }
 
         if ($postParams) {
@@ -95,24 +93,7 @@ class ProxyQuery
             $method = Utils::$METHOD_GET;
         }
 
-        $parts = parse_url($url);
-        if (!empty($parts['user'])) {
-            $parts['user'] = rawurldecode($parts['user']);
-            if (!empty($parts['pass'])) {
-                $parts['pass'] = rawurldecode($parts['pass']);
-            }
-        } else {
-            unset($parts['user']);
-            unset($parts['pass']);
-        }
-
-        $getParams = array();
-        if (isset($parts["query"])) {
-            parse_str($parts["query"], $getParams);
-            unset($parts["query"]);
-        }
-
-        return new ProxyQuery($parts, $method, $content, $getParams, $headers);
+        return new ProxyQuery($url, $method, $content, $headers);
     }
 
     /**
@@ -137,35 +118,50 @@ class ProxyQuery
     }
 
     /**
-     * Creates an instance
-     *
-     * @param array $urlParts the parsed url (parse_url()) without "query"
+     * @param string $url
      * @param string $method the GET/POST HTTP method
      * @param string $content the POST content
-     * @param array $getParams the GET parameter
      * @param array $headers the HTTP headers
      */
-    private function __construct($urlParts, $method, $content, $getParams,
-                                 $headers)
+    private function __construct($url, $method, $content, $headers)
     {
-        if (empty($urlParts["host"])) {
+        $parts = parse_url($url);
+        if (empty($parts["host"])) {
             throw new \InvalidArgumentException("Missing host name");
         }
-        $headers['Host'] = $urlParts['host'];
+        $this->headers = array_replace($headers, array(
+            'Host' => $parts['host'],
+        ));
 
-        $this->urlParts = $urlParts;
+        if (!empty($parts['user'])) {
+            $parts['user'] = rawurldecode($parts['user']);
+            if (!empty($parts['pass'])) {
+                $parts['pass'] = rawurldecode($parts['pass']);
+            }
+        } else {
+            unset($parts['user']);
+            unset($parts['pass']);
+        }
+
+        $this->getParams = array();
+        if (isset($parts["query"])) {
+            parse_str($parts["query"], $this->getParams);
+            // legacy quirk: filter repeated get params that differ only in case (first occurrence stays)
+            $usedKeys = array();
+            foreach ($this->getParams as $key => $value) {
+                $lcKey = strtolower($key);
+                if (in_array($lcKey, $usedKeys)) {
+                    unset($this->getParams[$key]);
+                } else {
+                    $usedKeys[] = $lcKey;
+                }
+            }
+            unset($parts["query"]);
+        }
+
+        $this->urlParts = $parts;
         $this->method     = $method;
         $this->content    = $content;
-        $this->getParams  = array();
-        $usedKeys = array();
-        foreach ($getParams as $key => $value) {
-            $lcKey = strtolower($key);
-            if (!in_array($lcKey, $usedKeys)) {
-                $this->getParams[$key] = $value;
-                $usedKeys[] = $lcKey;
-            }
-        }
-        $this->headers = $headers;
     }
 
     public function getHostname()
