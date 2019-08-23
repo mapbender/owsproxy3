@@ -13,12 +13,8 @@ use Symfony\Component\HttpFoundation\Request;
  */
 class ProxyQuery
 {
-
-    /**
-     *
-     * @var string[] the parsed url (PHP parse_url()) without get parameters
-     */
-    protected $urlParts;
+    /** @var string */
+    protected $url;
 
     /**
      *
@@ -133,16 +129,6 @@ class ProxyQuery
             'Host' => $parts['host'],
         ));
 
-        if (!empty($parts['user'])) {
-            $parts['user'] = rawurldecode($parts['user']);
-            if (!empty($parts['pass'])) {
-                $parts['pass'] = rawurldecode($parts['pass']);
-            }
-        } else {
-            unset($parts['user']);
-            unset($parts['pass']);
-        }
-
         $this->getParams = array();
         if (isset($parts["query"])) {
             parse_str($parts["query"], $this->getParams);
@@ -157,17 +143,16 @@ class ProxyQuery
                     $usedKeys[] = $lcKey;
                 }
             }
-            unset($parts["query"]);
         }
+        $this->url = $url;
 
-        $this->urlParts = $parts;
         $this->method     = $method;
         $this->content    = $content;
     }
 
     public function getHostname()
     {
-        return $this->urlParts['host'];
+        return \parse_url($this->url, PHP_URL_HOST);
     }
 
     /**
@@ -191,27 +176,38 @@ class ProxyQuery
     }
 
     /**
-     * Returns the row url (without GET parameter)
+     * Returns most url parts (as per parse_url) minus 'query'
      * @return string[]
+     * @deprecated for weird wording, low utility / complexity ratio; just use the url
      */
     public function getRowUrl()
     {
-        return $this->urlParts;
+        $parts = \parse_url($this->url);
+        unset($parts['query']);
+        if (empty($parts['user'])) {
+            unset($parts['user']);
+            unset($parts['pass']);
+        } else {
+            $parts['user'] = rawurldecode($parts['user']);
+            if (isset($parts['pass'])) {
+                $parts['pass'] = rawurldecode($parts['pass']);
+            } else {
+                $parts['pass'] = '';
+            }
+        }
+
+        return $parts;
     }
 
     public function getUsername()
     {
-        if (!empty($this->urlParts['user'])) {
-            return $this->urlParts['user'];
-        } else {
-            return null;
-        }
+        return rawurldecode(\parse_url($this->url, PHP_URL_USER) ?: '') ?: null;
     }
 
     public function getPassword()
     {
-        if (!empty($this->urlParts['pass'])) {
-            return $this->urlParts['pass'];
+        if (\parse_url($this->url, PHP_URL_USER)) {
+            return rawurldecode(\parse_url($this->url, PHP_URL_PASS) ?: '');
         } else {
             return null;
         }
@@ -228,36 +224,21 @@ class ProxyQuery
     }
 
     /**
-     * Generats the url for HTTP GET
+     * @return string
+     */
+    public function getUrl()
+    {
+        return $this->url;
+    }
+
+    /**
+     * Returns the url
      *
-     * @return string the HTTP GET url
+     * @return string
+     * @deprecated alias for getUrl; URLs don't depend on HTTP methods
      */
     public function getGetUrl()
     {
-        $scheme = empty($this->urlParts["scheme"]) ? "http://" : $this->urlParts["scheme"] . "://";
-        $user   = empty($this->urlParts["user"]) ? "" : $this->urlParts["user"];
-        $pass   = empty($this->urlParts["pass"]) ? "" : $this->urlParts["pass"];
-
-        // if pass is there, put a : between user and pass (user:pass)
-        if (!empty($pass)) {
-            $user =  rawurlencode($user) .  ":";
-        }
-
-        // if user and password are there, put a @ after pass, so that user:pass@host will be constructed
-        if (!empty($user) || !empty($pass)) {
-            $pass = rawurlencode($pass) . "@";
-        }
-
-        $host = $this->urlParts["host"];
-        $port = empty($this->urlParts["port"]) ? "" : ":" . $this->urlParts["port"];
-
-        $path = empty($this->urlParts["path"]) ? "" : $this->urlParts["path"];
-
-        $urlquery = "";
-        if (count($this->getParams) > 0)
-        {
-            $urlquery = "?" . http_build_query($this->getParams);
-        }
-        return $scheme . $user . $pass . $host . $port . $path . $urlquery;
+        return $this->url;
     }
 }
