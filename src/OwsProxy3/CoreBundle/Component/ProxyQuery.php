@@ -13,12 +13,8 @@ use Symfony\Component\HttpFoundation\Request;
  */
 class ProxyQuery
 {
-
-    /**
-     *
-     * @var string[] the parsed url (PHP parse_url()) without get parameters
-     */
-    protected $urlParts;
+    /** @var string */
+    protected $url;
 
     /**
      *
@@ -31,12 +27,6 @@ class ProxyQuery
      * @var array the GET parameters
      */
     protected $getParams;
-
-    /**
-     *
-     * @var array the POST parameter
-     */
-    protected $postParams;
 
     /**
      *
@@ -67,26 +57,39 @@ class ProxyQuery
             $headers = array(), $getParams = array(), $postParams = array(),
             $content = null)
     {
-        $rowUrl = parse_url($url);
-        if ($user !== null) {
-            $rowUrl["user"] = $user;
-            $rowUrl["pass"] = $password === null ? "" : $password;
+        // strip fragment
+        $url = preg_replace('/#.*$/', '', $url);
+        $url = rtrim($url, '&?');
+        if ($getParams) {
+            $extraQuery = \http_build_query($getParams);
+            if (preg_match('#\?#', $url)) {
+                $url = "{$url}&{$extraQuery}";
+            } else {
+                $url = "{$url}?{$extraQuery}";
+            }
         }
-        $getParamsHelp = array();
-        if (isset($rowUrl["query"])) {
-            parse_str($rowUrl["query"], $getParamsHelp);
-            unset($rowUrl["query"]);
-        }
-        $getParams = array_merge($getParamsHelp, $getParams);
 
-        if ($content !== null || $postParams) {
+        if ($user) {
+            $credentialsEnc = implode(':', array(
+                rawurlencode($user),
+                rawurlencode($password ?: ''),
+            ));
+            $url = preg_replace('#(?<=//)([^@]+@)?#', $credentialsEnc . '@', $url, 1);
+        }
+
+        if ($postParams) {
+            if ($content) {
+                $content .= '&';
+            }
+            $content .= \http_build_query($postParams);
+            $method = Utils::$METHOD_POST;
+        } elseif ($content !== null) {
             $method = Utils::$METHOD_POST;
         } else {
             $method = Utils::$METHOD_GET;
         }
 
-        return new ProxyQuery($rowUrl, $method, $content, $getParams,
-                $postParams, $headers);
+        return new ProxyQuery($url, $method, $content, $headers);
     }
 
     /**
@@ -98,85 +101,58 @@ class ProxyQuery
      */
     public static function createFromRequest(Request $request)
     {
-        $rowUrl = parse_url($request->query->get(Utils::$PARAMETER_URL));
-        $getParams = array();
-        if (isset($rowUrl["query"])) {
-            parse_str($rowUrl["query"], $getParams);
-            unset($rowUrl["query"]);
-        }
+        $url = $request->query->get(Utils::$PARAMETER_URL);
         $extraGetParams = $request->query->all();
         unset($extraGetParams[Utils::$PARAMETER_URL]);
-
-        $content    = $request->getContent() ?: null;
-        $postParams = $request->request->all();
-        if ($content || $postParams) {
-            $method     = Utils::$METHOD_POST;
-            // if url containts more get parameters
-            $postParams = array_merge($postParams, $extraGetParams);
-        } else {
-            $method = Utils::$METHOD_GET;
-            $getParams = array_merge($getParams, $extraGetParams);
-        }
         $headers = Utils::getHeadersFromRequest($request);
-
-        return new ProxyQuery($rowUrl, $method, $content, $getParams,
-                $postParams, $headers);
+        if ($request->getMethod() === 'POST') {
+            $content = $request->getContent();
+        } else {
+            $content = null;
+        }
+        return static::createFromUrl($url, null, null, $headers, $extraGetParams, array(), $content);
     }
 
     /**
-     * Creates an instance
-     *
-     * @param array $urlParts the parsed url (parse_url()) without "query"
+     * @param string $url
      * @param string $method the GET/POST HTTP method
      * @param string $content the POST content
-     * @param array $getParams the GET parameter
-     * @param array $postParams the POST parameter
      * @param array $headers the HTTP headers
      */
-    private function __construct($urlParts, $method, $content, $getParams,
-                                 $postParams, $headers)
+    private function __construct($url, $method, $content, $headers)
     {
-        if (empty($urlParts["host"])) {
+        $parts = parse_url($url);
+        if (empty($parts["host"])) {
             throw new \InvalidArgumentException("Missing host name");
         }
-        $headers['Host'] = $urlParts['host'];
+        $this->headers = array_replace($headers, array(
+            'Host' => $parts['host'],
+        ));
 
-        $this->urlParts = $urlParts;
+        $this->getParams = array();
+        if (isset($parts["query"])) {
+            parse_str($parts["query"], $this->getParams);
+            // legacy quirk: filter repeated get params that differ only in case (first occurrence stays)
+            $usedKeys = array();
+            foreach ($this->getParams as $key => $value) {
+                $lcKey = strtolower($key);
+                if (in_array($lcKey, $usedKeys)) {
+                    unset($this->getParams[$key]);
+                    $url = rtrim(preg_replace('#(?<=[&?])' . preg_quote($key, '#') . '[^&]*(&|$)#', '', $url), '&?');
+                } else {
+                    $usedKeys[] = $lcKey;
+                }
+            }
+        }
+        $this->url = $url;
+
         $this->method     = $method;
         $this->content    = $content;
-        $this->getParams  = array();
-        $this->postParams = array();
-        $usedKeys = array();
-        foreach ($getParams as $key => $value) {
-            $lcKey = strtolower($key);
-            if (!in_array($lcKey, $usedKeys)) {
-                $this->getParams[$key] = $value;
-                $usedKeys[] = $lcKey;
-            }
-        }
-        foreach ($postParams as $key => $value) {
-            $lcKey = strtolower($key);
-            if (!in_array($lcKey, $usedKeys)) {
-                $this->postParams[$key] = $value;
-                $usedKeys[] = $lcKey;
-            }
-        }
-        $this->headers = $headers;
     }
 
     public function getHostname()
     {
-        return $this->urlParts['host'];
-    }
-
-    /**
-     * Returns the query string for POST request
-     *
-     * @return string the query string for POST request
-     */
-    public function getPostQueryString()
-    {
-        return http_build_query($this->postParams);
+        return \parse_url($this->url, PHP_URL_HOST);
     }
 
     /**
@@ -200,12 +176,41 @@ class ProxyQuery
     }
 
     /**
-     * Returns the row url (without GET parameter)
+     * Returns most url parts (as per parse_url) minus 'query'
      * @return string[]
+     * @deprecated for weird wording, low utility / complexity ratio; just use the url
      */
     public function getRowUrl()
     {
-        return $this->urlParts;
+        $parts = \parse_url($this->url);
+        unset($parts['query']);
+        if (empty($parts['user'])) {
+            unset($parts['user']);
+            unset($parts['pass']);
+        } else {
+            $parts['user'] = rawurldecode($parts['user']);
+            if (isset($parts['pass'])) {
+                $parts['pass'] = rawurldecode($parts['pass']);
+            } else {
+                $parts['pass'] = '';
+            }
+        }
+
+        return $parts;
+    }
+
+    public function getUsername()
+    {
+        return rawurldecode(\parse_url($this->url, PHP_URL_USER) ?: '') ?: null;
+    }
+
+    public function getPassword()
+    {
+        if (\parse_url($this->url, PHP_URL_USER)) {
+            return rawurldecode(\parse_url($this->url, PHP_URL_PASS) ?: '');
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -219,36 +224,21 @@ class ProxyQuery
     }
 
     /**
-     * Generats the url for HTTP GET
+     * @return string
+     */
+    public function getUrl()
+    {
+        return $this->url;
+    }
+
+    /**
+     * Returns the url
      *
-     * @return string the HTTP GET url
+     * @return string
+     * @deprecated alias for getUrl; URLs don't depend on HTTP methods
      */
     public function getGetUrl()
     {
-        $scheme = empty($this->urlParts["scheme"]) ? "http://" : $this->urlParts["scheme"] . "://";
-        $user   = empty($this->urlParts["user"]) ? "" : $this->urlParts["user"];
-        $pass   = empty($this->urlParts["pass"]) ? "" : $this->urlParts["pass"];
-
-        // if pass is there, put a : between user and pass (user:pass)
-        if (!empty($pass)) {
-            $user =  rawurlencode($user) .  ":";
-        }
-
-        // if user and password are there, put a @ after pass, so that user:pass@host will be constructed
-        if (!empty($user) || !empty($pass)) {
-            $pass = rawurlencode($pass) . "@";
-        }
-
-        $host = $this->urlParts["host"];
-        $port = empty($this->urlParts["port"]) ? "" : ":" . $this->urlParts["port"];
-
-        $path = empty($this->urlParts["path"]) ? "" : $this->urlParts["path"];
-
-        $urlquery = "";
-        if (count($this->getParams) > 0)
-        {
-            $urlquery = "?" . http_build_query($this->getParams);
-        }
-        return $scheme . $user . $pass . $host . $port . $path . $urlquery;
+        return $this->url;
     }
 }

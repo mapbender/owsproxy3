@@ -91,16 +91,18 @@ class CommonProxy
      */
     protected function createBrowser()
     {
-        $this->logger->debug("CommonProxy->createBrowser rowUrl:" . print_r($this->proxy_query->getRowUrl(), true));
+        $pq = $this->proxy_query;
+        $this->logger->debug("CommonProxy->createBrowser",  array(
+            'url' => $pq->getUrl(),
+        ));
         $curl = new Curl();
-        $curlOptions = $this->getCurlOptions($this->proxy_query->getHostName(), $this->proxy_config);
+        $curlOptions = $this->getCurlOptions($pq->getHostName(), $this->proxy_config);
         foreach ($curlOptions as $optionId => $optionValue) {
             $curl->setOption($optionId, $optionValue);
         }
-        $parts = $this->proxy_query->getRowUrl();
         $browser = new Browser($curl);
-        if (!empty($parts['user']) && !empty($parts['pass'])) {
-            $browser->addMiddleware(new BasicAuthMiddleware($parts['user'], $parts['pass']));
+        if ($pq->getUsername()) {
+            $browser->addMiddleware(new BasicAuthMiddleware($pq->getUsername(), $pq->getPassword()));
         }
 
         return $browser;
@@ -120,19 +122,16 @@ class CommonProxy
         $headers = Utils::prepareHeadersForRequest($this->proxy_query->getHeaders(), $this->headerBlackList,
             $this->headerWhiteList);
         $headers['User-Agent'] = $this->userAgent;
-        $url = $this->proxy_query->getGetUrl();
+        $url = $this->proxy_query->getUrl();
 
-        $this->logger->debug("{$this->logMessagePrefix}->handle {$method}:" . $url);
-        $this->logger->debug("{$this->logMessagePrefix}->handle Headers: " . print_r($headers, true));
+        $this->logger->debug("{$this->logMessagePrefix}->handle {$method}", array(
+            'url' => $url,
+            'headers' => $headers,
+        ));
 
         /** @var Response $browserResponse */
         if ($method === Utils::$METHOD_POST) {
-            if ($this->proxy_query->getContent() !== null) {
-                $content = $this->proxy_query->getContent();
-            } else {
-                $content = $this->proxy_query->getPostQueryString();
-            }
-            $browserResponse = $browser->post($url, $headers, $content);
+            $browserResponse = $browser->post($url, $headers, $this->proxy_query->getContent());
             return $browserResponse;
         } else if ($method === Utils::$METHOD_GET) {
             $browserResponse = $browser->get($url, $headers);
