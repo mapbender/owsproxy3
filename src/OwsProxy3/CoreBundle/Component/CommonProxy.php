@@ -92,8 +92,9 @@ class CommonProxy
     protected function createBrowser()
     {
         $pq = $this->proxy_query;
-        $parts = $pq->getRowUrl();
-        $this->logger->debug("CommonProxy->createBrowser rowUrl:" . print_r($parts, true));
+        $this->logger->debug("CommonProxy->createBrowser",  array(
+            'url' => $pq->getUrl(),
+        ));
         $curl = new Curl();
         $curlOptions = $this->getCurlOptions($pq->getHostName(), $this->proxy_config);
         foreach ($curlOptions as $optionId => $optionValue) {
@@ -121,10 +122,12 @@ class CommonProxy
         $headers = Utils::prepareHeadersForRequest($this->proxy_query->getHeaders(), $this->headerBlackList,
             $this->headerWhiteList);
         $headers['User-Agent'] = $this->userAgent;
-        $url = $this->proxy_query->getGetUrl();
+        $url = $this->proxy_query->getUrl();
 
-        $this->logger->debug("{$this->logMessagePrefix}->handle {$method}:" . $url);
-        $this->logger->debug("{$this->logMessagePrefix}->handle Headers: " . print_r($headers, true));
+        $this->logger->debug("{$this->logMessagePrefix}->handle {$method}", array(
+            'url' => $url,
+            'headers' => $headers,
+        ));
 
         /** @var Response $browserResponse */
         if ($method === Utils::$METHOD_POST) {
