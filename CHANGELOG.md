@@ -1,3 +1,6 @@
+## v3.1.3
+- Fix credentials encoding issues causing signature errors on secured URLs
+
 ## v3.1.2
 - Update basic auth handling to work with buzz 0.16.1; require buzz 0.16.1
 
