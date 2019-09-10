@@ -50,9 +50,10 @@ class LoggingListener
      */
     public function onTerminate(PostResponseEvent $event)
     {
-        if(!$this->owsproxyLogging) {
+        if (!$this->owsproxyLogging || $event->getRequest()->attributes->get('_route') !== "owsproxy3_core_owsproxy_entrypoint") {
             return;
         }
+
         $log = new Log();
         $token = $this->tokenStorage->getToken();
         // User is either an object or string for anonymous users
