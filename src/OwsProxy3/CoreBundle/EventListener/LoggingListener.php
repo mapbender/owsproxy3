@@ -94,6 +94,7 @@ class LoggingListener
         $log->setResponseCode($event->getResponse()->getStatuscode());
         $log->setResponseSize(strlen($event->getResponse()->getContent()));
 
+        $this->entityManager->getUnitOfWork()->clear();
         $this->entityManager->persist($log);
         $this->entityManager->flush();
     }
