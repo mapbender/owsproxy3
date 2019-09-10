@@ -1,59 +1,34 @@
 @startuml
 
 
-box "Mapbender backend"
-	participant Mapbender
-	participant Significator
-	participant OwsProxy
-	participant Configuration
+box "Client"
+	participant Browser
 end box
 
-box "Frontend"
-	participant Browser
-	participant Application
-	participant OpenLayer
+box "Mapbender server"
+	participant "Url preprocessor"
+	participant OwsProxy
 end box
 
 box "External service"
 	participant GeoServer
 end box
-  Browser -> Mapbender: Get application configuration
 
-group Backend, sectret=password
-  Mapbender -> OwsProxy: Init OWS-Proxy
-  alt proxy=true,
-    Mapbender -> Significator: Get "secret" and signify WMS-URL
-    Significator -> Configuration: Set WMS-URL:\nhttp://mapbender.server/owsproxy?\n signature=HASH&\n url=http://wms.server/cgi-bin/mapbender_user.xml
-  else proxy=false,
-    Mapbender -> Configuration: Set WMS-URL:\nhttp://wms.server/cgi-bin/mapbender_user.xml
-  end
+group Backend
+    "Url preprocessor" -> Browser: Rewrite URL, add signature hash\nhttp://mapbender.server/owsproxy?\n signature=HASH&\n url=http://wms.server/path
 end
-Configuration -> Browser: Retrive applcaiton configuration
 
-Browser -> Application: Create application by configuration
-Application -> OpenLayer:  Creates OpenLayer2 map instance
-Application -> OpenLayer: Create WMS layer
-
-alt proxy=true
-
-  OpenLayer -> OwsProxy: Get WMS layer data
+group Frontend
+  Browser -> OwsProxy: Get service data
   activate OwsProxy
-    OwsProxy -> GeoServer: Get WMS layer data
-    activate OwsProxy
-      activate GeoServer
-        GeoServer -> OwsProxy: WMS layer data
-      deactivate GeoServer
-    deactivate OwsProxy
-    OwsProxy -> OpenLayer: WMS layer data
+  OwsProxy -> GeoServer: Get service data
   deactivate OwsProxy
-
-else proxy=false
-  OpenLayer -> GeoServer: <<request>> Get WMS layer data
   activate GeoServer
-    GeoServer -> OpenLayer: <<response>> WMS layer data
+  GeoServer -> OwsProxy: Service response
   deactivate GeoServer
+  activate OwsProxy
+  OwsProxy -> Browser: Forward response
+  deactivate OwsProxy
 end
-OpenLayer -> Application:  WMS layer ready
-
 
 @enduml
