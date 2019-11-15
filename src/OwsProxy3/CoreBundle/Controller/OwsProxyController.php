@@ -30,11 +30,14 @@ class OwsProxyController extends Controller
     /**
      * Handles the client's request
      * NOTE: no route; only reachable via Symfony internal SubRequest
+     * @deprecated
+     * For Mapbender >= 3.0.8-beta1, use getUrl method on mapbender.http_transport.service
+     * @see https://github.com/mapbender/mapbender/blob/v3.0.8.4/src/Mapbender/Component/Transport/OwsProxyTransport.php
      *
      * @param Request $request
      * @param string $url the url
      * @param string $content the POST content
-     * @return \Symfony\Component\HttpFoundation\Response the response
+     * @return Response
      */
     public function genericProxyAction(Request $request, $url, $content = null)
     {
