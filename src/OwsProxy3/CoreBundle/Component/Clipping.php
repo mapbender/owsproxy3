@@ -65,9 +65,7 @@ class Clipping
     }
 
     /**
-     * Returns the contains
-     * 
-     * @return boolean the contains
+     * @return boolean
      */
     public function getContains()
     {
@@ -75,9 +73,7 @@ class Clipping
     }
 
     /**
-     * Returns  the intersects.
-     * 
-     * @return boolean the intersects
+     * @return boolean
      */
     public function getIntersects()
     {

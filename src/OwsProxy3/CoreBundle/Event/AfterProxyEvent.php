@@ -7,31 +7,21 @@ use Symfony\Component\EventDispatcher\Event;
 use Buzz\Message\MessageInterface;
 
 /**
- * Description of BeforeProxyEvent
- *
  * @author A.R.Pour
  * @author Paul Schmidt
  */
 class AfterProxyEvent extends Event
 {
 
-    /**
-     *
-     * @var ProxyQuery $proxy_query the proxy query
-     */
+    /** @var ProxyQuery */
     protected $proxy_query;
 
-    /**
-     *
-     * @var MessageInterface the browser's message
-     */
+    /** @var MessageInterface */
     protected $browserMessage;
 
     /**
-     * Creates an instance
-     * 
-     * @param Request $request the HTTP request
-     * @param MessageInterface $browserMessage the browser's message
+     * @param ProxyQuery $proxy_query
+     * @param MessageInterface $browserMessage
      */
     public function __construct(ProxyQuery $proxy_query,
             MessageInterface $browserMessage)
@@ -41,9 +31,7 @@ class AfterProxyEvent extends Event
     }
 
     /**
-     * Returns the proxy query
-     * 
-     * @return ProxyQuery the proxy query
+     * @return ProxyQuery
      */
     public function getProxyQuery()
     {
@@ -51,9 +39,7 @@ class AfterProxyEvent extends Event
     }
 
     /**
-     * Returns the borwser's message
-     * 
-     * @return MessageInterface the browser's message
+     * @return MessageInterface
      */
     public function getBrowserMessage()
     {

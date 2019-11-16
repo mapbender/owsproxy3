@@ -3,8 +3,6 @@
 namespace OwsProxy3\CoreBundle\Component;
 
 /**
- * Description of SrsPoint
- *
  * @author Paul Schmidt
  */
 class SrsPoint
@@ -34,7 +32,7 @@ class SrsPoint
      * 
      * @param float $lon the point's longitude 
      * @param float $lat the point's latitude 
-     * @param int $srs the point's srs
+     * @param int $srs
      */
     public function __construct($lon, $lat, $srs)
     {
@@ -46,7 +44,7 @@ class SrsPoint
     /**
      * Gets the point's longitude
      * 
-     * @return float the point's longitude
+     * @return float
      */
     public function getLon()
     {
@@ -56,7 +54,7 @@ class SrsPoint
     /**
      * Gets the point's latitude
      * 
-     * @return float the point's latitude
+     * @return float
      */
     public function getLat()
     {
@@ -64,9 +62,7 @@ class SrsPoint
     }
 
     /**
-     * Gets the point's srs
-     * 
-     * @return int the point's srs
+     * @return int
      */
     public function getSrs()
     {
@@ -76,8 +72,8 @@ class SrsPoint
     /**
      * Generates the "geomfromtext function"
      * 
-     * @param int $databasetype the databasa type
-     * @return string "geomfromtext function"
+     * @param int $databasetype
+     * @return string
      */
     public function getGeomFromText($databasetype)
     {
@@ -97,11 +93,12 @@ class SrsPoint
     /**
      * Generates the "geomfromtext function" for multipoint object
      * 
-     * @param int $databasetype the databasa type
-     * @return string "geomfromtext function"
+     * @param int $databasetype
+     * @param static[] $points
+     * @return string
      */
     public static function getGeomFromTextMultiPoint(
-    $databasetype, $points)
+        $databasetype, $points)
     {
         $wkt = "";
         switch(strtoupper($databasetype))

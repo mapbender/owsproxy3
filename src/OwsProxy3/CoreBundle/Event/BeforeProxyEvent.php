@@ -6,24 +6,17 @@ use OwsProxy3\CoreBundle\Component\ProxyQuery;
 use Symfony\Component\EventDispatcher\Event;
 
 /**
- * Description of BeforeProxyEvent
- *
  * @author A.R.Pour
  * @author Paul Schmidt
  */
 class BeforeProxyEvent extends Event
 {
 
-    /**
-     *
-     * @var ProxyQuery $proxy_query the proxy query
-     */
+    /** @var ProxyQuery */
     protected $proxy_query;
 
     /**
-     * Creates an instance
-     * 
-     * @param ProxyQuery $proxy_query the proxy query
+     * @param ProxyQuery $proxy_query
      */
     public function __construct(ProxyQuery $proxy_query)
     {
@@ -31,9 +24,7 @@ class BeforeProxyEvent extends Event
     }
 
     /**
-     * Returns the proxy query
-     * 
-     * @return ProxyQuery the proxy query
+     * @return ProxyQuery
      */
     public function getProxyQuery()
     {

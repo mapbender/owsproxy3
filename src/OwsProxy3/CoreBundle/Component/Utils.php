@@ -41,10 +41,9 @@ class Utils
     /**
      * Returns the array  with parameters.
      * 
-     * @param \Symfony\Component\HttpFoundation\Request $request the request
-     * @param string $method  the HTTP method POST/GET
-     * (default null -> the method is determined from request)
-     * @return array the parameters
+     * @param Request $request
+     * @param string|null $method 'POST', 'GET' or null for method taken from request
+     * @return array
      */
     public static function getParams(Request $request, $method = null)
     {
@@ -111,8 +110,8 @@ class Utils
      * Returns the associative array with all parameters 
      * ("GET"=> array(),"POST"=>array(),"CONTENT"=>value).
      * 
-     * @param \Symfony\Component\HttpFoundation\Request $request
-     * @return array the associative array with all parameters
+     * @param Request $request
+     * @return array
      * @deprecated use Request methods directly
      */
     public static function getAllParams(Request $request)
@@ -138,11 +137,10 @@ class Utils
     /**
      * Returns the parameter value
      * 
-     * @param \Symfony\Component\HttpFoundation\Request $request the request
-     * @param string $name the parameter name
+     * @param Request $request
+     * @param string $name
      * @param boolean $ignoreCase if the parameter name is case sensitive
-     *  => false (default false)
-     * @return string|null the parameter value
+     * @return string|null
      * @deprecated
      */
     public static function getParamValueFromAll(Request $request, $name,
@@ -159,8 +157,8 @@ class Utils
     /**
      * Returns the headers from Request
      * 
-     * @param \Symfony\Component\HttpFoundation\Request $request
-     * @return array the headers
+     * @param Request $request
+     * @return array
      */
     public static function getHeadersFromRequest(Request $request)
     {
@@ -180,7 +178,7 @@ class Utils
      * into a "Name" => "Value" mapping.
      *
      * @param MessageInterface $browserResponse
-     * @return array the headers
+     * @return array
      */
     public static function getHeadersFromBrowserResponse(MessageInterface $browserResponse)
     {
@@ -200,8 +198,8 @@ class Utils
     /**
      * Sets the headers from proxy's browser response into proxy response
      * 
-     * @param Response $response the response
-     * @param MessageInterface $browserResponse the browser response
+     * @param Response $response
+     * @param MessageInterface $browserResponse
      */
     public static function setHeadersFromBrowserResponse(Response $response,
             MessageInterface $browserResponse)

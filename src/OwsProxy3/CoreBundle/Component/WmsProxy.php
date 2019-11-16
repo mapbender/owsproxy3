@@ -39,7 +39,7 @@ class WmsProxy extends CommonProxy
     /**
      * Handles the request and returns the response.
      *
-     * @return Response the browser response
+     * @return Response
      * @throws \Exception
      */
     public function handle()

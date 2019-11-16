@@ -6,8 +6,6 @@ use Symfony\Component\HttpFoundation\Request;
 
 
 /**
- * ProxyQuery class provides methods for
- *
  * @author A.R.Pour
  * @author Paul Schmidt
  */
@@ -20,47 +18,32 @@ class ProxyQuery
      */
     protected $rowUrl;
 
-    /**
-     *
-     * @var string HTTP method (GET/POST)
-     */
+    /** @var string HTTP method (GET/POST) */
     protected $method;
 
-    /**
-     *
-     * @var array the GET parameters
-     */
+    /** @var array */
     protected $getParams;
 
-    /**
-     *
-     * @var array the POST parameter
-     */
+    /** @var array */
     protected $postParams;
 
-    /**
-     *
-     * @var string the POST content
-     */
+    /** @var string the POST content */
     protected $content;
 
-    /**
-     *
-     * @var array the query headers
-     */
+    /** @var array */
     protected $headers;
 
     /**
      * Creates an instance from parameters
      *
-     * @param string $url the url
+     * @param string $url
      * @param string $user the user name for basic authentication
      * @param string $password the user password for basic authentication
-     * @param array $headers the HTTP headers
-     * @param array $getParams the GET parameters
-     * @param array $postParams the POST parameters
-     * @param string $content the POST content
-     * @return ProxyQuery a new instance
+     * @param array $headers
+     * @param array $getParams
+     * @param array $postParams
+     * @param string $content for POST
+     * @return ProxyQuery
      * @throws \InvalidArgumentException for invalid url
      */
     public static function createFromUrl($url, $user = null, $password = null,
@@ -96,10 +79,10 @@ class ProxyQuery
     }
 
     /**
-     * Creates an instance
+     * Creates an instance from a Symfony Request
      *
      * @param Request $request
-     * @return ProxyQuery a new instance
+     * @return ProxyQuery
      * @throws \InvalidArgumentException for invalid url
      */
     public static function createFromRequest(Request $request)
@@ -136,14 +119,12 @@ class ProxyQuery
     }
 
     /**
-     * Creates an instance
-     *
      * @param array $rowUrl the parsed url (parse_url()) without "query"
-     * @param string $method the GET/POST HTTP method
-     * @param string $content the POST content
-     * @param array $getParams the GET parameter
-     * @param array $postParams the POST parameter
-     * @param array $headers the HTTP headers
+     * @param string $method
+     * @param string $content for POST
+     * @param array $getParams
+     * @param array $postParams
+     * @param array $headers
      */
     private function __construct($rowUrl, $method, $content, $getParams,
             $postParams, $headers)
@@ -249,7 +230,7 @@ class ProxyQuery
     /**
      * Returns the query string for POST request
      *
-     * @return string the query string for POST request
+     * @return string
      */
     public function getPostQueryString()
     {
@@ -259,7 +240,7 @@ class ProxyQuery
     /**
      * Returns the POST content
      *
-     * @return string content
+     * @return string
      */
     public function getContent()
     {
@@ -269,7 +250,7 @@ class ProxyQuery
     /**
      * Returns the GET/POST method
      *
-     * @return string method
+     * @return string
      */
     public function getMethod()
     {
@@ -288,7 +269,7 @@ class ProxyQuery
     /**
      * Returns the headers
      *
-     * @return array headers
+     * @return array
      */
     public function getHeaders()
     {
@@ -319,7 +300,7 @@ class ProxyQuery
     /**
      * Generats the url for HTTP GET
      *
-     * @return string the HTTP GET url
+     * @return string
      */
     public function getGetUrl()
     {
@@ -353,9 +334,9 @@ class ProxyQuery
     /**
      * Returns the parameter value from GET/POST parameters
      *
-     * @param string $name the parameter name
+     * @param string $name
      * @param boolean $ignoreCase to ignore the parameter name case sensitivity
-     * @return string|null the parameter value or null
+     * @return string|null
      */
     public function getGetPostParamValue($name, $ignoreCase = false)
     {
@@ -373,9 +354,9 @@ class ProxyQuery
     /**
      * Returns the parameter value from GET parameters
      *
-     * @param string $name the parameter name
+     * @param string $name
      * @param boolean $ignoreCase to ignore the parameter name case sensitivity
-     * @return string|null the parameter value or null
+     * @return string|null
      */
     public function getGetParamValue($name, $ignoreCase = false)
     {
@@ -406,9 +387,9 @@ class ProxyQuery
     /**
      * Returns the parameter value from POST parameters
      *
-     * @param string $name the parameter name
-     * @param boolean $ignoreCase  to ignore the parameter name case sensitivity
-     * @return string|null the parameter value or null
+     * @param string $name
+     * @param boolean $ignoreCase to ignore the parameter name case sensitivity
+     * @return string|null
      */
     public function getPostParamValue($name, $ignoreCase = false)
     {
@@ -438,7 +419,7 @@ class ProxyQuery
 
     /**
      * Removes a GET parameter.
-     * @param string $name parameter name
+     * @param string $name
      * @return boolean true if parameter removed
      */
     public function removeGetParameter($name)
@@ -453,7 +434,7 @@ class ProxyQuery
 
     /**
      * Removes a POST parameter.
-     * @param string $name parameter name
+     * @param string $name
      * @return boolean true if parameter removed
      */
     public function removePostParameter($name)
@@ -469,9 +450,9 @@ class ProxyQuery
     /**
      * Checks if a GET/POST parameter exists
      *
-     * @param string $name the parameter name
+     * @param string $name
      * @param boolean $ignoreCase to ignore the parameter name case sensitivity
-     * @return boolean true if a parameter exists
+     * @return boolean
      */
     public function hasGetPostParamValue($name, $ignoreCase = false)
     {
@@ -489,9 +470,9 @@ class ProxyQuery
     /**
      * Checks if a GET parameter exists
      *
-     * @param string $name the parameter name
+     * @param string $name
      * @param boolean $ignoreCase to ignore the parameter name case sensitivity
-     * @return boolean true if a parameter exists
+     * @return boolean
      */
     public function hasGetParamValue($name, $ignoreCase = false)
     {
@@ -522,9 +503,9 @@ class ProxyQuery
     /**
      * Checks if a POST parameter exists
      *
-     * @param string $name the parameter name
+     * @param string $name
      * @param boolean $ignoreCase  to ignore the parameter name case sensitivity
-     * @return boolean true if a parameter exists
+     * @return boolean
      */
     public function hasPostParamValue($name, $ignoreCase = false)
     {

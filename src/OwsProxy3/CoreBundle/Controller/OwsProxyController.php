@@ -19,8 +19,6 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
- * Description of OwsProxyController
- *
  * @author A.R.Pour
  * @author P. Schmidt
  */
@@ -35,8 +33,8 @@ class OwsProxyController extends Controller
      * @see https://github.com/mapbender/mapbender/blob/v3.0.8.4/src/Mapbender/Component/Transport/OwsProxyTransport.php
      *
      * @param Request $request
-     * @param string $url the url
-     * @param string $content the POST content
+     * @param string $url
+     * @param string $content for POST
      * @return Response
      */
     public function genericProxyAction(Request $request, $url, $content = null)
@@ -69,7 +67,7 @@ class OwsProxyController extends Controller
      *
      * @Route("/")
      * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\Response the response
+     * @return Response
      */
     public function entryPointAction(Request $request)
     {
@@ -98,8 +96,8 @@ class OwsProxyController extends Controller
     /**
      * Creates a response with an exception as HTML
      *
-     * @param \Exception $e the exception
-     * @return \Symfony\Component\HttpFoundation\Response the response
+     * @param \Exception $e
+     * @return Response
      */
     private function exceptionHtml(\Exception $e)
     {
