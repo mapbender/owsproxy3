@@ -6,8 +6,6 @@ use Symfony\Component\HttpFoundation\Request;
 
 
 /**
- * ProxyQuery class provides methods for
- *
  * @author A.R.Pour
  * @author Paul Schmidt
  */
@@ -16,41 +14,29 @@ class ProxyQuery
     /** @var string */
     protected $url;
 
-    /**
-     *
-     * @var string HTTP method (GET/POST)
-     */
+    /** @var string HTTP method (GET/POST) */
     protected $method;
 
-    /**
-     *
-     * @var array the GET parameters
-     */
+    /** @var array */
     protected $getParams;
 
-    /**
-     *
-     * @var string the POST content
-     */
+    /** @var string the POST content */
     protected $content;
 
-    /**
-     *
-     * @var array the query headers
-     */
+    /** @var array */
     protected $headers;
 
     /**
      * Creates an instance from parameters
      *
-     * @param string $url the url
+     * @param string $url
      * @param string $user the user name for basic authentication
      * @param string $password the user password for basic authentication
-     * @param array $headers the HTTP headers
-     * @param array $getParams the GET parameters
-     * @param array $postParams the POST parameters
-     * @param string $content the POST content
-     * @return ProxyQuery a new instance
+     * @param array $headers
+     * @param array $getParams
+     * @param array $postParams
+     * @param string $content for POST
+     * @return ProxyQuery
      * @throws \InvalidArgumentException for invalid url
      */
     public static function createFromUrl($url, $user = null, $password = null,
@@ -93,10 +79,10 @@ class ProxyQuery
     }
 
     /**
-     * Creates an instance
+     * Creates an instance from a Symfony Request
      *
      * @param Request $request
-     * @return ProxyQuery a new instance
+     * @return ProxyQuery
      * @throws \InvalidArgumentException for invalid url
      */
     public static function createFromRequest(Request $request)
@@ -115,9 +101,9 @@ class ProxyQuery
 
     /**
      * @param string $url
-     * @param string $method the GET/POST HTTP method
-     * @param string $content the POST content
-     * @param array $headers the HTTP headers
+     * @param string $method
+     * @param string $content for POST
+     * @param array $headers
      */
     private function __construct($url, $method, $content, $headers)
     {
@@ -158,7 +144,7 @@ class ProxyQuery
     /**
      * Returns the POST content
      *
-     * @return string content
+     * @return string
      */
     public function getContent()
     {
@@ -168,7 +154,7 @@ class ProxyQuery
     /**
      * Returns the GET/POST method
      *
-     * @return string method
+     * @return string
      */
     public function getMethod()
     {
@@ -216,7 +202,7 @@ class ProxyQuery
     /**
      * Returns the headers
      *
-     * @return array headers
+     * @return array
      */
     public function getHeaders()
     {

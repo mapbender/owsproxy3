@@ -35,8 +35,8 @@ class Utils
     /**
      * Returns the headers from Request
      * 
-     * @param \Symfony\Component\HttpFoundation\Request $request
-     * @return array the headers
+     * @param Request $request
+     * @return array
      */
     public static function getHeadersFromRequest(Request $request)
     {
@@ -56,7 +56,7 @@ class Utils
      * into a "Name" => "Value" mapping.
      *
      * @param MessageInterface $browserResponse
-     * @return array the headers
+     * @return array
      */
     public static function getHeadersFromBrowserResponse(MessageInterface $browserResponse)
     {
@@ -76,8 +76,8 @@ class Utils
     /**
      * Sets the headers from proxy's browser response into proxy response
      * 
-     * @param Response $response the response
-     * @param MessageInterface $browserResponse the browser response
+     * @param Response $response
+     * @param MessageInterface $browserResponse
      */
     public static function setHeadersFromBrowserResponse(Response $response,
             MessageInterface $browserResponse)

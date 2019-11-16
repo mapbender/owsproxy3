@@ -10,55 +10,38 @@ use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
 /**
- * CommonProxy class for
- *
  * @author Paul Schmidt
  */
 class CommonProxy
 {
-    /**
-     *
-     * @var ProxyQuery
-     */
+    /** @var ProxyQuery */
     protected $proxy_query;
 
-    /**
-     *
-     * @var array the proxy configuration
-     */
+    /** @var array */
     protected $proxy_config;
 
-    /**
-     *
-     * @var LoggerInterface the logger
-     */
+    /** @var LoggerInterface */
     protected $logger;
 
-    /**
-     *
-     * @var array headernames
-     */
+    /** @var array headernames */
     protected $headerBlackList = array("cookie", "user-agent", "content-length", "referer", "host");
 
-    /**
-     *
-     * @var array headernames
-     */
+    /** @var array headernames */
     protected $headerWhiteList = array();
 
     /**
      * The user-agent to send along with proxy requests
-     * @var String
+     * @var string
      */
     protected $userAgent;
 
-    /** @var string the class name */
+    /** @var string */
     protected $logMessagePrefix;
 
     /**
      * Creates a common proxy
      *
-     * @param array $proxy_config the proxy configuration
+     * @param array $proxy_config
      * @param ProxyQuery $proxy_query
      * @param LoggerInterface|null $logger
      * @param string[]|null $headerBlackList omit for defaults
@@ -84,10 +67,7 @@ class CommonProxy
     }
 
     /**
-     * Creates the browser
-     *
-     *
-     * @return \Buzz\Browser
+     * @return Browser
      */
     protected function createBrowser()
     {
@@ -111,7 +91,7 @@ class CommonProxy
     /**
      * Handles the request and returns the response.
      *
-     * @return Response the browser response
+     * @return Response
      * @throws \Exception
      */
     public function handle()

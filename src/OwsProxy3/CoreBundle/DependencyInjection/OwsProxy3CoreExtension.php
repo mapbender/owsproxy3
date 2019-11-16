@@ -8,8 +8,6 @@ use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
 /**
- * Description of OwsProxy3CoreExtension
- *
  * @author A.R.Pour
  */
 class OwsProxy3CoreExtension extends Extension
