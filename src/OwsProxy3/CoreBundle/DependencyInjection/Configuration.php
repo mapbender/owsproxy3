@@ -20,12 +20,15 @@ class Configuration implements ConfigurationInterface
         $rootNode = $treeBuilder->root('ows_proxy3_core');
 
         $rootNode
-                ->children()
-                ->scalarNode('logging')
-                ->defaultTrue()
+            ->canBeUnset()->addDefaultsIfNotSet()
+            ->children()
+                ->booleanNode('logging')
+                    ->defaultFalse()
+                    ->treatNullLike(false)
                 ->end()
-                ->scalarNode('obfuscate_client_ip')
-                ->defaultTrue()
+                ->booleanNode('obfuscate_client_ip')
+                    ->defaultTrue()
+                    ->treatNullLike(true)
                 ->end()
                 ->arrayNode("proxy")
                 ->canBeUnset()
