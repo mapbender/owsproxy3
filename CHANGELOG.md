@@ -1,3 +1,9 @@
+## v3.1.4
+- Avoid undesirable implicit entity flushing and repeat of failing transactions commits on request end with enabled `logging` configuration
+- Change `logging` default true => false
+- Accept null for `logging` and `obfuscate_client_ip`
+- Add [CONFIGURATION.md](https://github.com/mapbender/owsproxy3/blob/master/CONFIGURATION.md)
+
 ## v3.1.3
 - Fix credentials encoding issues causing signature errors on secured URLs
 
