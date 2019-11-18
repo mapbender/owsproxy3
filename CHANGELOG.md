@@ -1,3 +1,6 @@
+## v3.0.6.6
+- Avoid undesirable implicit entity flushing and repeat of failing transactions commits on request end with enabled `logging` configuration
+
 ## v3.0.6.5
 - Resolve Symfony 3 compatibility issues ([PR#17](https://github.com/mapbender/owsproxy3/pull/17))
 - Support forwarding of valid empty and 304 Not Modified responses
