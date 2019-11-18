@@ -18,6 +18,12 @@
 - Remove interactive HTTP auth challenge forwarding
 - Allow installation of kriswallsmith/buzz 0.16.x on PHP>=5.4
 
+## v3.0.6.6
+- Avoid undesirable implicit entity flushing and repeat of failing transactions commits on request end with enabled `logging` configuration
+- Change `logging` default true => false
+- Accept null for `logging` and `obfuscate_client_ip`
+- Add [CONFIGURATION.md](https://github.com/mapbender/owsproxy3/blob/release/3.0.6/CONFIGURATION.md)
+
 ## v3.0.6.5
 - Resolve Symfony 3 compatibility issues ([PR#17](https://github.com/mapbender/owsproxy3/pull/17))
 - Support forwarding of valid empty and 304 Not Modified responses
