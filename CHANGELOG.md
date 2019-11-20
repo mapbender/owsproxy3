@@ -25,7 +25,7 @@
 - Allow installation of kriswallsmith/buzz 0.16.x on PHP>=5.4
 
 ## v3.0.6.6
-- Avoid undesirable implicit entity flushing and repeat of failing transactions commits on request end with enabled `logging` configuration
+- Avoid undesirable implicit entity flushing and repeat of failing transaction commits on request end with enabled `logging` configuration
 - Change `logging` default true => false
 - Accept null for `logging` and `obfuscate_client_ip`
 - Add [CONFIGURATION.md](https://github.com/mapbender/owsproxy3/blob/release/3.0.6/CONFIGURATION.md)
