@@ -24,6 +24,9 @@
 - Remove interactive HTTP auth challenge forwarding
 - Allow installation of kriswallsmith/buzz 0.16.x on PHP>=5.4
 
+## v3.0.6.7
+- Drop session interactions; owsproxy uses signatures
+
 ## v3.0.6.6
 - Avoid undesirable implicit entity flushing and repeat of failing transaction commits on request end with enabled `logging` configuration
 - Change `logging` default true => false
