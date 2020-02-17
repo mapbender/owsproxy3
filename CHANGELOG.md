@@ -1,3 +1,6 @@
+## v3.0.6.7
+- Drop session interactions; owsproxy uses signatures
+
 ## v3.0.6.6
 - Avoid undesirable implicit entity flushing and repeat of failing transaction commits on request end with enabled `logging` configuration
 - Change `logging` default true => false
