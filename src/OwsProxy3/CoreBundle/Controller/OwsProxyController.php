@@ -39,7 +39,6 @@ class OwsProxyController extends Controller
      */
     public function genericProxyAction(Request $request, $url, $content = null)
     {
-        $request->getSession()->save();
         $proxy = null;
         try {
             $headers_req = Utils::getHeadersFromRequest($request);
@@ -71,7 +70,6 @@ class OwsProxyController extends Controller
      */
     public function entryPointAction(Request $request)
     {
-        $request->getSession()->save();
         /** @var Signer $signer */
         $signer = $this->get('signer');
 
