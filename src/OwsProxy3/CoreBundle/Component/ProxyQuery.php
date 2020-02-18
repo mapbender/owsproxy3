@@ -165,6 +165,7 @@ class ProxyQuery
      * Returns most url parts (as per parse_url) minus 'query'
      * @return string[]
      * @deprecated for weird wording, low utility / complexity ratio; just use the url
+     * @todo v3.2: remove
      */
     public function getRowUrl()
     {
@@ -222,6 +223,7 @@ class ProxyQuery
      *
      * @return string
      * @deprecated alias for getUrl; URLs don't depend on HTTP methods
+     * @todo v3.2: remove
      */
     public function getGetUrl()
     {

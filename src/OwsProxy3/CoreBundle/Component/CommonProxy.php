@@ -44,6 +44,8 @@ class CommonProxy
      * @param string[]|null $headerBlackList omit for defaults
      * @param string[]|null $headerWhiteList omit for defaults
      * @param string $userAgent
+     * @todo v3.2: remove user agent argument
+     * @todo v3.2: remove header blacklist / whitelist arguments
      */
     public function __construct(array $proxy_config, ProxyQuery $proxy_query, $logger = null, $headerBlackList = null,
         $headerWhiteList = null, $userAgent = 'OWSProxy3')
