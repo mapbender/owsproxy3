@@ -73,7 +73,7 @@ class OwsProxyController extends Controller
         $url = $request->query->get('url');
 
         try {
-            $proxy_query = ProxyQuery::createFromRequest($request);
+            $proxy_query = ProxyQuery::createFromRequest($request, 'url');
             $signer->checkSignedUrl($url);
         } catch (\InvalidArgumentException $e) {
             throw new BadRequestHttpException($e->getMessage(), $e);

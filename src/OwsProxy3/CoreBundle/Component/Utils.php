@@ -31,6 +31,7 @@ class Utils
     /**
      *
      * @var string the identifier for parameter "url"
+     * @todo 3.2: no usages, remove
      */
     public static $PARAMETER_URL = "url";
 

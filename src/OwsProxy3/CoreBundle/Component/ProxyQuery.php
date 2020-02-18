@@ -74,14 +74,19 @@ class ProxyQuery
      * Creates an instance from a Symfony Request
      *
      * @param Request $request
+     * @param string|null $forwardUrlParamName
      * @return ProxyQuery
      * @throws \InvalidArgumentException for invalid url
      */
-    public static function createFromRequest(Request $request)
+    public static function createFromRequest(Request $request, $forwardUrlParamName = null)
     {
-        $url = $request->query->get(Utils::$PARAMETER_URL);
+        if (!$forwardUrlParamName) {
+            @trigger_error("Deprecated: " . __CLASS__ . '::' . __METHOD__ . ': expects explicit specification of "url" query parameter name', E_USER_DEPRECATED);
+            $forwardUrlParamName = 'url';
+        }
+        $url = $request->query->get($forwardUrlParamName);
         $extraGetParams = $request->query->all();
-        unset($extraGetParams[Utils::$PARAMETER_URL]);
+        unset($extraGetParams[$forwardUrlParamName]);
         $headers = Utils::getHeadersFromRequest($request);
         if ($request->getMethod() === 'POST') {
             $content = $request->getContent();
