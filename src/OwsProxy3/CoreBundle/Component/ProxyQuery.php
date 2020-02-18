@@ -24,6 +24,34 @@ class ProxyQuery
     protected $headers;
 
     /**
+     * @param string $url
+     * @param string[] $headers
+     * @return static
+     * @since v3.1.6
+     */
+    public static function createGet($url, $headers = array())
+    {
+        // strip fragment and trailing query param separators
+        $url = rtrim(preg_replace('/#.*$/', '', $url), '&?');
+        return new static($url, null, $headers);
+    }
+
+    /**
+     * @param string $url
+     * @param string[] $headers
+     * @param string $content
+     * @return static
+     * @since v3.1.6
+     */
+    public static function createPost($url, $content, $headers = array())
+    {
+        // strip fragment and trailing query param separators
+        $url = rtrim(preg_replace('/#.*$/', '', $url), '&?');
+        // force $content to string
+        return new static($url, $content ?: '', $headers);
+    }
+
+    /**
      * Creates an instance from parameters
      *
      * @param string $url
@@ -35,7 +63,9 @@ class ProxyQuery
      * @param string $content for POST
      * @return ProxyQuery
      * @throws \InvalidArgumentException for invalid url
-     * @todo: replace complex, redundant argument combination signature with more use-case-specific separate methods
+     * @deprecated: Use createGet or createPost depending on needs.
+     *              Use Utils:: methods for pre-baking url with parameters and / or credentials, and / or post content.
+     * @todo v3.3: remove. Breaks Mapbender <3.1 and <= 3.0.8.5 (TBD 3.0.8.6)
      */
     public static function createFromUrl($url, $user = null, $password = null,
             $headers = array(), $getParams = array(), $postParams = array(),
@@ -57,6 +87,7 @@ class ProxyQuery
             $url = Utils::addBasicAuthCredentials($url, $user, $password);
         }
 
+        @trigger_error("Deprecated: ProxyQuery::createFromUrl is deprecated since v3.1.6 and will be removed in v3.3. Use ::createGet or ::createPost instead. Combine with Utils methods for prebaking of URL and post content.", E_USER_DEPRECATED);
         return new ProxyQuery($url, $content, $headers);
     }
 
@@ -65,7 +96,7 @@ class ProxyQuery
      *
      * @param Request $request
      * @param string|null $forwardUrlParamName
-     * @return ProxyQuery
+     * @return static
      * @throws \InvalidArgumentException for invalid url
      */
     public static function createFromRequest(Request $request, $forwardUrlParamName = null)
@@ -77,13 +108,15 @@ class ProxyQuery
         $url = $request->query->get($forwardUrlParamName);
         $extraGetParams = $request->query->all();
         unset($extraGetParams[$forwardUrlParamName]);
+        if ($extraGetParams) {
+            $url = Utils::appendQueryParams($url, $extraGetParams);
+        }
         $headers = Utils::getHeadersFromRequest($request);
         if ($request->getMethod() === 'POST') {
-            $content = $request->getContent();
+            return static::createPost($url, $request->getContent(), $headers);
         } else {
-            $content = null;
+            return static::createGet($url, $headers);
         }
-        return static::createFromUrl($url, null, null, $headers, $extraGetParams, array(), $content);
     }
 
     /**
@@ -212,7 +245,7 @@ class ProxyQuery
      *
      * @return string
      * @deprecated alias for getUrl; URLs don't depend on HTTP methods
-     * @todo v3.2: remove
+     * @todo v3.3: remove. Breaks Mapbender <3.0.8.2 (WMTS only; <3.0.4.1 otherwise).
      */
     public function getGetUrl()
     {

@@ -37,21 +37,21 @@ class OwsProxyController extends Controller
      */
     public function genericProxyAction(Request $request, $url, $content = null)
     {
-        $proxy = null;
         try {
-            $headers_req = Utils::getHeadersFromRequest($request);
+            $url = Utils::appendQueryParams($url, $request->query->all());
+            $headers = Utils::getHeadersFromRequest($request);
             if (null === $content) {
+                // NOTE: this line forces POST method! getContent() always returns a string, never null.
+                // This is irresolvable. We can either support method + post content from request, or explicitly passed
+                // post content, not both.
                 $content = $request->getContent();
             }
-            $proxy_query = ProxyQuery::createFromUrl(
-                Utils::appendQueryParams($url, $request->query->all()),
-                null,
-                null,
-                $headers_req,
-                array(),
-                array(),
-                Utils::extendPostContent($content, $request->request->all())
-            );
+            $content = Utils::extendPostContent($content, $request->request->all());
+            if ($content !== null) {
+                $proxy_query = ProxyQuery::createPost($url, $content, $headers);
+            } else {
+                $proxy_query = ProxyQuery::createGet($url, $headers);
+            }
         } catch (\InvalidArgumentException $e) {
             throw new BadRequestHttpException($e->getMessage(), $e);
         }
