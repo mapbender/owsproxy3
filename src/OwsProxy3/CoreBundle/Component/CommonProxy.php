@@ -66,9 +66,6 @@ class CommonProxy
     protected function createBrowser()
     {
         $pq = $this->proxy_query;
-        $this->logger->debug("CommonProxy->createBrowser",  array(
-            'url' => $this->proxy_query->getUrl(),
-        ));
         $curl = new Curl();
         $curlOptions = $this->getCurlOptions($pq->getHostName(), $this->proxy_config);
         foreach ($curlOptions as $optionId => $optionValue) {
