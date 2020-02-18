@@ -41,10 +41,11 @@ class OwsProxyController extends Controller
             $url = Utils::appendQueryParams($url, $request->query->all());
             $headers = Utils::getHeadersFromRequest($request);
             if (null === $content) {
-                // NOTE: this line forces POST method! getContent() always returns a string, never null.
-                // This is irresolvable. We can either support method + post content from request, or explicitly passed
-                // post content, not both.
-                $content = $request->getContent();
+                $rq = $request->getContent();
+                if ($rq || $request->getMethod() === Request::METHOD_POST) {
+                    // force outgoing request to POST, even with empty body
+                    $content = $rq ?: '';
+                }
             }
             $content = Utils::extendPostContent($content, $request->request->all());
             if ($content !== null) {
