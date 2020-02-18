@@ -14,13 +14,10 @@ class ProxyQuery
     /** @var string */
     protected $url;
 
-    /** @var string HTTP method (GET/POST) */
-    protected $method;
-
     /** @var array */
     protected $getParams;
 
-    /** @var string the POST content */
+    /** @var string|null the POST content or null on GET requests */
     protected $content;
 
     /** @var array */
@@ -68,14 +65,9 @@ class ProxyQuery
                 $content .= '&';
             }
             $content .= \http_build_query($postParams);
-            $method = Utils::$METHOD_POST;
-        } elseif ($content !== null) {
-            $method = Utils::$METHOD_POST;
-        } else {
-            $method = Utils::$METHOD_GET;
         }
 
-        return new ProxyQuery($url, $method, $content, $headers);
+        return new ProxyQuery($url, $content, $headers);
     }
 
     /**
@@ -101,11 +93,10 @@ class ProxyQuery
 
     /**
      * @param string $url
-     * @param string $method
-     * @param string $content for POST
+     * @param string|null $content for POST
      * @param array $headers
      */
-    private function __construct($url, $method, $content, $headers)
+    private function __construct($url, $content, $headers)
     {
         $parts = parse_url($url);
         if (empty($parts["host"])) {
@@ -131,9 +122,7 @@ class ProxyQuery
             }
         }
         $this->url = $url;
-
-        $this->method     = $method;
-        $this->content    = $content;
+        $this->content = $content;
     }
 
     public function getHostname()
@@ -158,7 +147,11 @@ class ProxyQuery
      */
     public function getMethod()
     {
-        return $this->method;
+        if ($this->content !== null) {
+            return 'POST';
+        } else {
+            return 'GET';
+        }
     }
 
     /**

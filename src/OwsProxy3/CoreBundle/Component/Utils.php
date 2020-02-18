@@ -17,12 +17,14 @@ class Utils
     /**
      *
      * @var string the identifier for HTTP GET
+     * @todo 3.2: no usages, remove
      */
     public static $METHOD_GET = "GET";
 
     /**
      *
      * @var string the identifier for HTTP POST
+     * @todo 3.2: no usages, remove
      */
     public static $METHOD_POST = "POST";
 
