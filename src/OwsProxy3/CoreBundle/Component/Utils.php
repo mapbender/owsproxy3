@@ -183,6 +183,31 @@ class Utils
     }
 
     /**
+     * Inject (or replace) given basic auth credentials into $url.
+     *
+     * @param string $url
+     * @param string $user plain text (unencoded input)
+     * @param string $password plain text (unencoded input)
+     * @return string
+     */
+    public static function addBasicAuthCredentials($url, $user, $password)
+    {
+        $fragmentParts = explode('#', $url, 2);
+        if ($user && count($fragmentParts) === 2) {
+            return static::addBasicAuthCredentials($fragmentParts[0], $user, $password) . '#' . $fragmentParts[1];
+        }
+        if ($user) {
+            $credentialsEnc = implode(':', array(
+                rawurlencode($user),
+                rawurlencode($password ?: ''),
+            ));
+            return preg_replace('#(?<=//)([^@]+@)?#', $credentialsEnc . '@', $url, 1);
+        } else {
+            return $url;
+        }
+    }
+
+    /**
      * Adds more key-value pairs from $params to given scalar POST content.
      * Returns null ONLY IF input $content is null and $params is empty.
      *

@@ -52,13 +52,9 @@ class ProxyQuery
             @trigger_error("Deprecated: post params should not be passed separately from content. Use http_build_query to build valid post content. Use Utils::extendPostContent for help concatenating more parameters onto existing POST content.", E_USER_DEPRECATED);
             $content = Utils::extendPostContent($content, $postParams);
         }
-
         if ($user) {
-            $credentialsEnc = implode(':', array(
-                rawurlencode($user),
-                rawurlencode($password ?: ''),
-            ));
-            $url = preg_replace('#(?<=//)([^@]+@)?#', $credentialsEnc . '@', $url, 1);
+            @trigger_error("Deprecated: basic auth credentials should not be passed separately from content. Use Utils::addBasicAuthCredentials for credentials baking support.", E_USER_DEPRECATED);
+            $url = Utils::addBasicAuthCredentials($url, $user, $password);
         }
 
         return new ProxyQuery($url, $content, $headers);
