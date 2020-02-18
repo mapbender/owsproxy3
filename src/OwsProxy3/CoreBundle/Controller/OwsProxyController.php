@@ -44,13 +44,13 @@ class OwsProxyController extends Controller
                 $content = $request->getContent();
             }
             $proxy_query = ProxyQuery::createFromUrl(
-                $url,
+                Utils::appendQueryParams($url, $request->query->all()),
                 null,
                 null,
                 $headers_req,
-                $request->query->all(),
-                $request->request->all(),
-                $content
+                array(),
+                array(),
+                Utils::extendPostContent($content, $request->request->all())
             );
         } catch (\InvalidArgumentException $e) {
             throw new BadRequestHttpException($e->getMessage(), $e);

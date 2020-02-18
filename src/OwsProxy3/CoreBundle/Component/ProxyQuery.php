@@ -35,6 +35,7 @@ class ProxyQuery
      * @param string $content for POST
      * @return ProxyQuery
      * @throws \InvalidArgumentException for invalid url
+     * @todo: replace complex, redundant argument combination signature with more use-case-specific separate methods
      */
     public static function createFromUrl($url, $user = null, $password = null,
             $headers = array(), $getParams = array(), $postParams = array(),
@@ -44,12 +45,12 @@ class ProxyQuery
         $url = preg_replace('/#.*$/', '', $url);
         $url = rtrim($url, '&?');
         if ($getParams) {
-            $extraQuery = \http_build_query($getParams);
-            if (preg_match('#\?#', $url)) {
-                $url = "{$url}&{$extraQuery}";
-            } else {
-                $url = "{$url}?{$extraQuery}";
-            }
+            @trigger_error("Deprecated: query params should be passed inside the url. Use Utils::appendQueryParams for query param baking support.", E_USER_DEPRECATED);
+            $url = Utils::appendQueryParams($url, $getParams);
+        }
+        if ($postParams) {
+            @trigger_error("Deprecated: post params should not be passed separately from content. Use http_build_query to build valid post content. Use Utils::extendPostContent for help concatenating more parameters onto existing POST content.", E_USER_DEPRECATED);
+            $content = Utils::extendPostContent($content, $postParams);
         }
 
         if ($user) {
@@ -58,13 +59,6 @@ class ProxyQuery
                 rawurlencode($password ?: ''),
             ));
             $url = preg_replace('#(?<=//)([^@]+@)?#', $credentialsEnc . '@', $url, 1);
-        }
-
-        if ($postParams) {
-            if ($content) {
-                $content .= '&';
-            }
-            $content .= \http_build_query($postParams);
         }
 
         return new ProxyQuery($url, $content, $headers);
@@ -100,6 +94,7 @@ class ProxyQuery
      * @param string $url
      * @param string|null $content for POST
      * @param array $headers
+     * @throws \InvalidArgumentException for empty url host
      */
     private function __construct($url, $content, $headers)
     {

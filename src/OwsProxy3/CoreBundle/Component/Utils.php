@@ -151,4 +151,54 @@ class Utils
         }
         return $response;
     }
+
+    /**
+     * Appends given $params to $url as (additional) query parameters.
+     *
+     * @param string $url
+     * @param string[] $params
+     * @return string
+     */
+    public static function appendQueryParams($url, $params)
+    {
+        $fragmentParts = explode('#', $url, 2);
+        if (count($fragmentParts) === 2) {
+            return static::appendQueryParams($fragmentParts[0], $params) . '#' . $fragmentParts[1];
+        }
+        if ($params) {
+            $dangle = preg_match('/[&?]$/', $url);
+            $url = rtrim($url, '&?');
+            $extraQuery = \http_build_query($params);
+            if (preg_match('#\?#', $url)) {
+                $url = "{$url}&{$extraQuery}";
+            } else {
+                $url = "{$url}?{$extraQuery}";
+            }
+            // restore dangling param separator, if input url had it
+            if ($dangle) {
+                $url .= '&';
+            }
+        }
+        return $url;
+    }
+
+    /**
+     * Adds more key-value pairs from $params to given scalar POST content.
+     * Returns null ONLY IF input $content is null and $params is empty.
+     *
+     * @param string|null $content
+     * @param string[] $params
+     * @return string|null
+     */
+    public static function extendPostContent($content, $params)
+    {
+        if ($params) {
+            return implode('&', array_filter(array(
+                $content,
+                \http_build_query($params),
+            )));
+        } else {
+            return $content;
+        }
+    }
 }
