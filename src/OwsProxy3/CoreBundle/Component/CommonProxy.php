@@ -2,17 +2,14 @@
 
 namespace OwsProxy3\CoreBundle\Component;
 
-use Buzz\Browser;
-use Buzz\Client\Curl;
 use Buzz\Message\Response;
-use Buzz\Middleware\BasicAuthMiddleware;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
 /**
  * @author Paul Schmidt
  */
-class CommonProxy
+class CommonProxy extends BuzzClientCommon
 {
     /** @var ProxyQuery */
     protected $proxy_query;
@@ -31,7 +28,7 @@ class CommonProxy
 
     /**
      * The user-agent to send along with proxy requests
-     * @var string
+     * @var string|null
      */
     protected $userAgent;
 
@@ -63,25 +60,6 @@ class CommonProxy
     }
 
     /**
-     * @return Browser
-     */
-    protected function createBrowser()
-    {
-        $pq = $this->proxy_query;
-        $curl = new Curl();
-        $curlOptions = $this->getCurlOptions($pq->getHostName(), $this->proxy_config);
-        foreach ($curlOptions as $optionId => $optionValue) {
-            $curl->setOption($optionId, $optionValue);
-        }
-        $browser = new Browser($curl);
-        if ($pq->getUsername()) {
-            $browser->addMiddleware(new BasicAuthMiddleware($pq->getUsername(), $pq->getPassword()));
-        }
-
-        return $browser;
-    }
-
-    /**
      * Handles the request and returns the response.
      *
      * @return Response
@@ -89,28 +67,15 @@ class CommonProxy
      */
     public function handle()
     {
-        $browser = $this->createBrowser();
-
-        $method = $this->proxy_query->getMethod();
         $headers = Utils::prepareHeadersForRequest($this->proxy_query->getHeaders(), $this->headerBlackList,
             $this->headerWhiteList);
-        $headers['User-Agent'] = $this->userAgent;
-        $url = $this->proxy_query->getUrl();
+        $headers['User-Agent'] = $this->getUserAgent();
 
         $this->logger->debug("CommonProxy->handle {$this->proxy_query->getMethod()}", array(
             'url' => $this->proxy_query->getUrl(),
             'headers' => $headers,
         ));
-
-        /** @var Response $browserResponse */
-        if ($method === Utils::$METHOD_POST) {
-            $browserResponse = $browser->post($url, $headers, $this->proxy_query->getContent());
-            return $browserResponse;
-        } else if ($method === Utils::$METHOD_GET) {
-            $browserResponse = $browser->get($url, $headers);
-            return $browserResponse;
-        }
-        throw new \RuntimeException("Unsupported method {$method}");
+        return $this->handleQuery($this->proxy_query, $this->proxy_config, $headers);
     }
 
     /**
@@ -122,38 +87,10 @@ class CommonProxy
     }
 
     /**
-     * @param string $hostName
-     * @param array $config
-     * @return array
+     * @return string
      */
-    public static function getCurlOptions($hostName, $config)
+    protected function getUserAgent()
     {
-        $options = array(
-            CURLOPT_TIMEOUT => 60,
-            CURLOPT_CONNECTTIMEOUT => 30,
-        );
-        if (isset($config['timeout'])) {
-            $options[CURLOPT_TIMEOUT] = $config['timeout'];
-        }
-        if (isset($config['connecttimeout'])) {
-            $options[CURLOPT_CONNECTTIMEOUT] = $config['connecttimeout'];
-        }
-        if (isset($config['checkssl'])) {
-            $options[CURLOPT_SSL_VERIFYPEER] = !!$config['checkssl'];
-        }
-        if (isset($config['host']) && (empty($config['noproxy']) || !in_array($hostName, $config['noproxy']))) {
-            $proxyOptions = array(
-                CURLOPT_PROXY => $config['host'],
-                CURLOPT_PROXYPORT => $config['port'],
-            );
-            if (isset($config['user']) && isset($config['password'])) {
-                $proxyOptions = array_replace($proxyOptions, array(
-                    CURLOPT_PROXYUSERPWD => "{$config['user']}:{$config['password']}",
-                ));
-            }
-            $options = array_replace($options, $proxyOptions);
-        }
-        return $options;
+        return $this->userAgent ?: parent::getUserAgent();
     }
-
 }
