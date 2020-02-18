@@ -35,9 +35,6 @@ class CommonProxy
      */
     protected $userAgent;
 
-    /** @var string */
-    protected $logMessagePrefix;
-
     /**
      * Creates a common proxy
      *
@@ -61,9 +58,6 @@ class CommonProxy
             $this->headerWhiteList = $headerWhiteList;
         }
         $this->userAgent = $userAgent;
-
-        // strip namespace separators, get local class name
-        $this->logMessagePrefix = substr(get_class($this), strrpos(get_class($this), '\\') + 1);
     }
 
     /**
@@ -73,7 +67,7 @@ class CommonProxy
     {
         $pq = $this->proxy_query;
         $this->logger->debug("CommonProxy->createBrowser",  array(
-            'url' => $pq->getUrl(),
+            'url' => $this->proxy_query->getUrl(),
         ));
         $curl = new Curl();
         $curlOptions = $this->getCurlOptions($pq->getHostName(), $this->proxy_config);
@@ -104,8 +98,8 @@ class CommonProxy
         $headers['User-Agent'] = $this->userAgent;
         $url = $this->proxy_query->getUrl();
 
-        $this->logger->debug("{$this->logMessagePrefix}->handle {$method}", array(
-            'url' => $url,
+        $this->logger->debug("CommonProxy->handle {$this->proxy_query->getMethod()}", array(
+            'url' => $this->proxy_query->getUrl(),
             'headers' => $headers,
         ));
 
