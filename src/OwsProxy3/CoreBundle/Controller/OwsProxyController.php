@@ -122,22 +122,6 @@ class OwsProxyController extends Controller
     }
 
     /**
-     * @param CommonProxy $proxy
-     * @param Request $request
-     * @return Response
-     */
-    protected function getProxyResponse(CommonProxy $proxy, Request $request)
-    {
-        try {
-            $browserResponse = $proxy->handle();
-        } catch (\Exception $e) {
-            $this->getLogger()->error($e->getMessage() . " " . $e->getCode() . " " . get_class($proxy));
-            return $this->exceptionHtml($e);
-        }
-        return $this->convertBuzzResponse($browserResponse, $request, $proxy->getProxyQuery());
-    }
-
-    /**
      * @param \Buzz\Message\Response $browserResponse
      * @param Request $request
      * @param ProxyQuery $query
@@ -158,28 +142,21 @@ class OwsProxyController extends Controller
             return $response;
         }
 
-        $cookies_req = $request->cookies;
         $response = new Response();
         Utils::setHeadersFromBrowserResponse($response, $browserResponse);
-        foreach ($cookies_req as $key => $value) {
-            $response->headers->removeCookie($key);
-            $response->headers->setCookie(new Cookie($key, $value));
-        }
+        $this->restoreOriginalCookies($response, $request);
         $content = $browserResponse->getContent();
         $response->setContent($content);
         $response->setStatusCode($browserResponse->getStatusCode());
         return $response;
     }
 
-    /**
-     * @param ProxyQuery $query
-     * @return CommonProxy
-     */
-    protected function proxyFactory(ProxyQuery $query)
+    protected function restoreOriginalCookies(Response $response, Request $request)
     {
-        $config = $this->container->getParameter("owsproxy.proxy");
-        $logger = $this->getLogger();
-        return new CommonProxy($config, $query, $logger);
+        foreach ($request->cookies as $key => $value) {
+            $response->headers->removeCookie($key);
+            $response->headers->setCookie(new Cookie($key, $value));
+        }
     }
 
     /**
