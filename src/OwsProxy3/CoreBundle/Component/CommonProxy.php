@@ -8,6 +8,8 @@ use Psr\Log\NullLogger;
 
 /**
  * @author Paul Schmidt
+ * @deprecated for excessive constructor bindings; prefer using owsproxy.buzz_client service
+ * @todo v3.3: remove.
  */
 class CommonProxy extends BuzzClientCommon
 {
@@ -47,6 +49,10 @@ class CommonProxy extends BuzzClientCommon
     public function __construct(array $proxy_config, ProxyQuery $proxy_query, $logger = null, $headerBlackList = null,
         $headerWhiteList = null, $userAgent = 'OWSProxy3')
     {
+        @trigger_error("Deprecated: CommonProxy is deprecated since v3.1.6 and will be removed in v3.3. Use owsproxy.buzz_client service instead", E_USER_DEPRECATED);
+        if (func_num_args() >= 4) {
+            @trigger_error("Deprecated: constructor arguments headerBlackList, headerWhiteList and userAgent are deprecated since v3.1.6 and will be ignored in v3.2", E_USER_DEPRECATED);
+        }
         $this->proxy_config = $proxy_config;
         $this->proxy_query = $proxy_query;
         $this->logger = $logger ?: new NullLogger();
@@ -75,7 +81,7 @@ class CommonProxy extends BuzzClientCommon
             'url' => $this->proxy_query->getUrl(),
             'headers' => $headers,
         ));
-        return $this->handleQuery($this->proxy_query, $this->proxy_config, $headers);
+        return $this->handleQueryInternal($this->proxy_query, $this->proxy_config, $headers);
     }
 
     /**

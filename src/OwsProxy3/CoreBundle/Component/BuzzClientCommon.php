@@ -11,7 +11,6 @@ use Buzz\Middleware\BasicAuthMiddleware;
 /**
  * Unbound (use method arguments) portion of pre-bound (use instance attributes) CommonProxy
  * @internal
- * @todo: provide equivalent DI service
  * @todo future (break): drop CommonProxy, absorb fully into DI service
  */
 class BuzzClientCommon extends CurlClientCommon
@@ -45,7 +44,7 @@ class BuzzClientCommon extends CurlClientCommon
      * @return Response
      * @throws \Exception
      */
-    protected function handleQuery(ProxyQuery $query, $config, $headers = null)
+    protected function handleQueryInternal(ProxyQuery $query, $config, $headers = null)
     {
         if ($headers === null) {
             $stripHeaders = array(

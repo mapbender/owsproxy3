@@ -3,6 +3,7 @@ namespace OwsProxy3\CoreBundle\Controller;
 
 use ArsGeografica\Signing\BadSignatureException;
 use Mapbender\CoreBundle\Component\Signer;
+use OwsProxy3\CoreBundle\Component\BuzzClient;
 use OwsProxy3\CoreBundle\Component\Utils;
 use OwsProxy3\CoreBundle\Component\CommonProxy;
 use OwsProxy3\CoreBundle\Component\ProxyQuery;
@@ -56,8 +57,7 @@ class OwsProxyController extends Controller
         } catch (\InvalidArgumentException $e) {
             throw new BadRequestHttpException($e->getMessage(), $e);
         }
-        $proxy = $this->proxyFactory($proxy_query);
-        return $this->getProxyResponse($proxy, $request);
+        return $this->getQueryResponse($proxy_query, $request);
     }
 
     /**
@@ -85,9 +85,7 @@ class OwsProxyController extends Controller
         } catch (BadSignatureException $e) {
             throw new AccessDeniedHttpException('Invalid URL signature: ' . $e->getMessage());
         }
-
-        $proxy = $this->proxyFactory($proxy_query);
-        return $this->getProxyResponse($proxy, $request);
+        return $this->getQueryResponse($proxy_query, $request);
     }
 
     /**
@@ -110,6 +108,19 @@ class OwsProxyController extends Controller
         return $response;
     }
 
+    protected function getQueryResponse(ProxyQuery $query, Request $request)
+    {
+        /** @var BuzzClient $buzzClient */
+        $buzzClient = $this->get('owsproxy.buzz_client');
+        try {
+            $browserResponse = $buzzClient->handleQuery($query);
+        } catch (\Exception $e) {
+            $this->getLogger()->error($e->getMessage() . " " . $e->getCode());
+            return $this->exceptionHtml($e);
+        }
+        return $this->convertBuzzResponse($browserResponse, $request, $query);
+    }
+
     /**
      * @param CommonProxy $proxy
      * @param Request $request
@@ -123,9 +134,20 @@ class OwsProxyController extends Controller
             $this->getLogger()->error($e->getMessage() . " " . $e->getCode() . " " . get_class($proxy));
             return $this->exceptionHtml($e);
         }
+        return $this->convertBuzzResponse($browserResponse, $request, $proxy->getProxyQuery());
+    }
+
+    /**
+     * @param \Buzz\Message\Response $browserResponse
+     * @param Request $request
+     * @param ProxyQuery $query
+     * @return Response
+     */
+    protected function convertBuzzResponse(\Buzz\Message\Response $browserResponse, Request $request, ProxyQuery $query)
+    {
         if (!($browserResponse->isOk() || $browserResponse->isEmpty())) {
             $statusCode = $browserResponse->getStatusCode();
-            $host = $proxy->getProxyQuery()->getHostname();
+            $host = $query->getHostname();
             $message = "{$host} says: {$statusCode} {$browserResponse->getReasonPhrase()}";
             $response = $this->render("OwsProxy3CoreBundle::exception.html.twig", array(
                 'exception' => array(
