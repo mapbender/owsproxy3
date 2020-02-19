@@ -1,6 +1,7 @@
 <?php
 namespace OwsProxy3\CoreBundle\Controller;
 
+// @todo v3.2: remove BadSignatureException references
 use ArsGeografica\Signing\BadSignatureException;
 use Mapbender\CoreBundle\Component\Signer;
 use OwsProxy3\CoreBundle\Component\HttpFoundationClient;
@@ -37,6 +38,7 @@ class OwsProxyController extends Controller
      * @param string $url
      * @param string $content for POST
      * @return Response
+     * @todo v3.3: remove
      */
     public function genericProxyAction(Request $request, $url, $content = null)
     {
@@ -95,6 +97,7 @@ class OwsProxyController extends Controller
      *
      * @param \Exception $e
      * @return Response
+     * @todo v3.2.0: remove; let exceptions fly
      */
     private function exceptionHtml(\Exception $e)
     {
@@ -110,6 +113,12 @@ class OwsProxyController extends Controller
         return $response;
     }
 
+    /**
+     * @param ProxyQuery $query
+     * @param Request $request
+     * @return Response
+     * @todo v3.2.0: let exceptions fly
+     */
     protected function getQueryResponse(ProxyQuery $query, Request $request)
     {
         /** @var HttpFoundationClient $client */
@@ -128,6 +137,7 @@ class OwsProxyController extends Controller
      * @param Response $response
      * @param ProxyQuery $query
      * @return Response
+     * @todo v3.2.0: remove entire method. HTTP status code error handling is enough.
      */
     protected function formatResponse(Response $response, ProxyQuery $query)
     {
