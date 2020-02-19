@@ -3,12 +3,6 @@ Owsproxy evaluates the extension configuration node `ows_proxy3_core`.
 The defaults are:
 ```yaml
 ows_proxy3_core:
-    # request logging (boolean)
-    # deprecated; your web server logs every request, and your Symfony application
-    #             logs every request. You really don't need a third request log.
-    logging: false
-    # anonymize IP in generated logs (boolean)
-    obfuscate_client_ip: false
     # external proxy to pass outgoing requests over (array sub-node)
     proxy:
         # hostname / ip (string or null)
