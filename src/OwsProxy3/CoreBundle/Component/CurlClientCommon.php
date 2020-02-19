@@ -37,9 +37,20 @@ class CurlClientCommon extends BaseClient
                 CURLOPT_PROXYPORT => $config['port'],
             );
             if (isset($config['user']) && isset($config['password'])) {
-                $proxyOptions = array_replace($proxyOptions, array(
-                    CURLOPT_PROXYUSERPWD => "{$config['user']}:{$config['password']}",
-                ));
+                /** @todo v3.2: remove special detection, invariantly encode */
+                $encodedPattern = '#[%][0-9a-f]{2}#i';
+                if (preg_match($encodedPattern, $config['user']) || preg_match($encodedPattern, $config['password'])) {
+                    @trigger_error("Deprecated: proxy credentials look like they may be pre-encoded. Please supply them as plain text (no url encoding). Special handling for pre-encoded credentials will be removed in v3.2", E_USER_DEPRECATED);
+                    $proxyOptions = array_replace($proxyOptions, array(
+                        CURLOPT_PROXYUSERPWD => "{$config['user']}:{$config['password']}",
+                    ));
+                } else {
+                    // must be encoded, at the very least to disambiguate embedded colon from separator colon
+                    // see https://curl.haxx.se/libcurl/c/CURLOPT_PROXYUSERPWD.html
+                    $proxyOptions = array_replace($proxyOptions, array(
+                        CURLOPT_PROXYUSERPWD => rawurlencode($config['user']) . ':' . rawurlencode($config['password']),
+                    ));
+                }
             }
             $options = array_replace($options, $proxyOptions);
         }
