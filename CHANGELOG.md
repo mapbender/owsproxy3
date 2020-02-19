@@ -1,3 +1,13 @@
+## v3.1.6
+- Fix subrequests to genericProxyAction invariantly producing outgoing POST requests
+- Fix missing content type on HTML-reformatted error responses
+- Fix cascading internal exception when reformatting HttpException to HTML
+- Fix query parameter deduplication to also deduplicate params with equal case
+- Fix query parameter deduplication to also deduplicate no-value parameters
+- Fold immediate double-logging in CommonProxy into single message
+- Add `owsproxy.http_foundation_client` service for sane manual handling of `ProxyQuery` objects (Symfony-style responses)
+- Add `owsproxy.buzz_client` service for semi-sane manual handling of `ProxyQuery` objects ("Buzz"-style responses)
+
 ## v3.1.5
 - Drop session interactions; owsproxy uses signatures
 
