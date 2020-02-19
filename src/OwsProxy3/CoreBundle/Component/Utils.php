@@ -211,7 +211,7 @@ class Utils
             // NOTE: this will also support (and deduplicate) no-value params, e.g.
             // ?one&two&one
             $name = preg_replace('#[=].*$#', '', $pairIn);
-            $dedupeKey = $caseSensitiveNames ? strtolower($name) : $name;
+            $dedupeKey = $caseSensitiveNames ? $name : strtolower($name);
             if (!array_key_exists($dedupeKey, $paramPairsOut)) {
                 $paramPairsOut[$dedupeKey] = $pairIn;
             }
