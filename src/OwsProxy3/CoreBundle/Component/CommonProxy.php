@@ -41,7 +41,7 @@ class CommonProxy extends BuzzClientCommon
             'url' => $this->proxy_query->getUrl(),
             'headers' => $this->proxy_query->getHeaders(),
         ));
-        return $this->handleQueryInternal($this->proxy_query, $this->proxyParams);
+        return $this->handleQueryInternal($this->proxy_query);
     }
 
     /**

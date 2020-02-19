@@ -17,13 +17,12 @@ class BuzzClientCommon extends CurlClientCommon
 {
     /**
      * @param ProxyQuery $query
-     * @param mixed[] $config
      * @return Browser
      */
-    protected function browserFromQuery(ProxyQuery $query, array $config)
+    protected function browserFromQuery(ProxyQuery $query)
     {
         $curl = new Curl();
-        $curlOptions = $this->getCurlOptions($query->getHostName(), $config);
+        $curlOptions = $this->getCurlOptions($query->getHostName(), $this->proxyParams);
         foreach ($curlOptions as $optionId => $optionValue) {
             $curl->setOption($optionId, $optionValue);
         }
@@ -39,25 +38,21 @@ class BuzzClientCommon extends CurlClientCommon
      * Handles the request and returns the response.
      *
      * @param ProxyQuery $query
-     * @param mixed[] $config
-     * @param string[]|null $headers
      * @return Response
      * @throws \Exception
      */
-    protected function handleQueryInternal(ProxyQuery $query, $config, $headers = null)
+    protected function handleQueryInternal(ProxyQuery $query)
     {
-        if ($headers === null) {
-            $stripHeaders = array(
-                "cookie",
-                "user-agent",
-                "content-length",
-                "referer",
-                "host",
-            );
-            $headers = Utils::filterHeaders($query->getHeaders(), $stripHeaders);
-            $headers['User-Agent'] = $this->getUserAgent();
-        }
-        $browser = $this->browserFromQuery($query, $config);
+        $stripHeaders = array(
+            "cookie",
+            "user-agent",
+            "content-length",
+            "referer",
+            "host",
+        );
+        $headers = Utils::filterHeaders($query->getHeaders(), $stripHeaders);
+        $headers['User-Agent'] = $this->getUserAgent();
+        $browser = $this->browserFromQuery($query);
 
         $method = $query->getMethod();
         switch ($method) {

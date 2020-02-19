@@ -34,7 +34,7 @@ class HttpFoundationClient extends BuzzClientCommon
             'url' => $query->getUrl(),
             'headers' => $query->getHeaders(),
         ));
-        $buzzResponse = $this->handleQueryInternal($query, $this->proxyParams);
+        $buzzResponse = $this->handleQueryInternal($query);
         return Utils::buzzResponseToResponse($buzzResponse);
     }
 }
