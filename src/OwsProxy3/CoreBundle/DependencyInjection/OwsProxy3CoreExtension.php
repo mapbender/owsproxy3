@@ -18,9 +18,6 @@ class OwsProxy3CoreExtension extends Extension
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
-        $container->setParameter("owsproxy.logging", $config["logging"]);
-        $container->setParameter("owsproxy.obfuscate_client_ip",
-                                 $config["obfuscate_client_ip"]);
         $container->setParameter("owsproxy.proxy", $config["proxy"]);
 
         $loader = new XmlFileLoader($container,
