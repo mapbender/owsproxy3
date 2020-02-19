@@ -3,12 +3,18 @@
 
 namespace OwsProxy3\CoreBundle\Component;
 
+use OwsProxy3\CoreBundle\Controller\OwsProxyController;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Default implementation for service owsproxy.http_foundation_client.
  *
  * Handles ProxyQuery requests and returns Symfony HttpFoundation Requests
+ *
+ * Does not care about cookies or sessions or signatures.
+ * Use this service to replace internal direct usages of CommonProxy.
+ * Use this service to replace internal kernel subrequests to
+ * @see OwsProxyController::genericProxyAction()
  *
  * @since v3.1.6
  * @todo: eliminate Buzz usage

@@ -53,6 +53,7 @@ class OwsProxyController extends Controller
                 }
             }
             $content = Utils::extendPostContent($content, $request->request->all());
+            $url = Utils::filterDuplicateQueryParams($url, false);
             if ($content !== null) {
                 $proxy_query = ProxyQuery::createPost($url, $content, $headers);
             } else {

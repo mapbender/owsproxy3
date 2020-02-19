@@ -21,6 +21,11 @@ class ProxyQuery
     protected $headers;
 
     /**
+     * Factory method for ProxyQuery instances appropriate for GET request.
+     * NOTE: DOES NOT deduplicate query params. Use Utils method if you need help
+     * deduplicating params.
+     * @see Utils::filterDuplicateQueryParams()
+     *
      * @param string $url
      * @param string[] $headers
      * @return static
@@ -34,6 +39,11 @@ class ProxyQuery
     }
 
     /**
+     * Factory method for ProxyQuery instances appropriate for POST request.
+     * NOTE: DOES NOT deduplicate query params. Use Utils method if you need help
+     * deduplicating params.
+     * @see Utils::filterDuplicateQueryParams()
+     *
      * @param string $url
      * @param string[] $headers
      * @param string $content
@@ -85,6 +95,8 @@ class ProxyQuery
         }
 
         @trigger_error("Deprecated: ProxyQuery::createFromUrl is deprecated since v3.1.6 and will be removed in v3.3. Use ::createGet or ::createPost instead. Combine with Utils methods for prebaking of URL and post content.", E_USER_DEPRECATED);
+        // legacy quirk: filter repeated get params that differ only in case (first occurrence stays)
+        $url = Utils::filterDuplicateQueryParams($url, false);
         return new ProxyQuery($url, $content, $headers);
     }
 
@@ -108,6 +120,8 @@ class ProxyQuery
         if ($extraGetParams) {
             $url = Utils::appendQueryParams($url, $extraGetParams);
         }
+        // legacy quirk: filter repeated get params that differ only in case (first occurrence stays)
+        $url = Utils::filterDuplicateQueryParams($url, false);
         $headers = Utils::getHeadersFromRequest($request);
         if ($request->getMethod() === 'POST') {
             return static::createPost($url, $request->getContent(), $headers);
@@ -131,8 +145,7 @@ class ProxyQuery
         $this->headers = array_replace($headers, array(
             'Host' => $parts['host'],
         ));
-        // legacy quirk: filter repeated get params that differ only in case (first occurrence stays)
-        $this->url = Utils::filterDuplicateQueryParams($url, false);
+        $this->url = $url;
         $this->content = $content;
     }
 

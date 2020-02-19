@@ -11,6 +11,9 @@ use Buzz\Message\Response;
  *
  * Handles ProxyQuery requests and returns native Buzz Responses.
  *
+ * Does not care about cookies or sessions or signatures.
+ * Use this service to replace internal direct usages of CommonProxy.
+ *
  * @since v3.1.6
  */
 class BuzzClient extends BuzzClientCommon
