@@ -3,9 +3,8 @@ namespace OwsProxy3\CoreBundle\Controller;
 
 use ArsGeografica\Signing\BadSignatureException;
 use Mapbender\CoreBundle\Component\Signer;
-use OwsProxy3\CoreBundle\Component\BuzzClient;
+use OwsProxy3\CoreBundle\Component\HttpFoundationClient;
 use OwsProxy3\CoreBundle\Component\Utils;
-use OwsProxy3\CoreBundle\Component\CommonProxy;
 use OwsProxy3\CoreBundle\Component\ProxyQuery;
 use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
@@ -110,15 +109,16 @@ class OwsProxyController extends Controller
 
     protected function getQueryResponse(ProxyQuery $query, Request $request)
     {
-        /** @var BuzzClient $buzzClient */
-        $buzzClient = $this->get('owsproxy.buzz_client');
+        /** @var HttpFoundationClient $client */
+        $client = $this->get('owsproxy.http_foundation_client');
         try {
-            $browserResponse = $buzzClient->handleQuery($query);
+            $response = $client->handleQuery($query);
         } catch (\Exception $e) {
             $this->getLogger()->error($e->getMessage() . " " . $e->getCode());
             return $this->exceptionHtml($e);
         }
-        return $this->convertBuzzResponse($browserResponse, $request, $query);
+        $this->restoreOriginalCookies($response, $request);
+        return $this->formatResponse($response, $query);
     }
 
     /**
@@ -141,24 +141,6 @@ class OwsProxyController extends Controller
             ));
             $response->setStatusCode($statusCode);
         }
-        return $response;
-    }
-
-    /**
-     * @param \Buzz\Message\Response $browserResponse
-     * @param Request $request
-     * @param ProxyQuery $query
-     * @return Response
-     */
-    protected function convertBuzzResponse(\Buzz\Message\Response $browserResponse, Request $request, ProxyQuery $query)
-    {
-        $response = new Response();
-        Utils::setHeadersFromBrowserResponse($response, $browserResponse);
-        $this->restoreOriginalCookies($response, $request);
-        $content = $browserResponse->getContent();
-        $response->setContent($content);
-        $response->setStatusCode($browserResponse->getStatusCode(), $browserResponse->getReasonPhrase() ?: null);
-        $response = $this->formatResponse($response, $query);
         return $response;
     }
 

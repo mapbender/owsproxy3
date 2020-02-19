@@ -9,6 +9,8 @@
         <parameter key="owsproxy.user_agent">OWSProxy3</parameter>
         <parameter key="owsproxy.buzz_client.class">OwsProxy3\CoreBundle\Component\BuzzClient</parameter>
         <parameter key="owsproxy.buzz_client.user_agent">%owsproxy.user_agent%</parameter>
+        <parameter key="owsproxy.http_foundation_client.class">OwsProxy3\CoreBundle\Component\HttpFoundationClient</parameter>
+        <parameter key="owsproxy.http_foundation_client.user_agent">%owsproxy.user_agent%</parameter>
     </parameters>
 
     <services>
@@ -24,6 +26,11 @@
         <service id="owsproxy.buzz_client" class="%owsproxy.buzz_client.class%">
             <argument>%owsproxy.proxy%</argument>
             <argument>%owsproxy.buzz_client.user_agent%</argument>
+            <argument type="service" id="logger" on-invalid="null" />
+        </service>
+        <service id="owsproxy.http_foundation_client" class="%owsproxy.http_foundation_client.class%">
+            <argument>%owsproxy.proxy%</argument>
+            <argument>%owsproxy.http_foundation_client.user_agent%</argument>
             <argument type="service" id="logger" on-invalid="null" />
         </service>
     </services>

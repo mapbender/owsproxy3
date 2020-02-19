@@ -11,7 +11,6 @@ class BaseClient
 
     /**
      * @return string
-     * @todo: for service-type child classes, provide parameter-configurable value
      */
     protected function getUserAgent()
     {
