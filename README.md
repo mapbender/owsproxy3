@@ -4,10 +4,9 @@
  
 ## Features
 
-* [Significates](CONTRIBUTING.md#signing-urls) base of external URL
+* Proxy access is secured by checking a signature on the target URL (signing service provided by Mapbender)
 * Prohibits to communicate with not verified URL's
 * Allows to use server proxies
-* Let OpenLayers2 communicate with external WMS servers through OwsProxy
 * Uses a HTTP proxy to work in tightly secured environments
 * Logs proxy calls for billing
 
