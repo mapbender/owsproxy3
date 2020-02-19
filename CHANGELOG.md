@@ -4,6 +4,8 @@
 - Fix cascading internal exception when reformatting HttpException to HTML
 - Fix query parameter deduplication to also deduplicate params with equal case
 - Fix query parameter deduplication to also deduplicate no-value parameters
+- Fix support for proxy credentials containing url-reserved characters
+- Fix extraneous leading space on forwarded header values
 - Fold immediate double-logging in CommonProxy into single message
 - Add `owsproxy.http_foundation_client` service for sane manual handling of `ProxyQuery` objects (Symfony-style responses)
 - Add `owsproxy.buzz_client` service for semi-sane manual handling of `ProxyQuery` objects ("Buzz"-style responses)
