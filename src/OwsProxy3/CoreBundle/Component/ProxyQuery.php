@@ -14,9 +14,6 @@ class ProxyQuery
     /** @var string */
     protected $url;
 
-    /** @var array */
-    protected $getParams;
-
     /** @var string|null the POST content or null on GET requests */
     protected $content;
 
@@ -134,23 +131,8 @@ class ProxyQuery
         $this->headers = array_replace($headers, array(
             'Host' => $parts['host'],
         ));
-
-        $this->getParams = array();
-        if (isset($parts["query"])) {
-            parse_str($parts["query"], $this->getParams);
-            // legacy quirk: filter repeated get params that differ only in case (first occurrence stays)
-            $usedKeys = array();
-            foreach ($this->getParams as $key => $value) {
-                $lcKey = strtolower($key);
-                if (in_array($lcKey, $usedKeys)) {
-                    unset($this->getParams[$key]);
-                    $url = rtrim(preg_replace('#(?<=[&?])' . preg_quote($key, '#') . '[^&]*(&|$)#', '', $url), '&?');
-                } else {
-                    $usedKeys[] = $lcKey;
-                }
-            }
-        }
-        $this->url = $url;
+        // legacy quirk: filter repeated get params that differ only in case (first occurrence stays)
+        $this->url = Utils::filterDuplicateQueryParams($url, false);
         $this->content = $content;
     }
 

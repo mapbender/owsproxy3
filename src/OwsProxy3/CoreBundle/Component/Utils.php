@@ -184,6 +184,37 @@ class Utils
     }
 
     /**
+     * Remove repeated query params from given url
+     *
+     * @param string $url
+     * @param boolean $caseSensitiveNames
+     * @return string
+     * @internal
+     */
+    public static function filterDuplicateQueryParams($url, $caseSensitiveNames)
+    {
+        $fragmentParts = explode('#', $url, 2);
+        if (count($fragmentParts) === 2) {
+            return static::filterDuplicateQueryParams($fragmentParts[0], $caseSensitiveNames) . '#' . $fragmentParts[1];
+        }
+        $queryString = parse_url($url, PHP_URL_QUERY);
+        $paramPairs = explode('&', $queryString);
+        $paramPairsOut = array();
+        foreach ($paramPairs as $pairIn) {
+            if (!$pairIn || $pairIn == '?') {
+                // at this stage, we don't need dangling param separators anymore => strip them
+                continue;
+            }
+            $name = preg_replace('#[=].*$#', '', $pairIn);
+            $dedupeKey = $caseSensitiveNames ? strtolower($name) : $name;
+            if (!array_key_exists($dedupeKey, $paramPairsOut)) {
+                $paramPairsOut[$dedupeKey] = $pairIn;
+            }
+        }
+        return str_replace('?' . $queryString, '?' . implode('&', $paramPairsOut), $url);
+    }
+
+    /**
      * Inject (or replace) given basic auth credentials into $url.
      *
      * @param string $url
