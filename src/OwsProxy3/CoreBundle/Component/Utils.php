@@ -98,6 +98,7 @@ class Utils
      * 
      * @param Response $response
      * @param MessageInterface $browserResponse
+     * @deprecated remove in v3.2. Use buzzResponseToResponse or individual header processing methods, depending on needs.
      */
     public static function setHeadersFromBrowserResponse(Response $response,
             MessageInterface $browserResponse)
@@ -155,7 +156,8 @@ class Utils
             'transfer-encoding',
         ));
         $response = new Response($buzzResponse->getContent(), $buzzResponse->getStatusCode(), $headers);
-        $response->setProtocolVersion($buzzResponse->getProtocolVersion());
+        # TBD: safe to copy protocol version?
+        # $response->setProtocolVersion($buzzResponse->getProtocolVersion());
         $statusText = $buzzResponse->getReasonPhrase();
         if ($statusText) {
             $response->setStatusCode($buzzResponse->getStatusCode(), $statusText);

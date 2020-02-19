@@ -35,10 +35,6 @@ class HttpFoundationClient extends BuzzClientCommon
             'headers' => $query->getHeaders(),
         ));
         $buzzResponse = $this->handleQueryInternal($query, $this->proxyParams);
-        $response = new Response();
-        Utils::setHeadersFromBrowserResponse($response, $buzzResponse);
-        $response->setContent($buzzResponse->getContent());
-        $response->setStatusCode($buzzResponse->getStatusCode(), $buzzResponse->getReasonPhrase() ?: null);
-        return $response;
+        return Utils::buzzResponseToResponse($buzzResponse);
     }
 }
