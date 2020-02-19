@@ -15,7 +15,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
  * @author A.R.Pour
@@ -94,63 +93,16 @@ class OwsProxyController extends Controller
     }
 
     /**
-     * Creates a response with an exception as HTML
-     *
-     * @param \Exception $e
-     * @return Response
-     * @todo v3.2.0: remove; let exceptions fly
-     */
-    private function exceptionHtml(\Exception $e)
-    {
-        $response = $this->render("OwsProxy3CoreBundle::exception.html.twig", array(
-            "exception" => $e,
-        ));
-        $response->headers->set('Content-Type', 'text/html');
-        if ($e instanceof HttpException) {
-            $response->setStatusCode($e->getStatusCode());
-        } else {
-            $response->setStatusCode(500);
-        }
-        return $response;
-    }
-
-    /**
      * @param ProxyQuery $query
      * @param Request $request
      * @return Response
-     * @todo v3.2.0: let exceptions fly
      */
     protected function getQueryResponse(ProxyQuery $query, Request $request)
     {
         /** @var HttpFoundationClient $client */
         $client = $this->get('owsproxy.http_foundation_client');
-        try {
-            $response = $client->handleQuery($query);
-        } catch (\Exception $e) {
-            $this->getLogger()->error($e->getMessage() . " " . $e->getCode());
-            return $this->exceptionHtml($e);
-        }
+        $response = $client->handleQuery($query);
         $this->restoreOriginalCookies($response, $request);
-        return $this->formatResponse($response, $query);
-    }
-
-    /**
-     * @param Response $response
-     * @param ProxyQuery $query
-     * @return Response
-     * @todo v3.2.0: remove entire method. HTTP status code error handling is enough.
-     */
-    protected function formatResponse(Response $response, ProxyQuery $query)
-    {
-        // Emulate Buzz behaviour: treat HTTP 201 / Created as empty ok response
-        if (!($response->isOk() || $response->isEmpty() || $response->getStatusCode() === Response::HTTP_CREATED)) {
-            $statusCode = $response->getStatusCode();
-            $statusText = Response::$statusTexts[$statusCode];
-            $host = $query->getHostname();
-            $message = "{$host} says: {$statusCode} {$statusText}";
-            $fakeException = new HttpException($statusCode, $message);
-            return $this->exceptionHtml($fakeException);
-        }
         return $response;
     }
 
