@@ -103,7 +103,7 @@ class OwsProxyController extends Controller
         ));
         $response->headers->set('Content-Type', 'text/html');
         if ($e instanceof HttpException) {
-            $response->setStatusCode($e->getCode());
+            $response->setStatusCode($e->getStatusCode());
         } else {
             $response->setStatusCode(500);
         }
@@ -137,12 +137,8 @@ class OwsProxyController extends Controller
             $statusText = Response::$statusTexts[$statusCode];
             $host = $query->getHostname();
             $message = "{$host} says: {$statusCode} {$statusText}";
-            $response = $this->render("OwsProxy3CoreBundle::exception.html.twig", array(
-                'exception' => array(
-                    'message' => $message,
-                ),
-            ));
-            $response->setStatusCode($statusCode);
+            $fakeException = new HttpException($statusCode, $message);
+            return $this->exceptionHtml($fakeException);
         }
         return $response;
     }
