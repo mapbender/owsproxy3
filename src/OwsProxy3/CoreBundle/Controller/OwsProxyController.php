@@ -122,6 +122,29 @@ class OwsProxyController extends Controller
     }
 
     /**
+     * @param Response $response
+     * @param ProxyQuery $query
+     * @return Response
+     */
+    protected function formatResponse(Response $response, ProxyQuery $query)
+    {
+        // Emulate Buzz behaviour: treat HTTP 201 / Created as empty ok response
+        if (!($response->isOk() || $response->isEmpty() || $response->getStatusCode() === Response::HTTP_CREATED)) {
+            $statusCode = $response->getStatusCode();
+            $statusText = Response::$statusTexts[$statusCode];
+            $host = $query->getHostname();
+            $message = "{$host} says: {$statusCode} {$statusText}";
+            $response = $this->render("OwsProxy3CoreBundle::exception.html.twig", array(
+                'exception' => array(
+                    'message' => $message,
+                ),
+            ));
+            $response->setStatusCode($statusCode);
+        }
+        return $response;
+    }
+
+    /**
      * @param \Buzz\Message\Response $browserResponse
      * @param Request $request
      * @param ProxyQuery $query
@@ -129,25 +152,13 @@ class OwsProxyController extends Controller
      */
     protected function convertBuzzResponse(\Buzz\Message\Response $browserResponse, Request $request, ProxyQuery $query)
     {
-        if (!($browserResponse->isOk() || $browserResponse->isEmpty())) {
-            $statusCode = $browserResponse->getStatusCode();
-            $host = $query->getHostname();
-            $message = "{$host} says: {$statusCode} {$browserResponse->getReasonPhrase()}";
-            $response = $this->render("OwsProxy3CoreBundle::exception.html.twig", array(
-                'exception' => array(
-                    'message' => $message,
-                ),
-            ));
-            $response->setStatusCode($statusCode, $browserResponse->getReasonPhrase());
-            return $response;
-        }
-
         $response = new Response();
         Utils::setHeadersFromBrowserResponse($response, $browserResponse);
         $this->restoreOriginalCookies($response, $request);
         $content = $browserResponse->getContent();
         $response->setContent($content);
-        $response->setStatusCode($browserResponse->getStatusCode());
+        $response->setStatusCode($browserResponse->getStatusCode(), $browserResponse->getReasonPhrase() ?: null);
+        $response = $this->formatResponse($response, $query);
         return $response;
     }
 
