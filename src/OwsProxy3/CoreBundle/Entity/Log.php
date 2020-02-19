@@ -11,6 +11,9 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Entity
  * @ORM\Table(name="owsproxy_log")
+ * @deprecated leftover from request logging removed in v3.2; keeping Entity for another release avoids schema changes
+ *     and failing gc cron jobs
+ * @todo v3.3: remove
  */
 class Log
 {
