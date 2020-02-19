@@ -72,43 +72,6 @@ class Utils
     }
 
     /**
-     * Sets the headers from proxy's browser response into proxy response
-     * 
-     * @param Response $response
-     * @param MessageInterface $browserResponse
-     * @deprecated remove in v3.2. Use buzzResponseToResponse or individual header processing methods, depending on needs.
-     */
-    public static function setHeadersFromBrowserResponse(Response $response,
-            MessageInterface $browserResponse)
-    {
-        $headers = static::getHeadersFromBrowserResponse($browserResponse);
-        $headers = static::filterHeaders($headers, array(
-            'transfer-encoding',
-        ));
-        foreach ($headers as $key => $value) {
-            $response->headers->set($key, $value);
-        }
-    }
-
-    /**
-     * Filters the HTTP headers according blacklist / whitelist. Key comparisons use the lower-case version of
-     * the input keys, so blacklist / whitelist must also use lower-case keys to work.
-     *
-     * @param array $headers the HTTP headers
-     * @param array $blackList the array with header names to remove
-     * @param array $whiteList the array with header names to keep @deprecated
-     * @return array the prepared HTTP headers
-     */
-    public static function prepareHeadersForRequest(array $headers, array $blackList, array $whiteList = null)
-    {
-        if (func_num_args() >= 3) {
-            @trigger_error("Deprecated: whiteList argument to prepareHeadersForRequest is deprecated and will be ignored in v.3.2. Use array_diff to build your blackList properly", E_USER_DEPRECATED);
-            $blackList = array_diff(array_map('strtolower', $blackList), array_map('strtolower', $whiteList ?: array()));
-        }
-        return static::filterHeaders($headers, $blackList);
-    }
-
-    /**
      * Convert a Buzz Response to a Symfony HttpFoundation Response.
      *
      * Preserves original status code and message.

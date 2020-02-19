@@ -178,31 +178,6 @@ class ProxyQuery
         }
     }
 
-    /**
-     * Returns most url parts (as per parse_url) minus 'query'
-     * @return string[]
-     * @deprecated for weird wording, low utility / complexity ratio; just use the url
-     * @todo v3.2: remove
-     */
-    public function getRowUrl()
-    {
-        $parts = \parse_url($this->url);
-        unset($parts['query']);
-        if (empty($parts['user'])) {
-            unset($parts['user']);
-            unset($parts['pass']);
-        } else {
-            $parts['user'] = rawurldecode($parts['user']);
-            if (isset($parts['pass'])) {
-                $parts['pass'] = rawurldecode($parts['pass']);
-            } else {
-                $parts['pass'] = '';
-            }
-        }
-
-        return $parts;
-    }
-
     public function getUsername()
     {
         return rawurldecode(\parse_url($this->url, PHP_URL_USER) ?: '') ?: null;
