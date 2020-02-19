@@ -59,21 +59,18 @@ class Utils
      * into a "Name" => "Value" mapping.
      *
      * @param MessageInterface $browserResponse
-     * @return array
+     * @return string[]
      */
     public static function getHeadersFromBrowserResponse(MessageInterface $browserResponse)
     {
-        $newheaders = array();
-        $headers = $browserResponse->getHeaders();
-        foreach($headers as $header)
-        {
-            $pos = stripos($header, ":");
-            if(is_int($pos))
-            {
-                $newheaders[substr($header, 0, $pos)] = substr($header, $pos + 1);
+        $headers = array();
+        foreach ($browserResponse->getHeaders() as $headerLine) {
+            $parts = explode(':', $headerLine, 2);
+            if (count($parts) === 2) {
+                $headers[$parts[0]] = ltrim($parts[1]);
             }
         }
-        return $newheaders;
+        return $headers;
     }
 
     /**
