@@ -26,8 +26,11 @@ class OwsProxyController extends Controller
     /**
      * Handles the client's request
      * NOTE: no route; only reachable via Symfony internal SubRequest
-     * @deprecated
-     * For Mapbender >= 3.0.8-beta1, use getUrl method on mapbender.http_transport.service
+     * @deprecated for complex usage, uncontrollable query param merging and uncontrollable POST behaviour
+     * Use owsproxy.http_foundation_client service to internally retrieve Response objects from ProxyQuery objects (GET + POST)
+     * For Mapbender >= 3.0.8-beta1, you can also use getUrl method on mapbender.http_transport.service for simple url-based GET requests
+     * Use Utils:: methods to ease URL and post content construction.
+     *
      * @see https://github.com/mapbender/mapbender/blob/v3.0.8.4/src/Mapbender/Component/Transport/OwsProxyTransport.php
      *
      * @param Request $request

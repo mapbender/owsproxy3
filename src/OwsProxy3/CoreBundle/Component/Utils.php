@@ -158,6 +158,7 @@ class Utils
      * @param string $url
      * @param string[] $params
      * @return string
+     * @since v3.1.6
      */
     public static function appendQueryParams($url, $params)
     {
@@ -189,6 +190,7 @@ class Utils
      * @param string $user plain text (unencoded input)
      * @param string $password plain text (unencoded input)
      * @return string
+     * @since v3.1.6
      */
     public static function addBasicAuthCredentials($url, $user, $password)
     {
@@ -214,6 +216,7 @@ class Utils
      * @param string|null $content
      * @param string[] $params
      * @return string|null
+     * @since v3.1.6
      */
     public static function extendPostContent($content, $params)
     {

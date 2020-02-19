@@ -12,6 +12,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
  * LoggingListener
  *
  * @author A.R.Pour
+ * @deprecated remove in v3.2.0. Redundant vs web server logs and a constant source of ORM UnitOfWork inconsistencies.
  */
 class LoggingListener
 {
