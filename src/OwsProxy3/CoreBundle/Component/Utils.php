@@ -184,12 +184,15 @@ class Utils
     }
 
     /**
-     * Remove repeated query params from given url
+     * Remove repeated query params from given url and returns url with repeated params
+     * removed. First occurence will remain.
+     * NOTE: internal param separator chains will be contracted collaterally. E.g.
+     *   "dog&&cat=hat" => "dog&cat=hat"
      *
      * @param string $url
      * @param boolean $caseSensitiveNames
      * @return string
-     * @internal
+     * @since v3.1.6
      */
     public static function filterDuplicateQueryParams($url, $caseSensitiveNames)
     {
@@ -202,16 +205,27 @@ class Utils
         $paramPairsOut = array();
         foreach ($paramPairs as $pairIn) {
             if (!$pairIn || $pairIn == '?') {
-                // at this stage, we don't need dangling param separators anymore => strip them
+                // internal chained param separators => strip them
                 continue;
             }
+            // NOTE: this will also support (and deduplicate) no-value params, e.g.
+            // ?one&two&one
             $name = preg_replace('#[=].*$#', '', $pairIn);
             $dedupeKey = $caseSensitiveNames ? strtolower($name) : $name;
             if (!array_key_exists($dedupeKey, $paramPairsOut)) {
                 $paramPairsOut[$dedupeKey] = $pairIn;
             }
         }
-        return str_replace('?' . $queryString, '?' . implode('&', $paramPairsOut), $url);
+        $dangle = preg_match('/[&?]$/', $url);
+        $replacement = '?' . implode('&', $paramPairsOut);
+        if ($dangle) {
+            if ($paramPairsOut) {
+                $replacement .= '&';
+            }
+        } else {
+            $replacement = rtrim($replacement, '?');
+        }
+        return str_replace('?' . $queryString, $replacement, $url);
     }
 
     /**
