@@ -4,11 +4,10 @@ namespace OwsProxy3\CoreBundle\Component;
 
 use Buzz\Message\Response;
 use Psr\Log\LoggerInterface;
-use Psr\Log\NullLogger;
 
 /**
  * @author Paul Schmidt
- * @deprecated for excessive constructor bindings; prefer using owsproxy.buzz_client service
+ * @deprecated for excessive constructor bindings; prefer using owsproxy.buzz_client service for Buzz response; prefer owsproxy.http_foundation_client service for Symfony-style Response
  * @todo v3.3: remove.
  */
 class CommonProxy extends BuzzClientCommon
@@ -16,23 +15,11 @@ class CommonProxy extends BuzzClientCommon
     /** @var ProxyQuery */
     protected $proxy_query;
 
-    /** @var array */
-    protected $proxy_config;
-
-    /** @var LoggerInterface */
-    protected $logger;
-
     /** @var array headernames */
     protected $headerBlackList = array("cookie", "user-agent", "content-length", "referer", "host");
 
     /** @var array headernames */
     protected $headerWhiteList = array();
-
-    /**
-     * The user-agent to send along with proxy requests
-     * @var string|null
-     */
-    protected $userAgent;
 
     /**
      * Creates a common proxy
@@ -53,16 +40,14 @@ class CommonProxy extends BuzzClientCommon
         if (func_num_args() >= 4) {
             @trigger_error("Deprecated: constructor arguments headerBlackList, headerWhiteList and userAgent are deprecated since v3.1.6 and will be ignored in v3.2", E_USER_DEPRECATED);
         }
-        $this->proxy_config = $proxy_config;
+        parent::__construct($proxy_config, $userAgent, $logger);
         $this->proxy_query = $proxy_query;
-        $this->logger = $logger ?: new NullLogger();
         if ($headerBlackList !== null) {
             $this->headerBlackList = $headerBlackList;
         }
         if ($headerWhiteList !== null) {
             $this->headerWhiteList = $headerWhiteList;
         }
-        $this->userAgent = $userAgent;
     }
 
     /**
@@ -81,7 +66,7 @@ class CommonProxy extends BuzzClientCommon
             'url' => $this->proxy_query->getUrl(),
             'headers' => $headers,
         ));
-        return $this->handleQueryInternal($this->proxy_query, $this->proxy_config, $headers);
+        return $this->handleQueryInternal($this->proxy_query, $this->proxyParams, $headers);
     }
 
     /**
@@ -90,13 +75,5 @@ class CommonProxy extends BuzzClientCommon
     public function getProxyQuery()
     {
         return $this->proxy_query;
-    }
-
-    /**
-     * @return string
-     */
-    protected function getUserAgent()
-    {
-        return $this->userAgent ?: parent::getUserAgent();
     }
 }
