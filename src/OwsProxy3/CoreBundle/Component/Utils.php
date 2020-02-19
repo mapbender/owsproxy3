@@ -44,10 +44,9 @@ class Utils
     public static function getHeadersFromRequest(Request $request)
     {
         $headers = array();
-        foreach($request->headers as $key => $value)
-        {
-            if(isset($key) && isset($value) && isset($value[0]))
-            {
+        foreach ($request->headers->keys() as $key) {
+            $value = $request->headers->get($key, null, true);
+            if ($value !== null) {
                 $headers[$key] = $value[0];
             }
         }
@@ -74,6 +73,27 @@ class Utils
     }
 
     /**
+     * Returns a new array containing only the key => value pairs from $headers where the key
+     * does not occur in $namesToRemove. Matching is case insensitive, because HTTP header names
+     * are case insensitive.
+     *
+     * @param string[] $headers
+     * @param string[] $namesToRemove
+     * @return string[] remaining headers
+     */
+    public static function filterHeaders($headers, $namesToRemove)
+    {
+        $namesToRemove = array_map('strtolower', $namesToRemove);
+        $filtered = array();
+        foreach ($headers as $name => $value) {
+            if (!\in_array(strtolower($name), $namesToRemove)) {
+                $filtered[$name] = $value;
+            }
+        }
+        return $filtered;
+    }
+
+    /**
      * Sets the headers from proxy's browser response into proxy response
      * 
      * @param Response $response
@@ -82,12 +102,12 @@ class Utils
     public static function setHeadersFromBrowserResponse(Response $response,
             MessageInterface $browserResponse)
     {
-        $heasers_resp = Utils::getHeadersFromBrowserResponse($browserResponse);
-        foreach($heasers_resp as $key => $value)
-        {
-            if(strtolower($key) !== "transfer-encoding"){
-                $response->headers->set($key, $value);
-            }
+        $headers = static::getHeadersFromBrowserResponse($browserResponse);
+        $headers = static::filterHeaders($headers, array(
+            'transfer-encoding',
+        ));
+        foreach ($headers as $key => $value) {
+            $response->headers->set($key, $value);
         }
     }
 
@@ -96,19 +116,17 @@ class Utils
      * the input keys, so blacklist / whitelist must also use lower-case keys to work.
      *
      * @param array $headers the HTTP headers
-     * @param array $blackList the array with header names to remove MUST BE LOWER CASE TO BE EFFECTIVE
-     * @param array $whiteList the array with header names to remove MUST BE LOWER CASE TO BE EFFECTIVE
+     * @param array $blackList the array with header names to remove
+     * @param array $whiteList the array with header names to keep @deprecated
      * @return array the prepared HTTP headers
      */
-    public static function prepareHeadersForRequest(array $headers, array $blackList, array $whiteList)
+    public static function prepareHeadersForRequest(array $headers, array $blackList, array $whiteList = null)
     {
-        foreach ($headers as $key => $value) {
-            $lkey = strtolower($key);
-            if (in_array($lkey, $blackList) && !in_array($lkey, $whiteList)) {
-                unset($headers[$key]);
-            }
+        if (func_num_args() >= 3) {
+            @trigger_error("Deprecated: whiteList argument to prepareHeadersForRequest is deprecated and will be ignored in v.3.2. Use array_diff to build your blackList properly", E_USER_DEPRECATED);
+            $blackList = array_diff(array_map('strtolower', $blackList), array_map('strtolower', $whiteList ?: array()));
         }
-        return $headers;
+        return static::filterHeaders($headers, $blackList);
     }
 
     /**
@@ -126,20 +144,16 @@ class Utils
      */
     public static function buzzResponseToResponse($buzzResponse)
     {
-        // adapt header formatting: Buzz uses a flat list of lines, HttpFoundation expects a name: value mapping
-        $headers = array();
-        foreach ($buzzResponse->getHeaders() as $headerLine) {
-            $parts = explode(':', $headerLine, 2);
-            /**
-             * Forward all headers except Transfer-Encoding.
-             * Buzz (actually curl) pipes this through even though the content is
-             * never chunked and never compressed.
-             * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Transfer-Encoding
-             */
-            if (count($parts) == 2 && strtolower($parts[0]) != 'transfer-encoding') {
-                $headers[$parts[0]] = $parts[1];
-            }
-        }
+        $headers = static::getHeadersFromBrowserResponse($buzzResponse);
+        /**
+         * Forward all headers except Transfer-Encoding.
+         * Buzz (actually curl) pipes this through even though the content is
+         * never chunked and never compressed.
+         * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Transfer-Encoding
+         */
+        $headers = static::filterHeaders($headers, array(
+            'transfer-encoding',
+        ));
         $response = new Response($buzzResponse->getContent(), $buzzResponse->getStatusCode(), $headers);
         $response->setProtocolVersion($buzzResponse->getProtocolVersion());
         $statusText = $buzzResponse->getReasonPhrase();

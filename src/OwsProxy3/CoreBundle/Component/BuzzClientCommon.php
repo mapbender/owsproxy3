@@ -54,7 +54,7 @@ class BuzzClientCommon extends CurlClientCommon
                 "referer",
                 "host",
             );
-            $headers = Utils::prepareHeadersForRequest($query->getHeaders(), $stripHeaders, array());
+            $headers = Utils::filterHeaders($query->getHeaders(), $stripHeaders);
             $headers['User-Agent'] = $this->getUserAgent();
         }
         $browser = $this->browserFromQuery($query, $config);
