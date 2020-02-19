@@ -13,28 +13,6 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class Utils
 {
-
-    /**
-     *
-     * @var string the identifier for HTTP GET
-     * @todo 3.2: no usages, remove
-     */
-    public static $METHOD_GET = "GET";
-
-    /**
-     *
-     * @var string the identifier for HTTP POST
-     * @todo 3.2: no usages, remove
-     */
-    public static $METHOD_POST = "POST";
-
-    /**
-     *
-     * @var string the identifier for parameter "url"
-     * @todo 3.2: no usages, remove
-     */
-    public static $PARAMETER_URL = "url";
-
     /**
      * Returns the headers from Request
      * 
