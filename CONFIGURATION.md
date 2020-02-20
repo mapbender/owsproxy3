@@ -1,3 +1,9 @@
+# Parameters
+Owsproxy evaluates the following single configuration parameter (shown value is the default):
+```yaml
+# http user agent for outgoing requests (string)
+owsproxy.useragent: OWSProxy3
+```
 # Extension configuration
 Owsproxy evaluates the extension configuration node `ows_proxy3_core`.
 The defaults are:
