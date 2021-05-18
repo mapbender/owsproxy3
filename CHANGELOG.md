@@ -1,3 +1,6 @@
+## v3.1.7
+- Fix outgoing headers (v3.1.6 regression)
+
 ## v3.1.6
 - Fix subrequests to genericProxyAction invariantly producing outgoing POST requests
 - Fix missing content type on HTML-reformatted error responses

@@ -25,7 +25,7 @@ class Utils
         foreach ($request->headers->keys() as $key) {
             $value = $request->headers->get($key, null, true);
             if ($value !== null) {
-                $headers[$key] = $value[0];
+                $headers[$key] = $value;
             }
         }
         return $headers;
