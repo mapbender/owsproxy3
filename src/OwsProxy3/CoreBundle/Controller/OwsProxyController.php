@@ -15,7 +15,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Templating\EngineInterface;
 
 /**
  * @author A.R.Pour
@@ -23,8 +22,6 @@ use Symfony\Component\Templating\EngineInterface;
  */
 class OwsProxyController
 {
-    /** @var EngineInterface */
-    protected $templateEngine;
     /** @var HttpFoundationClient */
     protected $client;
     /** @var Signer */
@@ -32,12 +29,10 @@ class OwsProxyController
     /** @var LoggerInterface */
     protected $logger;
 
-    public function __construct(EngineInterface $templateEngine,
-                                HttpFoundationClient $client,
+    public function __construct(HttpFoundationClient $client,
                                 Signer $signer,
                                 LoggerInterface $logger = null)
     {
-        $this->templateEngine = $templateEngine;
         $this->client = $client;
         $this->signer = $signer;
         $this->logger = $logger ?: new NullLogger();

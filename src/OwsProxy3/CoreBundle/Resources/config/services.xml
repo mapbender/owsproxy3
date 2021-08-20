@@ -24,7 +24,6 @@
             <argument type="service" id="logger" on-invalid="null" />
         </service>
         <service id="OwsProxy3\CoreBundle\Controller\OwsProxyController" class="OwsProxy3\CoreBundle\Controller\OwsProxyController" public="true">
-            <argument type="service" id="templating" />
             <argument type="service" id="owsproxy.http_foundation_client" />
             <argument type="service" id="signer" />
             <argument type="service" id="logger" on-invalid="null" />
