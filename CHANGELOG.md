@@ -1,3 +1,7 @@
+## v3.1.8
+- Fix controller incompatibilities with Symfony 4 / 5
+- Resolve reliance on undeclared dependency sensio/framework-extra-bundle
+
 ## v3.1.7
 - Fix outgoing headers (v3.1.6 regression)
 

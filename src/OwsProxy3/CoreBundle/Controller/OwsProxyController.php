@@ -8,20 +8,40 @@ use OwsProxy3\CoreBundle\Component\HttpFoundationClient;
 use OwsProxy3\CoreBundle\Component\Utils;
 use OwsProxy3\CoreBundle\Component\ProxyQuery;
 use Psr\Log\LoggerInterface;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Psr\Log\NullLogger;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Templating\EngineInterface;
 
 /**
  * @author A.R.Pour
  * @author P. Schmidt
  */
-class OwsProxyController extends Controller
+class OwsProxyController
 {
+    /** @var EngineInterface */
+    protected $templateEngine;
+    /** @var HttpFoundationClient */
+    protected $client;
+    /** @var Signer */
+    protected $signer;
+    /** @var LoggerInterface */
+    protected $logger;
+
+    public function __construct(EngineInterface $templateEngine,
+                                HttpFoundationClient $client,
+                                Signer $signer,
+                                LoggerInterface $logger = null)
+    {
+        $this->templateEngine = $templateEngine;
+        $this->client = $client;
+        $this->signer = $signer;
+        $this->logger = $logger ?: new NullLogger();
+    }
 
     /**
      * Handles the client's request
@@ -73,13 +93,11 @@ class OwsProxyController extends Controller
      */
     public function entryPointAction(Request $request)
     {
-        /** @var Signer $signer */
-        $signer = $this->get('signer');
         $url = $request->query->get('url');
 
         try {
             $proxy_query = ProxyQuery::createFromRequest($request, 'url');
-            $signer->checkSignedUrl($url);
+            $this->signer->checkSignedUrl($url);
         } catch (\InvalidArgumentException $e) {
             throw new BadRequestHttpException($e->getMessage(), $e);
             // NOTE: ProxySignatureException is not defined in Mapbender < 3.0.8.1
@@ -99,9 +117,7 @@ class OwsProxyController extends Controller
      */
     protected function getQueryResponse(ProxyQuery $query, Request $request)
     {
-        /** @var HttpFoundationClient $client */
-        $client = $this->get('owsproxy.http_foundation_client');
-        $response = $client->handleQuery($query);
+        $response = $this->client->handleQuery($query);
         $this->restoreOriginalCookies($response, $request);
         return $response;
     }
@@ -112,15 +128,5 @@ class OwsProxyController extends Controller
             $response->headers->removeCookie($key);
             $response->headers->setCookie(new Cookie($key, $value));
         }
-    }
-
-    /**
-     * @return LoggerInterface
-     */
-    protected function getLogger()
-    {
-        /** @var LoggerInterface $logger */
-        $logger = $this->get('logger');
-        return $logger;
     }
 }
