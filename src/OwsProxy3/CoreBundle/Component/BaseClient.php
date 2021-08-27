@@ -28,12 +28,4 @@ class BaseClient
         $this->userAgent = $userAgent ?: self::DEFAULT_USER_AGENT;
         $this->logger = $logger ?: new NullLogger();
     }
-
-    /**
-     * @return string
-     */
-    protected function getUserAgent()
-    {
-        return $this->userAgent;
-    }
 }

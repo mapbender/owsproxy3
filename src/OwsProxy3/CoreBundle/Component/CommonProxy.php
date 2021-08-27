@@ -2,15 +2,15 @@
 
 namespace OwsProxy3\CoreBundle\Component;
 
-use Buzz\Message\Response;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @author Paul Schmidt
  * @deprecated for excessive constructor bindings; prefer owsproxy.http_foundation_client service for Symfony-style Response
  * @todo v3.3: remove.
  */
-class CommonProxy extends BuzzClientCommon
+class CommonProxy extends HttpFoundationClient
 {
     /** @var ProxyQuery */
     protected $proxy_query;
@@ -32,7 +32,7 @@ class CommonProxy extends BuzzClientCommon
     /**
      * Handles the request and returns the response.
      *
-     * @return Response
+     * @return \Buzz\Message\Response
      * @throws \Exception
      */
     public function handle()
@@ -41,7 +41,27 @@ class CommonProxy extends BuzzClientCommon
             'url' => $this->proxy_query->getUrl(),
             'headers' => $this->proxy_query->getHeaders(),
         ));
-        return $this->handleQueryInternal($this->proxy_query);
+        return $this->toBuzz($this->handleQueryInternal($this->proxy_query));
+    }
+
+    /**
+     * @param Response $response
+     * @return \Buzz\Message\Response
+     */
+    protected static function toBuzz(Response $response)
+    {
+        $statusCode = $response->getStatusCode();
+        if (!empty(Response::$statusTexts[$statusCode])) {
+            $statusText = Response::$statusTexts[$statusCode];
+        } else {
+            $statusText = 'Unknown status';
+        }
+        $statusLine = "HTTP/{$response->getProtocolVersion()} {$statusCode} {$statusText}";
+        $headers = array_merge(array($statusLine), static::flattenHeaders($response->headers->all()));
+        $buzzResponse = new \Buzz\Message\Response();
+        $buzzResponse->addHeaders($headers);
+        $buzzResponse->setContent($response->getContent() ?: '');
+        return $buzzResponse;
     }
 
     /**
