@@ -15,6 +15,7 @@ use Buzz\Message\Response;
  * Use this service to replace internal direct usages of CommonProxy.
  *
  * @since v3.1.6
+ * @deprecated
  */
 class BuzzClient extends BuzzClientCommon
 {
