@@ -7,7 +7,7 @@ use Psr\Log\LoggerInterface;
 
 /**
  * @author Paul Schmidt
- * @deprecated for excessive constructor bindings; prefer using owsproxy.buzz_client service for Buzz response; prefer owsproxy.http_foundation_client service for Symfony-style Response
+ * @deprecated for excessive constructor bindings; prefer owsproxy.http_foundation_client service for Symfony-style Response
  * @todo v3.3: remove.
  */
 class CommonProxy extends BuzzClientCommon
@@ -24,7 +24,7 @@ class CommonProxy extends BuzzClientCommon
      */
     public function __construct(array $proxy_config, ProxyQuery $proxy_query, $logger = null)
     {
-        @trigger_error("Deprecated: CommonProxy is deprecated since v3.1.6 and will be removed in v3.3. Use owsproxy.buzz_client service instead", E_USER_DEPRECATED);
+        @trigger_error("Deprecated: CommonProxy is deprecated since v3.1.6 and will be removed in v3.3. Use owsproxy.owsproxy.http_foundation_client service instead (returns PSR7 / Symfony response)", E_USER_DEPRECATED);
         parent::__construct($proxy_config, null, $logger);
         $this->proxy_query = $proxy_query;
     }
