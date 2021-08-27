@@ -47,4 +47,21 @@ class CurlClientCommon extends BaseClient
         }
         return $options;
     }
+
+    protected static function flattenHeaders(array $values)
+    {
+        $flat = array();
+        foreach ($values as $name => $value) {
+            if (\is_numeric($name)) {
+                $flat[] = $value;
+            } elseif (\is_array($value)) {
+                foreach ($value as $next) {
+                    $flat[] = "{$name}: {$next}";
+                }
+            } elseif ($value !== null) {
+                $flat[] = "{$name}: {$value}";
+            }
+        }
+        return $flat;
+    }
 }

@@ -3,70 +3,43 @@
 
 namespace OwsProxy3\CoreBundle\Component;
 
-use Buzz\Browser;
-use Buzz\Client\Curl;
-use Buzz\Message\Response;
-use Buzz\Middleware\BasicAuthMiddleware;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Unbound (use method arguments) portion of pre-bound (use instance attributes) CommonProxy
  * @internal
- * @todo future (break): drop CommonProxy, absorb fully into DI service
- * @internal
  */
-class BuzzClientCommon extends CurlClientCommon
+class BuzzClientCommon extends HttpFoundationClient
 {
-    /**
-     * @param ProxyQuery $query
-     * @return Browser
-     */
-    protected function browserFromQuery(ProxyQuery $query)
-    {
-        $curl = new Curl();
-        $curlOptions = $this->getCurlOptions($query->getHostName(), $this->proxyParams);
-        foreach ($curlOptions as $optionId => $optionValue) {
-            $curl->setOption($optionId, $optionValue);
-        }
-        $browser = new Browser($curl);
-        if ($query->getUsername()) {
-            $browser->addMiddleware(new BasicAuthMiddleware($query->getUsername(), $query->getPassword()));
-        }
-
-        return $browser;
-    }
-
     /**
      * Handles the request and returns the response.
      *
      * @param ProxyQuery $query
-     * @return Response
+     * @return \Buzz\Message\Response
      * @throws \Exception
      */
     protected function handleQueryInternal(ProxyQuery $query)
     {
-        $stripHeaders = array(
-            "cookie",
-            "user-agent",
-            "content-length",
-            "referer",
-            "host",
-        );
-        $headers = Utils::filterHeaders($query->getHeaders(), $stripHeaders);
-        $headers['User-Agent'] = $this->getUserAgent();
-        $browser = $this->browserFromQuery($query);
+        return $this->toBuzz(parent::handleQuery($query));
+    }
 
-        $method = $query->getMethod();
-        switch ($method) {
-            case 'POST':
-                /** @var Response $response */
-                $response = $browser->post($query->getUrl(), $headers, $query->getContent());
-                return $response;
-            case 'GET':
-                /** @var Response $response */
-                $response = $browser->get($query->getUrl(), $headers);
-                return $response;
-            default:
-                throw new \RuntimeException("Unsupported method {$method}");
+    /**
+     * @param Response $response
+     * @return \Buzz\Message\Response
+     */
+    protected static function toBuzz(Response $response)
+    {
+        $statusCode = $response->getStatusCode();
+        if (!empty(Response::$statusTexts[$statusCode])) {
+            $statusText = Response::$statusTexts[$statusCode];
+        } else {
+            $statusText = 'Unknown status';
         }
+        $statusLine = "HTTP/{$response->getProtocolVersion()} {$statusCode} {$statusText}";
+        $headers = array_merge(array($statusLine), static::flattenHeaders($response->headers->all()));
+        $buzzResponse = new \Buzz\Message\Response();
+        $buzzResponse->addHeaders($headers);
+        $buzzResponse->setContent($response->getContent() ?: '');
+        return $buzzResponse;
     }
 }
