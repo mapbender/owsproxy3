@@ -12,7 +12,7 @@
         "psr-4": {"OwsProxy3\\": "src/OwsProxy3"}
     },
     "conflict": {
-        "mapbender/mapbender": "<3.0.8.1"
+        "mapbender/mapbender": "<3.0.8.2"
     },
     "extra": {
         "branch-alias": {
