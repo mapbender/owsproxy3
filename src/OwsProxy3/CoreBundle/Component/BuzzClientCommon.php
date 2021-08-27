@@ -12,6 +12,7 @@ use Buzz\Middleware\BasicAuthMiddleware;
  * Unbound (use method arguments) portion of pre-bound (use instance attributes) CommonProxy
  * @internal
  * @todo future (break): drop CommonProxy, absorb fully into DI service
+ * @internal
  */
 class BuzzClientCommon extends CurlClientCommon
 {

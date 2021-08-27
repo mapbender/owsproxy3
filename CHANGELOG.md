@@ -1,3 +1,6 @@
+## v3.1.9
+- Fix configuration loading error on Symfony 5
+
 ## v3.1.8
 - Fix controller incompatibilities with Symfony 4 / 5
 - Resolve reliance on undeclared dependency sensio/framework-extra-bundle
