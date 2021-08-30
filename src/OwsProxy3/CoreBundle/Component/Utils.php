@@ -2,9 +2,7 @@
 
 namespace OwsProxy3\CoreBundle\Component;
 
-use Buzz\Message\MessageInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Utils class with help functions
@@ -32,25 +30,6 @@ class Utils
     }
 
     /**
-     * Returns the headers from BrowserResponse; converts Buzz-format "Name: Value" single strings
-     * into a "Name" => "Value" mapping.
-     *
-     * @param MessageInterface $browserResponse
-     * @return string[]
-     */
-    public static function getHeadersFromBrowserResponse(MessageInterface $browserResponse)
-    {
-        $headers = array();
-        foreach ($browserResponse->getHeaders() as $headerLine) {
-            $parts = explode(':', $headerLine, 2);
-            if (count($parts) === 2) {
-                $headers[$parts[0]] = ltrim($parts[1]);
-            }
-        }
-        return $headers;
-    }
-
-    /**
      * Returns a new array containing only the key => value pairs from $headers where the key
      * does not occur in $namesToRemove. Matching is case insensitive, because HTTP header names
      * are case insensitive.
@@ -69,41 +48,6 @@ class Utils
             }
         }
         return $filtered;
-    }
-
-    /**
-     * Convert a Buzz Response to a Symfony HttpFoundation Response.
-     *
-     * Preserves original status code and message.
-     *
-     * Note: We do not do anything about cookies here. Buzz\Response::getHeaders() DOES NOT return received cookies.
-     *       When using the Mapbender host as a proxy, none of the upstream cookies have any meaning to begin with,
-     *       as they are for a domain the client never talked to directly. As such, cookie handling of any form
-     *       is redundant for the proxy use case via Buzz.
-     *
-     * @param \Buzz\Message\Response $buzzResponse
-     * @return Response
-     */
-    public static function buzzResponseToResponse($buzzResponse)
-    {
-        $headers = static::getHeadersFromBrowserResponse($buzzResponse);
-        /**
-         * Forward all headers except Transfer-Encoding.
-         * Buzz (actually curl) pipes this through even though the content is
-         * never chunked and never compressed.
-         * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Transfer-Encoding
-         */
-        $headers = static::filterHeaders($headers, array(
-            'transfer-encoding',
-        ));
-        $response = new Response($buzzResponse->getContent(), $buzzResponse->getStatusCode(), $headers);
-        # TBD: safe to copy protocol version?
-        # $response->setProtocolVersion($buzzResponse->getProtocolVersion());
-        $statusText = $buzzResponse->getReasonPhrase();
-        if ($statusText) {
-            $response->setStatusCode($buzzResponse->getStatusCode(), $statusText);
-        }
-        return $response;
     }
 
     /**
