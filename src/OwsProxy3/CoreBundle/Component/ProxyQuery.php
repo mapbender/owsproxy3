@@ -167,16 +167,4 @@ class ProxyQuery
     {
         return $this->url;
     }
-
-    /**
-     * Returns the url
-     *
-     * @return string
-     * @deprecated alias for getUrl; URLs don't depend on HTTP methods
-     * @todo v3.3: remove. Breaks Mapbender <3.0.8.2 (WMTS only; <3.0.4.1 otherwise).
-     */
-    public function getGetUrl()
-    {
-        return $this->url;
-    }
 }
