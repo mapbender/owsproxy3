@@ -59,48 +59,6 @@ class ProxyQuery
     }
 
     /**
-     * Creates an instance from parameters
-     *
-     * @param string $url
-     * @param string $user the user name for basic authentication
-     * @param string $password the user password for basic authentication
-     * @param array $headers
-     * @param array $getParams
-     * @param array $postParams
-     * @param string $content for POST
-     * @return ProxyQuery
-     * @throws \InvalidArgumentException for invalid url
-     * @deprecated: Use createGet or createPost depending on needs.
-     *              Use Utils:: methods for pre-baking url with parameters and / or credentials, and / or post content.
-     * @todo v3.3: remove. Breaks Mapbender <3.1 and <= 3.0.8.5 (TBD 3.0.8.6)
-     */
-    public static function createFromUrl($url, $user = null, $password = null,
-            $headers = array(), $getParams = array(), $postParams = array(),
-            $content = null)
-    {
-        // strip fragment
-        $url = preg_replace('/#.*$/', '', $url);
-        $url = rtrim($url, '&?');
-        if ($getParams) {
-            @trigger_error("Deprecated: query params should be passed inside the url. Use Utils::appendQueryParams for query param baking support.", E_USER_DEPRECATED);
-            $url = Utils::appendQueryParams($url, $getParams);
-        }
-        if ($postParams) {
-            @trigger_error("Deprecated: post params should not be passed separately from content. Use http_build_query to build valid post content. Use Utils::extendPostContent for help concatenating more parameters onto existing POST content.", E_USER_DEPRECATED);
-            $content = Utils::extendPostContent($content, $postParams);
-        }
-        if ($user) {
-            @trigger_error("Deprecated: basic auth credentials should not be passed separately from content. Use Utils::addBasicAuthCredentials for credentials baking support.", E_USER_DEPRECATED);
-            $url = Utils::addBasicAuthCredentials($url, $user, $password);
-        }
-
-        @trigger_error("Deprecated: ProxyQuery::createFromUrl is deprecated since v3.1.6 and will be removed in v3.3. Use ::createGet or ::createPost instead. Combine with Utils methods for prebaking of URL and post content.", E_USER_DEPRECATED);
-        // legacy quirk: filter repeated get params that differ only in case (first occurrence stays)
-        $url = Utils::filterDuplicateQueryParams($url, false);
-        return new ProxyQuery($url, $content, $headers);
-    }
-
-    /**
      * Creates an instance from a Symfony Request
      *
      * @param Request $request
