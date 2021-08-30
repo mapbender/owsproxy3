@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * Default implementation for service owsproxy.http_foundation_client.
  *
- * Handles ProxyQuery requests and returns Symfony HttpFoundation Requests
+ * Handles ProxyQuery requests and returns Symfony HttpFoundation Responses
  *
  * Does not care about cookies or sessions or signatures.
  * Use this service to replace internal direct usages of CommonProxy.

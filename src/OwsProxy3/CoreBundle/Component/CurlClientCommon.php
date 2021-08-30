@@ -4,9 +4,7 @@
 namespace OwsProxy3\CoreBundle\Component;
 
 /**
- * Curl-specific portion of BuzzClientCommon / CommonProxy
- * @todo future (break): drop Buzz-aware API, standardize on bare curl (better maintenance, less overhead) or upcoming
- *    plain-PHP / Symfony HTTP APIs
+ * Curl-specific portion of HttpFoundationClient
  * @internal
  */
 class CurlClientCommon extends BaseClient
