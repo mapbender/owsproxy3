@@ -1,3 +1,11 @@
+## v3.2.0
+- Removed html reformatting of error responses (all responses are forwarded)
+- Removed database logging (use web server log and / or Symfony log)
+- Removed legacy workaround for url-encoded proxy user / password configuration; do not pre-encode basic auth credentials
+- Removed Buzz-specific header utility methods
+- Removed unrouted (no url) "genericProxyAction". Use service `owsproxy.http_foundation_client` service to replace kernel subrequests to this action.
+- Removed `owsproxy.buzz_client` service. Use service `owsproxy.http_foundation_client` instead.
+
 ## v3.1.9
 - Fix configuration loading error on Symfony 5
 
