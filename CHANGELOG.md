@@ -1,3 +1,9 @@
+## v3.3.0
+- Removed CommonProxy. Use service `owsproxy.http_foundation_client` instead.
+- Removed kriswallsmith/buzz integration and dependency.
+- Removed ProxyQuery::getGetUrl (urls are not method specific; use getUrl).
+- Removed ProxyQuery::createFromUrl (use createGet, createPost or createFromRequest as appropriate)
+
 ## v3.2.0
 - Removed html reformatting of error responses (all responses are forwarded)
 - Removed database logging (use web server log and / or Symfony log)
