@@ -1,3 +1,6 @@
+## v3.3.1
+- Fix error processing redirected response
+
 ## v3.3.0
 - Removed CommonProxy. Use service `owsproxy.http_foundation_client` instead.
 - Removed kriswallsmith/buzz integration and dependency.
