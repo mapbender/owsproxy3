@@ -1,3 +1,6 @@
+## v3.2.1
+- Fix error processing redirected response
+
 ## v3.2.0
 - Removed html reformatting of error responses (all responses are forwarded)
 - Removed database logging (use web server log and / or Symfony log)
