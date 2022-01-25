@@ -4,6 +4,9 @@
 - Removed ProxyQuery::getGetUrl (urls are not method specific; use getUrl).
 - Removed ProxyQuery::createFromUrl (use createGet, createPost or createFromRequest as appropriate)
 
+## v3.2.1
+- Fix error processing redirected response
+
 ## v3.2.0
 - Removed html reformatting of error responses (all responses are forwarded)
 - Removed database logging (use web server log and / or Symfony log)
