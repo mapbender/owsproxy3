@@ -1,4 +1,10 @@
-# OWS Proxy
+# Deprecated
+
+This repository is deprecated. Its functionality has been integrated into the [mapbender core repository](https://github.com/mapbender/mapbender/) in [version 3.3.0](https://github.com/mapbender/mapbender/releases/tag/v3.3.0).
+
+---
+
+## Old description: OWS Proxy
 
  Can be used to relay requests and results form clients to servers that are otherwise not directly accessible to the client.
  
